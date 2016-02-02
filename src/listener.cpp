@@ -105,9 +105,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    std_msgs::Float32MultiArray pid_inner_x_msg;
    pid_inner_x_msg.data.resize(5); // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
    std_msgs::Float32MultiArray pid_inner_y_msg;
-   pid_inner_x_msg.data.resize(5);
+   pid_inner_y_msg.data.resize(5);
    std_msgs::Float32MultiArray pid_inner_z_msg;
-   pid_inner_x_msg.data.resize(5);
+   pid_inner_z_msg.data.resize(5);
 
 
 
