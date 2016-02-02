@@ -1,18 +1,22 @@
 #include "ros/ros.h"
+
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Point.h"
-#include "pcl_msgs/Vertices.h"
-#include "iostream"
-#include <sstream>
-#include "math.h"
-#include <string>
-#include "param.h"
+#include "pcl_msgs/ModelCoefficients.h"
 
 #include <signal.h>
 #include <termios.h>
 #include <stdio.h>
+
+#include <iostream>
+#include <sstream>
+#include <string>
+#include "math.h"
+#include "param.h"
+
+
 
 
 static int kfd = 0;
@@ -259,14 +263,14 @@ int main(int argc, char **argv) {
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
 
-	ros::Subscriber velocity_sub = n.subscribe("calculated_velocity", 100, velocityCallback);
+	ros::Subscriber velocity_sub = n.subscribe("/FIRST/CURRENT_VEL", 100, velocityCallback);
 
-	ros::Subscriber position_sub = n.subscribe("/FIRST/POSDATA", 100, position_Callback);
+	ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
 
 
 // <geometry_msgs::Point>
-	param_pub = n.advertise<pcl_msgs::Vertices>("param_talker", 100);
+	param_pub = n.advertise<pcl_msgs::ModelCoefficients>("param_talker", 100);
 
 	ros::Rate loop_rate(1000);
 	//ros::Rate loop_rate(30);
@@ -400,7 +404,7 @@ int main(int argc, char **argv) {
 		std_msgs::Float32 float_msg;
 		
 
-		pcl_msgs::Vertices param_msg;
+		pcl_msgs::ModelCoefficients param_msg;
 
 		float_msg.data = 0;
 		static float float_msg_tmp = 0;

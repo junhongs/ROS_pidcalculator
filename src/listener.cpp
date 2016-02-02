@@ -3,8 +3,9 @@
 #include "std_msgs/String.h"
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Point.h"
-#include <std_msgs/Float32.h>
+#include "std_msgs/Float32.h"
 #include "pcl_msgs/Vertices.h"
+#include "pcl_msgs/ModelCoefficients.h"
 
 #include <iostream>
 
@@ -37,18 +38,24 @@ TOPIC{
       PIDparam rate        X,Y,Z  * (P,I,D,IMAX)     (12)
 
    out::
-         "FIRST/OUTPUT_PID/X/"
-      Output_Pid           X,Y,Z,Y                   (3)
+         "FIRST/OUTPUT_PID/"
+         pcl_msgs::ModelCoefficients
+      Output_PID           X,Y,Z,Y,A                 (5)
 
-      Output_
+         "FIRST/OUTPUT_INNER_PID/X"
+         pcl_msgs::ModelCoefficients
+      Output_inner_PPID         X,Y,Z * (res,posP,rateP,rateI,rateD)
+
 }
 SERVICE{
 }
 */
 static ros::Publisher float_pub;
-
-
 static ros::Publisher velocity_pub;
+static ros::Publisher pid_out_pub;
+static ros::Publisher pid_inner_x_pub;
+static ros::Publisher pid_inner_y_pub;
+static ros::Publisher pid_inner_z_pub;
 
 // target_pos_vel_t *target;
 // pos_vel_t *current;
@@ -219,9 +226,25 @@ int main(int argc, char **argv) {
 
    float_pub = n.advertise<std_msgs::Float32>("calculated_pid", 100);
 
-   velocity_pub = n.advertise<geometry_msgs::Point>("calculated_velocity", 100);
+   velocity_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
 
+   //pcl_msgs/ModelCoefficients
+   pid_out_pub       = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_PID", 100);
+   pid_inner_x_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/X", 100);
+   pid_inner_y_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/Y", 100);
+   pid_inner_z_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/Z", 100);
+   /*
+   "FIRST/OUTPUT_PID/"
+   "FIRST/OUTPUT_INNER_PID/X"
+   */
    //n.advertise<geometry_msgs::Point>("/FIRST/POSDATA", 100);
+
+   pcl_msgs::ModelCoefficients v_msgs;
+   v_msgs.values.clear();
+   v_msgs.values.push_back(10);
+   v_msgs.values.push_back(20);
+   v_msgs.values.push_back(30);
+   v_msgs.values.push_back(40);
 
 
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
