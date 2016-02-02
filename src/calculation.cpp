@@ -1,6 +1,10 @@
 #include "ros/ros.h"
 #include "calculation.h"
 #include "math.h"
+
+#include <iostream>
+using namespace std;
+
 // pid_calc_t -> error
 static int get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;
@@ -21,18 +25,31 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
 static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
 
+#define DEBUG
+#ifdef DEBUG
+   cout << " Deriv:" << pid->derivative;
+#endif
+
    // Low pass filter cut frequency for derivative calculation
    // Set to  "1 / ( 2 * PI * gps_lpf )"
 #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)50))
    // discrete low pass filter, cuts out the
    // high frequency noise that can drive the controller crazy
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
+
+#ifdef DEBUG
+   cout << "  Deriv:" << pid->derivative;
+#endif
    // update state
 
    pid->last_error = pid->error;
-
    pid->last_derivative = pid->derivative;
    // add in derivative component
+
+   #ifdef DEBUG
+   cout << "  Param_D:" << pid_param->pid_D;
+   #endif
+
    return pid_param->pid_D * pid->derivative;
 }
 
@@ -41,7 +58,7 @@ void reset_PID(pid_calc_t *pid) {
    pid->last_derivative = 0;
 }
 
-double calc_dist(double x,double y,double z,double xx,double yy,double zz){
+double calc_dist(double x, double y, double z, double xx, double yy, double zz) {
 
    double tmp = 0;
    double sum = 0;
