@@ -125,6 +125,13 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pid_calc_t pid_rate_X = {0, };
    static target_pos_vel_t target_pos_vel_X = {0, };
 
+/*
+      1. restrict the target velocity by 200
+      2. set the target_position
+      
+
+
+*/
    pid_calc_t *pid_pos_p = &pid_pos_X;
    pid_calc_t *pid_rate_p = &pid_rate_X;
    target_pos_vel_t *target_pos_vel_p = &target_pos_vel_X;
@@ -139,7 +146,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
-   pid_output_msg.data[0] = pid_rate_p->output;   // ROLL
+   pid_output_msg.data[0] = (unsigned short)pid_rate_p->output;   // ROLL
 
    pid_inner_x_msg.data[0] = target_pos_vel_p->target_vel;
    pid_inner_x_msg.data[1] = pid_rate_p->inner_p;
@@ -164,7 +171,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
-   pid_output_msg.data[1] = pid_rate_p->output;  // PITCH
+   pid_output_msg.data[1] = (unsigned short)pid_rate_p->output;  // PITCH
 
    pid_inner_y_msg.data[0] = target_pos_vel_p->target_vel;
    pid_inner_y_msg.data[1] = pid_rate_p->inner_p;
@@ -189,9 +196,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
 
-   pid_output_msg.data[3] = pid_rate_p->output;   // THROTTLE
+   pid_output_msg.data[3] = (unsigned short)pid_rate_p->output;   // THROTTLE
    pid_output_msg.data[2] = 1500;   // THROTTLE
-   pid_output_msg.data[5] = 1000;
+   pid_output_msg.data[4] = 1000;
 
    pid_inner_z_msg.data[0] = target_pos_vel_p->target_vel;
    pid_inner_z_msg.data[1] = pid_rate_p->inner_p;
