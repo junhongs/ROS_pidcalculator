@@ -23,6 +23,7 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
 static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
+   if(pid->cycle_time)
    pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
 
 #define DEBUG
