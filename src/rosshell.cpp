@@ -334,9 +334,18 @@ int main(int argc, char **argv) {
 			else if ( argvector[0] == "dat" ) {
 
 
+				int is_recursive = 0;
+				if ( argvector.size() > 1 && argvector[1] == "-r" ) {
+					argvector.erase(argvector.begin() + 1);
+					is_recursive = 1;
+				}
+				else if (argvector.size() > 2 && argvector[2] == "-r" ) {
+					argvector.erase(argvector.begin() + 2);
+					is_recursive = 1;
+				}
 
-				if ( argvector.size() > 1 && argvector[1] == "-r" )
-				{
+
+				if ( argvector.size() > 1 && argvector[1] == "vel" ) {
 					is_loop = 1;
 					ros::Rate data_rate(30);
 					while (is_loop) {
@@ -347,31 +356,37 @@ int main(int argc, char **argv) {
 						ros::spinOnce(); // receive the topic. It will cause the callback function
 						// if (is_received_float)
 						// 	std::cout << float_data << std::endl;
-
 						if (is_received_velocity)
 							std::cout << "VEL X:Y:Z=" << velocity_data.x << ":" << velocity_data.y << ":" << velocity_data.z << std::endl;
-
-						if (is_received_position)
-							std::cout << "POS X:Y:Z=" << position_data.x << ":" << position_data.y << ":" << position_data.z << std::endl;
-
+						if (!is_recursive)
+							break;
 						data_rate.sleep();
 					}
+
+					continue;
 				}
-				else {
+
+
+				is_loop = 1;
+				ros::Rate data_rate(30);
+				while (is_loop) {
 
 					is_received_float = 0;
 					is_received_velocity = 0;
 
-					ros::spinOnce();
-					if (is_received_float)
-						std::cout << "dummy" << float_data << std::endl;
+					ros::spinOnce(); // receive the topic. It will cause the callback function
+					// if (is_received_float)
+					// 	std::cout << float_data << std::endl;
+
 					if (is_received_velocity)
 						std::cout << "VEL X:Y:Z=" << velocity_data.x << ":" << velocity_data.y << ":" << velocity_data.z << std::endl;
+
 					if (is_received_position)
 						std::cout << "POS X:Y:Z=" << position_data.x << ":" << position_data.y << ":" << position_data.z << std::endl;
+					if (!is_recursive)
+						break;
+					data_rate.sleep();
 				}
-
-
 			}
 			else
 				std::cout << std::endl;
