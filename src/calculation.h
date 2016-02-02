@@ -39,7 +39,8 @@ typedef struct target_pos_vel_t {
    float target_vel;
 } target_pos_vel_t;
 
-
+void reset_PID(pid_calc_t *pid);
+double calc_dist(double,double,double,double,double,double);
 void calc_velocity( pos_vel_t* pos_vel);
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
 void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);

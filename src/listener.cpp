@@ -99,6 +99,24 @@ void position_Callback(const geometry_msgs::Point& msg) {
    msg_pos_vel_Z.cur_pos = msg.z;
    calc_velocity(&msg_pos_vel_Z);
 
+   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
+   float limited_target_vel = 200;
+   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
+
+
+
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+   double target_pos_x = 0;
+   double target_pos_y = 1100;
+   double target_pos_z = -1600;
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+   int distance = calc_dist(target_pos_x,target_pos_y,target_pos_z,msg.x,msg.y,msg.z);
+   std_msgs::Float32 float_msg;
+   float_msg.data = distance ;
+   //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
+   float_pub.publish(float_msg);
+
 
    std_msgs::UInt16MultiArray pid_output_msg;
    pid_output_msg.data.resize(5, 1000);
@@ -128,22 +146,29 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pid_calc_t pid_rate_X = {0, };
    static target_pos_vel_t target_pos_vel_X = {0, };
 
-/*
-      1. restrict the target velocity by 200
-      2. set the target_position
-      
+
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+   target_pos_vel_X.target_pos = target_pos_x;
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
 
 
-*/
+
+   /*
+         1. restrict the target velocity by 200.   OK
+         2. set the target_position.               OK
+   */
    pid_calc_t *pid_pos_p = &pid_pos_X;
    pid_calc_t *pid_rate_p = &pid_rate_X;
    target_pos_vel_t *target_pos_vel_p = &target_pos_vel_X;
 
+
+   //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_X);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos_p, &pid_pos_param_X);
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
+   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
@@ -163,14 +188,28 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pid_calc_t pid_rate_Y = {0, };
    static target_pos_vel_t target_pos_vel_Y = {0, };
 
+
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+   target_pos_vel_Y.target_pos = target_pos_y;
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+
+
+
    pid_pos_p = &pid_pos_Y;
    pid_rate_p = &pid_rate_Y;
    target_pos_vel_p = &target_pos_vel_Y;
 
+   //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Y);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos_p, &pid_pos_param_X);
    target_pos_vel_p->target_vel = pid_pos_p->output;
+
+
+   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+
+
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
@@ -188,14 +227,25 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pid_calc_t pid_rate_Z = {0, };
    static target_pos_vel_t target_pos_vel_Z = {0, };
 
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+   target_pos_vel_Z.target_pos = target_pos_z;
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+
    pid_pos_p = &pid_pos_Z;
    pid_rate_p = &pid_rate_Z;
    target_pos_vel_p = &target_pos_vel_Z;
 
+   //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Z);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos_p, &pid_pos_param_Z);
    target_pos_vel_p->target_vel = pid_pos_p->output;
+
+   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+
+
+
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
 
@@ -283,7 +333,7 @@ int main(int argc, char **argv) {
    // parameter server uses disk io, so it causes some delay.
    // ros::Timer timer = n.createTimer(ros::Duration(1), timerCallback);
 
-   float_pub = n.advertise<std_msgs::Float32>("calculated_pid", 100);
+   float_pub = n.advertise<std_msgs::Float32>("calculated_distance", 100);
 
    velocity_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
 

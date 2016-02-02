@@ -1,6 +1,6 @@
 #include "ros/ros.h"
 #include "calculation.h"
-
+#include "math.h"
 // pid_calc_t -> error
 static int get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;
@@ -36,9 +36,23 @@ static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid_param->pid_D * pid->derivative;
 }
 
-static void reset_PID(pid_calc_t *pid) {
+void reset_PID(pid_calc_t *pid) {
    pid->integrator = 0;
    pid->last_derivative = 0;
+}
+
+double calc_dist(double x,double y,double z,double xx,double yy,double zz){
+
+   double tmp = 0;
+   double sum = 0;
+   tmp = (x - xx);
+   sum += tmp * tmp;
+   tmp = (y - yy);
+   sum += tmp * tmp;
+   tmp = (z - zz);
+   sum += tmp * tmp;
+
+   return sqrt(sum);
 }
 
 
