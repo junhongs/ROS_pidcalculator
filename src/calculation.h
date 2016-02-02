@@ -12,6 +12,11 @@ typedef struct {
    float integrator;          // integrator value
    float last_error;
    float last_derivative;     // last derivative for low-pass filter
+   
+   float inner_p;
+   float inner_i;
+   float inner_d;
+
    float output;
 
 } pid_calc_t;

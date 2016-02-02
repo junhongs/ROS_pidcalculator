@@ -46,7 +46,7 @@ TOPIC{
 
          "FIRST/OUTPUT_INNER_PID/X"
          pcl_msgs::ModelCoefficients
-      Output_inner_PPID         X,Y,Z * (res,posP,rateP,rateI,rateD)
+      Output_inner_PPID         X,Y,Z * (res,target_vel,P,I,D)
 
 }
 SERVICE{
@@ -99,6 +99,17 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_velocity(&msg_pos_vel_Z);
 
 
+   std_msgs::UInt16MultiArray pid_output_msg;
+   pid_output_msg.data.resize(5, 1000);
+
+   std_msgs::Float32MultiArray pid_inner_x_msg;
+   pid_inner_x_msg.data.resize(5); // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+   std_msgs::Float32MultiArray pid_inner_y_msg;
+   pid_inner_x_msg.data.resize(5);
+   std_msgs::Float32MultiArray pid_inner_z_msg;
+   pid_inner_x_msg.data.resize(5);
+
+
 
 
 
@@ -122,10 +133,21 @@ void position_Callback(const geometry_msgs::Point& msg) {
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos_p, &pid_pos_param_X);
    target_pos_vel_p->target_vel = pid_pos_p->output;
+
+   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
+   pid_output_msg.data[0] = pid_rate_p->output;   // ROLL
 
+   pid_inner_x_msg.data[0] = target_pos_vel_p->target_vel;
+   pid_inner_x_msg.data[1] = pid_rate_p->inner_p;
+   pid_inner_x_msg.data[2] = pid_rate_p->inner_i;
+   pid_inner_x_msg.data[3] = pid_rate_p->inner_d;
+   pid_inner_x_msg.data[4] = pid_rate_p->output;
+
+   pid_inner_x_pub.publish(pid_inner_x_msg);
 
    static pid_calc_t pid_pos_Y = {0, };
    static pid_calc_t pid_rate_Y = {0, };
@@ -142,8 +164,15 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
+   pid_output_msg.data[1] = pid_rate_p->output;  // PITCH
 
+   pid_inner_y_msg.data[0] = target_pos_vel_p->target_vel;
+   pid_inner_y_msg.data[1] = pid_rate_p->inner_p;
+   pid_inner_y_msg.data[2] = pid_rate_p->inner_i;
+   pid_inner_y_msg.data[3] = pid_rate_p->inner_d;
+   pid_inner_y_msg.data[4] = pid_rate_p->output;
 
+   pid_inner_y_pub.publish(pid_inner_y_msg);
 
    static pid_calc_t pid_pos_Z = {0, };
    static pid_calc_t pid_rate_Z = {0, };
@@ -159,6 +188,22 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p->target_vel = pid_pos_p->output;
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
+
+   pid_output_msg.data[3] = pid_rate_p->output;   // THROTTLE
+   pid_output_msg.data[2] = 1500;   // THROTTLE
+   pid_output_msg.data[5] = 1000;
+
+   pid_inner_z_msg.data[0] = target_pos_vel_p->target_vel;
+   pid_inner_z_msg.data[1] = pid_rate_p->inner_p;
+   pid_inner_z_msg.data[2] = pid_rate_p->inner_i;
+   pid_inner_z_msg.data[3] = pid_rate_p->inner_d;
+   pid_inner_z_msg.data[4] = pid_rate_p->output;
+
+   pid_inner_z_pub.publish(pid_inner_z_msg);
+
+   pid_out_pub.publish(pid_output_msg);
+
+
 }
 
 
@@ -179,6 +224,7 @@ void positionCallback(const std_msgs::Float32& msg) {
    velocity_msg.y = 0;
    velocity_msg.z = msg_pos_vel.cur_vel;
    velocity_pub.publish(velocity_msg);
+
 
 
 
