@@ -64,7 +64,14 @@ int constrain(int amt, int low, int high) {
    else
       return amt;
 }
-
+float constrain(float amt, float low, float high) {
+   if (amt < low)
+      return low;
+   else if (amt > high)
+      return high;
+   else
+      return amt;
+}
 
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
 // if (target->target_pos && current->cur_pos )

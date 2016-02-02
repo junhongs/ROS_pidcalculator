@@ -46,5 +46,6 @@ void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *curren
 void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
 void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
 int constrain(int amt, int low, int high);
+float constrain(float amt, float low, float high);
 
 #endif
