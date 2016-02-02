@@ -85,6 +85,10 @@ double *get_param(int pr, int xyz, int pidi) {
    return &((&((&(pid_param.pos_pid_X)[n / 4])->pid_P))[n % 4]);
 }
 
+void update_param(int n){
+   *get_param(n) = ros::param::param( (param_list[n]),*get_param(n));
+}
+
 int get_param_n(int pr, int xyz, int pidi) {
    return pr * 4 + xyz * 8 + pidi;
 }

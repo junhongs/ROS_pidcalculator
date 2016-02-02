@@ -97,7 +97,7 @@ void keyLoop() {
 	static int pr = 0, xyz = 0, pidi = 0;
 
 	static double scale = 0.001;
-
+	static std_msgs::Int32 param_msg;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -137,13 +137,22 @@ void keyLoop() {
 			break;
 		case KEYCODE_U:
 
+			
+			param_msg.data = get_param_n(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+
 			*db_pt += scale;
-			key_debug(param_list[get_param_n(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_n(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
 			break;
 		case KEYCODE_D:
+			
+
+			param_msg.data = get_param_n(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+
 			*db_pt -= scale;
-			key_debug(param_list[get_param_n(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_n(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
 			break;
 
@@ -274,7 +283,7 @@ int main(int argc, char **argv) {
 
 // <geometry_msgs::Point>
 // std_msgs::Float32MultiArray
-	param_pub = n.advertise<std_msgs::Float32MultiArray>("param_talker", 100);
+	param_pub = n.advertise<std_msgs::Int32>("/PARAM_CHANGE", 100);
 
 	ros::Rate loop_rate(1000);
 	//ros::Rate loop_rate(30);
@@ -406,9 +415,9 @@ int main(int argc, char **argv) {
 
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
-		
+
 //std_msgs::Float32MultiArray
-		std_msgs::Float32MultiArray param_msg;
+		//std_msgs::Float32MultiArray param_msg;
 		//pcl_msgs::ModelCoefficients param_msg;
 
 		float_msg.data = 0;

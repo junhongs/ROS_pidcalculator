@@ -4,6 +4,7 @@
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Point.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Int32.h"
 #include "pcl_msgs/Vertices.h"
 #include "pcl_msgs/ModelCoefficients.h"
 #include "geometry_msgs/Inertia.h"
@@ -80,9 +81,11 @@ void timerCallback(const ros::TimerEvent&) {
    update_param(&pid_param);
 }
 
-void paramCallback(const pcl_msgs::Vertices& msg) {
-   msg.vertices[0];
+void paramCallback(const std_msgs::Int32& msg) {
+   update_param(msg.data);
 }
+
+
 void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t msg_pos_vel_X = {0,};
    msg_pos_vel_X.cur_time = ros::Time::now().toSec();
@@ -369,7 +372,7 @@ int main(int argc, char **argv) {
 
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
 
-   ros::Subscriber param_sub = n.subscribe("param_talker", 100, paramCallback);
+   ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
    ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
