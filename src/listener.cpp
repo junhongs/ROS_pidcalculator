@@ -238,7 +238,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p = &target_pos_vel_Z;
 
 
-   std::cout<<"T" <<target->target_pos << " : C"<<current->cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
+   std::cout<< "T" <<  target_pos_vel_p->target_pos << " : C"<<msg_pos_vel_Z.cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
 //target->target_pos - current->cur_pos
    //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Z);
