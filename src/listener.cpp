@@ -174,6 +174,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
+
    pid_output_msg.data[0] = (unsigned short)pid_rate_p->output;   // ROLL
 
    pid_inner_x_msg.m = target_pos_vel_p->target_vel;
@@ -243,7 +244,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
    constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
-
+   std::cout << target_pos_vel_p->target_vel << std::endl;
 
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
