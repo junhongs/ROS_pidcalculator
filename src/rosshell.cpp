@@ -398,6 +398,8 @@ int main(int argc, char **argv) {
 
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
+		
+
 		pcl_msgs::Vertices param_msg;
 
 		float_msg.data = 0;

@@ -26,6 +26,7 @@ PARAM{
 TOPIC{
    in::
          "FIRST/TARGET_POS/X/"
+         "FIRST/CURRENT_POS/X/"
       Target Position      X,Y,Z                     (3)
       Current Position     X,Y,Z                     (3)
 
@@ -37,7 +38,9 @@ TOPIC{
 
    out::
          "FIRST/OUTPUT_PID/X/"
-      Output_Pid           X,Y,Z                     (3)
+      Output_Pid           X,Y,Z,Y                   (3)
+
+      Output_
 }
 SERVICE{
 }
@@ -225,7 +228,7 @@ int main(int argc, char **argv) {
 
    ros::Subscriber param_sub = n.subscribe("param_talker", 100, paramCallback);
 
-   ros::Subscriber position_sub = n.subscribe("/FIRST/POSDATA", 100, position_Callback);
+   ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
 
    ros::spin();
