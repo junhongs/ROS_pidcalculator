@@ -6,6 +6,8 @@
 #include "std_msgs/Float32.h"
 #include "pcl_msgs/Vertices.h"
 #include "pcl_msgs/ModelCoefficients.h"
+#include "std_msgs/Float32MultiArray.h"
+#include "std_msgs/UInt16MultiArray.h"
 
 #include <iostream>
 
@@ -220,6 +222,7 @@ int main(int argc, char **argv) {
    ros::NodeHandle n;
    init_param(&pid_param);
 
+
    // Creat Timer to update the parameter.
    // parameter server uses disk io, so it causes some delay.
    // ros::Timer timer = n.createTimer(ros::Duration(1), timerCallback);
@@ -229,10 +232,14 @@ int main(int argc, char **argv) {
    velocity_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
 
    //pcl_msgs/ModelCoefficients
-   pid_out_pub       = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_PID", 100);
-   pid_inner_x_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/X", 100);
-   pid_inner_y_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/Y", 100);
-   pid_inner_z_pub   = n.advertise<pcl_msgs::ModelCoefficients>("/FIRST/OUTPUT_INNER_PID/Z", 100);
+   pid_out_pub       = n.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
+   pid_inner_x_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/X", 100);
+   pid_inner_y_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/Y", 100);
+   pid_inner_z_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/Z", 100);
+
+
+// std_msgs/UInt16MultiArray
+
    /*
    "FIRST/OUTPUT_PID/"
    "FIRST/OUTPUT_INNER_PID/X"

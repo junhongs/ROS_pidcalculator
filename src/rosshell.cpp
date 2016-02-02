@@ -5,7 +5,10 @@
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Point.h"
 #include "pcl_msgs/ModelCoefficients.h"
+#include "std_msgs/Float32MultiArray.h"
+#include "std_msgs/UInt16MultiArray.h"
 
+///opt/ros/indigo/share/std_msgs/msg/UInt16MultiArray.msg
 #include <signal.h>
 #include <termios.h>
 #include <stdio.h>
@@ -93,7 +96,7 @@ void keyLoop() {
 
 	static int pr = 0, xyz = 0, pidi = 0;
 
-	static float scale = 0.001;
+	static double scale = 0.001;
 
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -270,7 +273,8 @@ int main(int argc, char **argv) {
 
 
 // <geometry_msgs::Point>
-	param_pub = n.advertise<pcl_msgs::ModelCoefficients>("param_talker", 100);
+// std_msgs::Float32MultiArray
+	param_pub = n.advertise<std_msgs::Float32MultiArray>("param_talker", 100);
 
 	ros::Rate loop_rate(1000);
 	//ros::Rate loop_rate(30);
@@ -403,8 +407,9 @@ int main(int argc, char **argv) {
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
 		
-
-		pcl_msgs::ModelCoefficients param_msg;
+//std_msgs::Float32MultiArray
+		std_msgs::Float32MultiArray param_msg;
+		//pcl_msgs::ModelCoefficients param_msg;
 
 		float_msg.data = 0;
 		static float float_msg_tmp = 0;
