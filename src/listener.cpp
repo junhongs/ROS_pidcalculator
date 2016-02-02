@@ -6,6 +6,7 @@
 #include "std_msgs/Float32.h"
 #include "pcl_msgs/Vertices.h"
 #include "pcl_msgs/ModelCoefficients.h"
+#include "geometry_msgs/Inertia.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
 
@@ -102,14 +103,16 @@ void position_Callback(const geometry_msgs::Point& msg) {
    std_msgs::UInt16MultiArray pid_output_msg;
    pid_output_msg.data.resize(5, 1000);
 
-   std_msgs::Float32MultiArray pid_inner_x_msg;
-   pid_inner_x_msg.data.resize(5); // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-   std_msgs::Float32MultiArray pid_inner_y_msg;
-   pid_inner_y_msg.data.resize(5);
-   std_msgs::Float32MultiArray pid_inner_z_msg;
-   pid_inner_z_msg.data.resize(5);
+   // std_msgs::Float32MultiArray pid_inner_x_msg;
+   // pid_inner_x_msg.data.resize(5); // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+   // std_msgs::Float32MultiArray pid_inner_y_msg;
+   // pid_inner_y_msg.data.resize(5);
+   // std_msgs::Float32MultiArray pid_inner_z_msg;
+   // pid_inner_z_msg.data.resize(5);
 
-
+   geometry_msgs::Inertia pid_inner_x_msg;
+   geometry_msgs::Inertia pid_inner_y_msg;
+   geometry_msgs::Inertia pid_inner_z_msg;
 
 
 
@@ -148,11 +151,11 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    pid_output_msg.data[0] = (unsigned short)pid_rate_p->output;   // ROLL
 
-   pid_inner_x_msg.data[0] = target_pos_vel_p->target_vel;
-   pid_inner_x_msg.data[1] = pid_rate_p->inner_p;
-   pid_inner_x_msg.data[2] = pid_rate_p->inner_i;
-   pid_inner_x_msg.data[3] = pid_rate_p->inner_d;
-   pid_inner_x_msg.data[4] = pid_rate_p->output;
+   pid_inner_x_msg.m = target_pos_vel_p->target_vel;
+   pid_inner_x_msg.ixx = pid_rate_p->inner_p;
+   pid_inner_x_msg.ixy = pid_rate_p->inner_i;
+   pid_inner_x_msg.ixz = pid_rate_p->inner_d;
+   pid_inner_x_msg.izz = pid_rate_p->output;
 
    pid_inner_x_pub.publish(pid_inner_x_msg);
 
@@ -173,11 +176,11 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    pid_output_msg.data[1] = (unsigned short)pid_rate_p->output;  // PITCH
 
-   pid_inner_y_msg.data[0] = target_pos_vel_p->target_vel;
-   pid_inner_y_msg.data[1] = pid_rate_p->inner_p;
-   pid_inner_y_msg.data[2] = pid_rate_p->inner_i;
-   pid_inner_y_msg.data[3] = pid_rate_p->inner_d;
-   pid_inner_y_msg.data[4] = pid_rate_p->output;
+   pid_inner_y_msg.m = target_pos_vel_p->target_vel;
+   pid_inner_y_msg.ixx = pid_rate_p->inner_p;
+   pid_inner_y_msg.ixy = pid_rate_p->inner_i;
+   pid_inner_y_msg.ixz = pid_rate_p->inner_d;
+   pid_inner_y_msg.izz = pid_rate_p->output;
 
    pid_inner_y_pub.publish(pid_inner_y_msg);
 
@@ -200,11 +203,11 @@ void position_Callback(const geometry_msgs::Point& msg) {
    pid_output_msg.data[2] = 1500;   // THROTTLE
    pid_output_msg.data[4] = 1000;
 
-   pid_inner_z_msg.data[0] = target_pos_vel_p->target_vel;
-   pid_inner_z_msg.data[1] = pid_rate_p->inner_p;
-   pid_inner_z_msg.data[2] = pid_rate_p->inner_i;
-   pid_inner_z_msg.data[3] = pid_rate_p->inner_d;
-   pid_inner_z_msg.data[4] = pid_rate_p->output;
+   pid_inner_z_msg.m = target_pos_vel_p->target_vel;
+   pid_inner_z_msg.ixx = pid_rate_p->inner_p;
+   pid_inner_z_msg.ixy = pid_rate_p->inner_i;
+   pid_inner_z_msg.ixz = pid_rate_p->inner_d;
+   pid_inner_z_msg.izz = pid_rate_p->output;
 
    pid_inner_z_pub.publish(pid_inner_z_msg);
 
@@ -286,9 +289,9 @@ int main(int argc, char **argv) {
 
    //pcl_msgs/ModelCoefficients
    pid_out_pub       = n.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
-   pid_inner_x_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/X", 100);
-   pid_inner_y_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/Y", 100);
-   pid_inner_z_pub   = n.advertise<std_msgs::Float32MultiArray>("/FIRST/OUTPUT_INNER_PID/Z", 100);
+   pid_inner_x_pub   = n.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/X", 100);
+   pid_inner_y_pub   = n.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Y", 100);
+   pid_inner_z_pub   = n.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Z", 100);
 
 
 // std_msgs/UInt16MultiArray
