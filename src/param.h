@@ -28,9 +28,9 @@ void set_param(pos_pid_parameter_t *pid_param);
 void reset_param(void);
 void delete_param(void);
 void update_param(int);
-int get_param_n(int pr, int xyz, int pidi);
-double *get_param(int n);
-double *get_param(int pr, int xyz, int pidi);
+int get_param_num(int pr, int xyz, int pidi);
+double *get_param_n(int n);
+double *get_param_n(int pr, int xyz, int pidi);
 void set_param_n(int n, double data);
 void set_param_n(int pr, int xyz, int pidi, double data);
 

@@ -56,17 +56,25 @@ pos_pid_parameter_t pid_param = {
 };
 
 pid_parameter_t default_param_pos = {
-   0.11,
+   1,
    0,
    0,
-   2000
+   200
 };
 
 pid_parameter_t default_param_rate = {
-   2,
-   0.08,
-   0.045,
-   2000
+//Z value!
+   0.4,
+   0.002,
+   0.005,
+   200
+
+   // 0.2,
+   // 0.008,
+   // 0.0045,
+   // 200
+
+
 };
 
 pid_parameter_t reset_param_pos_X = default_param_pos;
@@ -77,26 +85,26 @@ pid_parameter_t reset_param_pos_Z = default_param_pos;
 pid_parameter_t reset_param_rate_Z = default_param_rate;
 
 
-double *get_param(int n) {
+double *get_param_n(int n) {
    return &((&((&(pid_param.pos_pid_X)[n / 4])->pid_P))[n % 4]);
 }
-double *get_param(int pr, int xyz, int pidi) {
-   int n = get_param_n(pr,xyz,pidi);
+double *get_param_n(int pr, int xyz, int pidi) {
+   int n = get_param_num(pr,xyz,pidi);
    return &((&((&(pid_param.pos_pid_X)[n / 4])->pid_P))[n % 4]);
 }
 
 void update_param(int n){
-   *get_param(n) = ros::param::param( (param_list[n]),*get_param(n));
+   *get_param_n(n) = ros::param::param( (param_list[n]),*get_param_n(n));
 }
 
-int get_param_n(int pr, int xyz, int pidi) {
+int get_param_num(int pr, int xyz, int pidi) {
    return pr * 4 + xyz * 8 + pidi;
 }
 void set_param_n(int n, double data){
    ros::param::set(param_list[n], data);
 }
 void set_param_n(int pr, int xyz, int pidi, double data){
-   int n = get_param_n(pr,xyz,pidi);
+   int n = get_param_num(pr,xyz,pidi);
    ros::param::set(param_list[n], data);
 }
 

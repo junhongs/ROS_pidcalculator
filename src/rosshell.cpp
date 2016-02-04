@@ -111,8 +111,8 @@ void keyLoop() {
 	//printf("\033[2J"); // Clear the screen, move to (0,0)
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
-	std::cout << param_list[get_param_n(pr, xyz, pidi)] << std::endl;
-	double *db_pt = get_param( pr,  xyz, pidi);
+	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
+	double *db_pt = get_param_n( pr,  xyz, pidi);
 
 
 	while (is_loop) {
@@ -138,21 +138,21 @@ void keyLoop() {
 		case KEYCODE_U:
 
 			
-			param_msg.data = get_param_n(pr, xyz, pidi);
+			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 
 			*db_pt += scale;
-			key_debug(param_list[ get_param_n(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
 			break;
 		case KEYCODE_D:
 			
 
-			param_msg.data = get_param_n(pr, xyz, pidi);
+			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 
 			*db_pt -= scale;
-			key_debug(param_list[ get_param_n(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
 			break;
 
@@ -240,8 +240,8 @@ void keyLoop() {
 			//printf("value: %c \t 0x%02X\n", c, c);
 			break;
 		}
-		db_pt = get_param( pr,  xyz, pidi);
-		std::cout << param_list[get_param_n(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
+		db_pt = get_param_n( pr,  xyz, pidi);
+		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
