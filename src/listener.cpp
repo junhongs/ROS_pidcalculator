@@ -171,7 +171,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_pid(pid_pos_p, &pid_pos_param_X);
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
-   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
@@ -211,7 +211,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
 
-   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
 
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
@@ -251,7 +251,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    
 
-   constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
    
    std::cout <<  "inner_P" << pid_pos_p->inner_p << " ::inner_I" << pid_pos_p->inner_i<< " ::inner_D"  << pid_pos_p->inner_d<<" target_vel :" << target_pos_vel_p->target_vel << std::endl;
 
