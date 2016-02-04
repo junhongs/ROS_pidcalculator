@@ -291,16 +291,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    float_msg.data = distance ;
    //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
    float_pub.publish(float_msg);
-
-
-
-
-
-
-
    pid_out_pub.publish(pid_output_msg);
-
-
 }
 
 
