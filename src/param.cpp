@@ -64,10 +64,10 @@ pid_parameter_t default_param_pos = {
 
 pid_parameter_t default_param_rate = {
 //Z value!
-   0.4,
-   0.002,
+   0.2,
+   0.3,
    0.005,
-   200
+   600
 
    // 0.2,
    // 0.008,

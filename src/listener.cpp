@@ -178,7 +178,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
 
-   pid_output_msg.data[0] = (unsigned short)pid_rate_p->output;   // ROLL
+   pid_output_msg.data[0] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);   // ROLL
 
    pid_inner_x_msg.m = target_pos_vel_p->target_vel;
    pid_inner_x_msg.ixx = pid_rate_p->inner_p;
@@ -217,7 +217,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
-   pid_output_msg.data[1] = (unsigned short)pid_rate_p->output;  // PITCH
+   pid_output_msg.data[1] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);  // PITCH
 
    pid_inner_y_msg.m = target_pos_vel_p->target_vel;
    pid_inner_y_msg.ixx = pid_rate_p->inner_p;
@@ -259,9 +259,12 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
 
-   pid_output_msg.data[3] = (unsigned short)pid_rate_p->output;   // THROTTLE
-   pid_output_msg.data[2] = 1500;   // THROTTLE
+   pid_output_msg.data[3] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);   // THROTTLE
+   pid_output_msg.data[2] = 1500;   // YAW
    pid_output_msg.data[4] = 1000;
+
+   pid_output_msg.data[0] = 1500;
+   pid_output_msg.data[1] = 1500;
 
    pid_inner_z_msg.m = target_pos_vel_p->target_vel;
    pid_inner_z_msg.ixx = pid_rate_p->inner_p;
