@@ -111,7 +111,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    double target_pos_x = -500;
    double target_pos_y = 700;
-   double target_pos_z = -2000;
+   double target_pos_z = -1700;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
 
    int distance = calc_dist(target_pos_x,target_pos_y,target_pos_z,msg.x,msg.y,msg.z);
