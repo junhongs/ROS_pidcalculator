@@ -114,11 +114,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    double target_pos_z = -1700;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
 
-   int distance = calc_dist(target_pos_x,target_pos_y,target_pos_z,msg.x,msg.y,msg.z);
-   std_msgs::Float32 float_msg;
-   float_msg.data = distance ;
-   //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
-   float_pub.publish(float_msg);
+
 
 
    std_msgs::UInt16MultiArray pid_output_msg;
@@ -259,9 +255,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
 
-   pid_output_msg.data[3] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);   // THROTTLE
+   pid_output_msg.data[3] = (unsigned short)constrain(pid_rate_p->output,0.0,1000.0) + 1000;   // THROTTLE
    pid_output_msg.data[2] = 1500;   // YAW
-   pid_output_msg.data[4] = 1000;
+   // pid_output_msg.data[4] = 1000;//ARM
 
    pid_output_msg.data[0] = 1500;
    pid_output_msg.data[1] = 1500;
@@ -273,6 +269,34 @@ void position_Callback(const geometry_msgs::Point& msg) {
    pid_inner_z_msg.izz = pid_rate_p->output;
 
    pid_inner_z_pub.publish(pid_inner_z_msg);
+
+
+   int distance = calc_dist(target_pos_x,target_pos_y,target_pos_z,msg.x,msg.y,msg.z);
+   static int is_start = 0;
+
+   if(distance < 50.0)
+      is_start = 1;
+
+
+   if(is_start == 1){
+      pid_output_msg.data[4] = 1950;
+   }
+   else{
+      pid_output_msg.data[4] = 1000;
+      pid_output_msg.data[3] = 1000;
+      reset_PID(&pid_rate_Z);
+   }
+
+   std_msgs::Float32 float_msg;
+   float_msg.data = distance ;
+   //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
+   float_pub.publish(float_msg);
+
+
+
+
+
+
 
    pid_out_pub.publish(pid_output_msg);
 
