@@ -89,7 +89,7 @@ void paramCallback(const std_msgs::Int32& msg) {
 
 
 
-void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, geometry_msgs::Inertia pid_inner_msg) {
+void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
    //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p, current);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
@@ -103,13 +103,13 @@ void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *t
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
 
-
+   geometry_msgs::Inertia pid_inner_msg;
    pid_inner_msg.m = target_pos_vel_p->target_vel;
    pid_inner_msg.ixx = pid_rate_p->inner_p;
    pid_inner_msg.ixy = pid_rate_p->inner_i;
    pid_inner_msg.ixz = pid_rate_p->inner_d;
    pid_inner_msg.izz = pid_rate_p->output;
-   pid_inner_x_pub.publish(pid_inner_msg);
+   pid_inner_pub->publish(pid_inner_msg);
 
 
 
@@ -217,7 +217,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    geometry_msgs::Inertia pid_inner_x_msg;
 
-   pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, pid_inner_x_msg);
+   pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
 
    //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_X);
