@@ -3,6 +3,7 @@
 
 #include "ros/ros.h"
 #include "param.h"
+#include "geometry_msgs/Inertia.h"
 
 typedef struct {
    float error;
@@ -47,5 +48,9 @@ void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *curre
 void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
 int constrain(int amt, int low, int high);
 float constrain(float amt, float low, float high);
+
+
+void pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *);
+
 
 #endif
