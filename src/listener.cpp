@@ -86,28 +86,76 @@ void paramCallback(const std_msgs::Int32& msg) {
 }
 
 
+
+
+
+void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, geometry_msgs::Inertia pid_inner_msg) {
+   //calculate the target velocity
+   calc_pos_error(pid_pos_p, target_pos_vel_p, current);
+   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
+   calc_pid(pid_pos_p, &pid_pos_param_X);
+   target_pos_vel_p->target_vel = pid_pos_p->output;
+
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
+   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+
+   calc_rate_error(pid_rate_p, target_pos_vel_p, current);
+   calc_pid(pid_rate_p, &pid_rate_param_X);
+
+
+
+   pid_inner_msg.m = target_pos_vel_p->target_vel;
+   pid_inner_msg.ixx = pid_rate_p->inner_p;
+   pid_inner_msg.ixy = pid_rate_p->inner_i;
+   pid_inner_msg.ixz = pid_rate_p->inner_d;
+   pid_inner_msg.izz = pid_rate_p->output;
+   pid_inner_x_pub.publish(pid_inner_msg);
+
+
+
+}
+
+
+
 void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t msg_pos_vel_X = {0,};
+   static pos_vel_t msg_pos_vel_Y = {0,};
+   static pos_vel_t msg_pos_vel_Z = {0,};
+
+
+   /****************************************************
+    *       Check and save the time.
+    *       Calculate the velocity
+    *       Publish the velocity
+    */
    msg_pos_vel_X.cur_time = ros::Time::now().toSec();
    msg_pos_vel_X.cur_pos = msg.x;
    calc_velocity(&msg_pos_vel_X);
 
-   static pos_vel_t msg_pos_vel_Y = {0,};
    msg_pos_vel_Y.cur_time = msg_pos_vel_X.cur_time;
    msg_pos_vel_Y.cur_pos = msg.y;
    calc_velocity(&msg_pos_vel_Y);
 
-   static pos_vel_t msg_pos_vel_Z = {0,};
    msg_pos_vel_Z.cur_time = msg_pos_vel_X.cur_time;
    msg_pos_vel_Z.cur_pos = msg.z;
    calc_velocity(&msg_pos_vel_Z);
 
+
+   geometry_msgs::Point velocity_msg;
+   velocity_msg.x = msg_pos_vel_X.cur_vel;
+   velocity_msg.y = msg_pos_vel_Y.cur_vel;
+   velocity_msg.z = msg_pos_vel_Z.cur_vel;
+   velocity_pub.publish(velocity_msg);
+//***************************************************
+
+
+   /*
+         1. restrict the target velocity by 200.   OK
+         2. set the target_position.               OK
+   */
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
    float limited_target_vel = 200;
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
-
-
-
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    double target_pos_x = -500;
    double target_pos_y = 700;
@@ -116,50 +164,60 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-
+   // DECLARE the pid output
    std_msgs::UInt16MultiArray pid_output_msg;
    pid_output_msg.data.resize(5, 1000);
+   // DECLARE the pid output
 
-   // std_msgs::Float32MultiArray pid_inner_x_msg;
-   // pid_inner_x_msg.data.resize(5); // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-   // std_msgs::Float32MultiArray pid_inner_y_msg;
-   // pid_inner_y_msg.data.resize(5);
-   // std_msgs::Float32MultiArray pid_inner_z_msg;
-   // pid_inner_z_msg.data.resize(5);
 
-   geometry_msgs::Inertia pid_inner_x_msg;
+   // DECLARE the inner pid message
+
    geometry_msgs::Inertia pid_inner_y_msg;
    geometry_msgs::Inertia pid_inner_z_msg;
+   // DECLARE the inner pid message
 
 
 
-   geometry_msgs::Point velocity_msg;
-   velocity_msg.x = msg_pos_vel_X.cur_vel;
-   velocity_msg.y = msg_pos_vel_Y.cur_vel;
-   velocity_msg.z = msg_pos_vel_Z.cur_vel;
-   velocity_pub.publish(velocity_msg);
 
 
-
+   // DECLARE the X, Y, Z pid calculation variables.
    static pid_calc_t pid_pos_X = {0, };
    static pid_calc_t pid_rate_X = {0, };
    static target_pos_vel_t target_pos_vel_X = {0, };
 
+   static pid_calc_t pid_pos_Y = {0, };
+   static pid_calc_t pid_rate_Y = {0, };
+   static target_pos_vel_t target_pos_vel_Y = {0, };
+
+   static pid_calc_t pid_pos_Z = {0, };
+   static pid_calc_t pid_rate_Z = {0, };
+   static target_pos_vel_t target_pos_vel_Z = {0, };
+   // DECLARE the X, Y, Z pid calculation variables.
+
+
+
 
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    target_pos_vel_X.target_pos = target_pos_x;
+   target_pos_vel_Y.target_pos = target_pos_y;
+   target_pos_vel_Z.target_pos = target_pos_z;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+
 
 
 
    /*
-         1. restrict the target velocity by 200.   OK
-         2. set the target_position.               OK
-   */
+
+    */
    pid_calc_t *pid_pos_p = &pid_pos_X;
-   pid_calc_t *pid_rate_p = &pid_rate_X;
+   pid_calc_t  *pid_rate_p = &pid_rate_X;
    target_pos_vel_t *target_pos_vel_p = &target_pos_vel_X;
 
+
+   geometry_msgs::Inertia pid_inner_x_msg;
+
+   pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, pid_inner_x_msg);
 
    //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_X);
@@ -167,31 +225,32 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_pid(pid_pos_p, &pid_pos_param_X);
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
+   pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_p->output, -500.0, 500.0); // ROLL
 
-   pid_output_msg.data[0] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);   // ROLL
+
 
    pid_inner_x_msg.m = target_pos_vel_p->target_vel;
    pid_inner_x_msg.ixx = pid_rate_p->inner_p;
    pid_inner_x_msg.ixy = pid_rate_p->inner_i;
    pid_inner_x_msg.ixz = pid_rate_p->inner_d;
    pid_inner_x_msg.izz = pid_rate_p->output;
-
    pid_inner_x_pub.publish(pid_inner_x_msg);
 
-   static pid_calc_t pid_pos_Y = {0, };
-   static pid_calc_t pid_rate_Y = {0, };
-   static target_pos_vel_t target_pos_vel_Y = {0, };
 
 
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-   target_pos_vel_Y.target_pos = target_pos_y;
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+
+
+
+
+
+
 
 
 
@@ -207,13 +266,13 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
 
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
 
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
    calc_pid(pid_rate_p, &pid_rate_param_X);
 
-   pid_output_msg.data[1] = (unsigned short)constrain(pid_rate_p->output,-500.0,500.0);  // PITCH
+   pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_p->output, -500.0, 500.0); // PITCH
 
    pid_inner_y_msg.m = target_pos_vel_p->target_vel;
    pid_inner_y_msg.ixx = pid_rate_p->inner_p;
@@ -223,13 +282,12 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    pid_inner_y_pub.publish(pid_inner_y_msg);
 
-   static pid_calc_t pid_pos_Z = {0, };
-   static pid_calc_t pid_rate_Z = {0, };
-   static target_pos_vel_t target_pos_vel_Z = {0, };
 
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-   target_pos_vel_Z.target_pos = target_pos_z;
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+
+
+
+
+
 
 
    pid_pos_p = &pid_pos_Z;
@@ -237,30 +295,22 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_p = &target_pos_vel_Z;
 
 
-   std::cout<< "T" <<  target_pos_vel_p->target_pos << " : C"<<msg_pos_vel_Z.cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
-//target->target_pos - current->cur_pos
+   // std::cout<< "T" <<  target_pos_vel_p->target_pos << " : C"<<msg_pos_vel_Z.cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
+   //target->target_pos - current->cur_pos
    //calculate the target velocity
    calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Z);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos_p, &pid_pos_param_Z);
    target_pos_vel_p->target_vel = pid_pos_p->output;
 
-   
 
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel,-limited_target_vel,limited_target_vel);
-   
-   std::cout <<  "inner_P" << pid_pos_p->inner_p << " ::inner_I" << pid_pos_p->inner_i<< " ::inner_D"  << pid_pos_p->inner_d<<" target_vel :" << target_pos_vel_p->target_vel << std::endl;
 
+   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
+
+   // std::cout <<  "inner_P" << pid_pos_p->inner_p << " ::inner_I" << pid_pos_p->inner_i<< " ::inner_D"  << pid_pos_p->inner_d<<" target_vel :" << target_pos_vel_p->target_vel << std::endl;
 
    calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
    calc_pid(pid_rate_p, &pid_rate_param_Z);
-
-   pid_output_msg.data[3] = (unsigned short)constrain(pid_rate_p->output,0.0,1000.0) + 1000;   // THROTTLE
-   pid_output_msg.data[2] = 1500;   // YAW
-   // pid_output_msg.data[4] = 1000;//ARM
-
-   pid_output_msg.data[0] = 1500;
-   pid_output_msg.data[1] = 1500;
 
    pid_inner_z_msg.m = target_pos_vel_p->target_vel;
    pid_inner_z_msg.ixx = pid_rate_p->inner_p;
@@ -271,17 +321,41 @@ void position_Callback(const geometry_msgs::Point& msg) {
    pid_inner_z_pub.publish(pid_inner_z_msg);
 
 
-   int distance = calc_dist(target_pos_x,target_pos_y,target_pos_z,msg.x,msg.y,msg.z);
+
+
+
+
+
+   pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_p->output, 0.0, 1000.0); // THROTTLE
+   pid_output_msg.data[2] = 1500;   // YAW
+   // pid_output_msg.data[4] = 1000;//ARM
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
    static int is_start = 0;
 
-   if(distance < 50.0)
+   if (distance < 50.0)
       is_start = 1;
 
 
-   if(is_start == 1){
+   if (is_start == 1) {
       pid_output_msg.data[4] = 1950;
    }
-   else{
+   else {
       pid_output_msg.data[4] = 1000;
       pid_output_msg.data[3] = 1000;
       reset_PID(&pid_rate_Z);
