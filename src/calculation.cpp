@@ -18,7 +18,6 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
-
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
@@ -147,33 +146,6 @@ void calc_velocity( pos_vel_t* pos_vel) {
    pos_vel->last_vel_raw = pos_vel->cur_vel_raw;
 }
 
-
-
-void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
-   //calculate the target velocity
-   calc_pos_error(pid_pos_p, target_pos_vel_p, current);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
-   calc_pid(pid_pos_p, &pid_pos_param_X);
-   target_pos_vel_p->target_vel = pid_pos_p->output;
-
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
-   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-
-   calc_rate_error(pid_rate_p, target_pos_vel_p, current);
-   calc_pid(pid_rate_p, &pid_rate_param_X);
-
-
-   geometry_msgs::Inertia pid_inner_msg;
-   pid_inner_msg.m = target_pos_vel_p->target_vel;
-   pid_inner_msg.ixx = pid_rate_p->inner_p;
-   pid_inner_msg.ixy = pid_rate_p->inner_i;
-   pid_inner_msg.ixz = pid_rate_p->inner_d;
-   pid_inner_msg.izz = pid_rate_p->output;
-   pid_inner_pub->publish(pid_inner_msg);
-}
-
-
-
 void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, float nav_target_vel) {
 
    float vector_x = target_x->target_pos - cur_x->cur_pos;
@@ -187,20 +159,67 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    }
 }
 
-void navi_rate(pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
 
+
+void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, target_pos_vel_t *target_z, pos_vel_t *cur_z, float nav_target_vel) {
+
+   float vector_x = target_x->target_pos - cur_x->cur_pos;
+   float vector_y = target_y->target_pos - cur_y->cur_pos;
+   float vector_z = target_z->target_pos - cur_z->cur_pos;
+
+   float norm_xyz = sqrt(vector_x*vector_x + vector_y*vector_y + vector_z*vector_z);
+
+   if (norm_xyz) {
+      target_x->target_vel = vector_x / norm_xyz * nav_target_vel;
+      target_y->target_vel = vector_y / norm_xyz * nav_target_vel;
+      target_z->target_vel = vector_z / norm_xyz * nav_target_vel;
+   }
+}
+
+
+
+void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
+
+   float err_pos = target->target_pos - current->cur_pos;
+   if( err_pos < 50 || err_pos > -50 )
+      pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-   calc_rate_error(pid_rate_p, target_pos_vel_p, current);
-   calc_pid(pid_rate_p, &pid_rate_param_X);
-
+   calc_rate_error(pid_rate, target, current);
+   calc_pid(pid_rate, &pid_rate_param_X);
 
    geometry_msgs::Inertia pid_inner_msg;
-   pid_inner_msg.m = target_pos_vel_p->target_vel;
-   pid_inner_msg.ixx = pid_rate_p->inner_p;
-   pid_inner_msg.ixy = pid_rate_p->inner_i;
-   pid_inner_msg.ixz = pid_rate_p->inner_d;
-   pid_inner_msg.izz = pid_rate_p->output;
+   pid_inner_msg.m = target->target_vel;
+   pid_inner_msg.ixx = pid_rate->inner_p;
+   pid_inner_msg.ixy = pid_rate->inner_i;
+   pid_inner_msg.ixz = pid_rate->inner_d;
+   pid_inner_msg.izz = pid_rate->output;
    pid_inner_pub->publish(pid_inner_msg);
 }
+
+
+void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
+   //calculate the target velocity
+   calc_pos_error(pid_pos, target, current);
+   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
+   calc_pid(pid_pos, &pid_pos_param_X);
+   target->target_vel = pid_pos->output;
+
+   target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
+   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+
+   calc_rate_error(pid_rate, target, current);
+   calc_pid(pid_rate, &pid_rate_param_X);
+
+   geometry_msgs::Inertia pid_inner_msg;
+   pid_inner_msg.m = target->target_vel;
+   pid_inner_msg.ixx = pid_rate->inner_p;
+   pid_inner_msg.ixy = pid_rate->inner_i;
+   pid_inner_msg.ixz = pid_rate->inner_d;
+   pid_inner_msg.izz = pid_rate->output;
+   pid_inner_pub->publish(pid_inner_msg);
+}
+
+
+
 
 

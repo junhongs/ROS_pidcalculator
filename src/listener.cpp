@@ -16,6 +16,9 @@
 #include "param.h"
 #include "calculation.h"
 
+static const float TAKEOFF_SPEED = 200;
+static const float LANDING_SPEED = -200;
+
 // cfg.P8[PIDNAVR] = 14; // NAV_P * 10;
 // cfg.I8[PIDNAVR] = 20; // NAV_I * 100;
 // cfg.D8[PIDNAVR] = 80; // NAV_D * 1000;
@@ -165,6 +168,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //Z
    static pid_calc_t pid_pos_Z = {0, };
    static pid_calc_t pid_rate_Z = {0, };
+   pid_rate_Z.integrator = -500;
    static target_pos_vel_t target_pos_vel_Z = {0, };
 
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
@@ -173,9 +177,12 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_Z.target_pos = target_pos_z;
 
 
-
    if (flight_mode == MISSION_NAV) {
-      calc_navi_set_target(&target_pos_vel_X, &msg_pos_vel_X, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel);
+      calc_navi_set_target(&target_pos_vel_X, &msg_pos_vel_X, &target_pos_vel_Y, &msg_pos_vel_Y,&target_pos_vel_Z, &msg_pos_vel_Z ,limited_target_vel);
+// navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
+      navi_rate(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
+      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
    }
    else if (flight_mode == MISSION_POSHOLD) {
       //Calculate the pos_hold mod
@@ -183,11 +190,23 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
       pos_hold(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
    }
+   else if (flight_mode == MISSION_TAKEOFF) {
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
+      target_pos_vel_Z.target_vel = TAKEOFF_SPEED;
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
+   }
+   else if (flight_mode == MISSION_LANDING) {
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
+      target_pos_vel_Z.target_vel = LANDING_SPEED;
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
+   }
 
    //Write the pid_output
    pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
    pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
-   pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_Z.output, 0.0, 1000.0); // THROTTLE
+   pid_output_msg.data[3] = 1500 + (unsigned short)constrain(pid_rate_Z.output, -500.0, 500.0); // THROTTLE
    pid_output_msg.data[2] = 1500;   // YAW
    // pid_output_msg.data[4] = 1000;//ARM
 
@@ -244,16 +263,16 @@ void positionCallback(const std_msgs::Float32& msg) {
    static pid_calc_t pid_rate = {0, };
    static target_pos_vel_t target_pos_vel = {0, };
 
-   pid_calc_t *pid_pos_p = &pid_pos;
-   pid_calc_t *pid_rate_p = &pid_rate;
-   target_pos_vel_t *target_pos_vel_p = &target_pos_vel;
+   pid_calc_t *tmp_pid_pos = &pid_pos;
+   pid_calc_t *tmp_pid_rate = &pid_rate;
+   target_pos_vel_t *tmp_target_pos_vel = &target_pos_vel;
 
-   calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel);
+   calc_pos_error(tmp_pid_pos, tmp_target_pos_vel , &msg_pos_vel);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
-   calc_pid(pid_pos_p, &pid_pos_param_X);
-   target_pos_vel_p->target_vel = pid_pos_p->output;
-   calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel);
-   calc_pid(pid_rate_p, &pid_rate_param_X);
+   calc_pid(tmp_pid_pos, &pid_pos_param_X);
+   tmp_target_pos_vel->target_vel = tmp_pid_pos->output;
+   calc_rate_error(tmp_pid_rate, tmp_target_pos_vel , &msg_pos_vel);
+   calc_pid(tmp_pid_rate, &pid_rate_param_X);
 
 
    // pid_rate_p->output = get_P(pid_rate_p, &pid_rate_param_X);
