@@ -61,18 +61,35 @@ static ros::Publisher pid_inner_x_pub;
 static ros::Publisher pid_inner_y_pub;
 static ros::Publisher pid_inner_z_pub;
 
+
+
 // target_pos_vel_t *target;
 // pos_vel_t *current;
 typedef struct lpf_t {
    double input;
+   double cur_time;
+
    double last_input;
+   double last_time;
    double cycle_time;
+   double lpf_filter;
+   int lpf_hz;
 } lpf_t;
 
-static int get_lpf(lpf_t *lpf) {
-#define LPF_FILTER       (1.0f / (2.0f * M_PI * (float)50))
-   lpf->input = lpf->last_input + (lpf->cycle_time / (LPF_FILTER + lpf->cycle_time)) * (lpf->input - lpf->last_input);
+static int get_lpf(lpf_t *lpf, int lpf_hz = 15) {
+   if (!lpf->last_time || !lpf_hz) {
+      lpf->last_time = lpf->cur_time;
+      return 0;
+   }
+   if (!lpf->lpf_filter || lpf_hz != lpf->lpf_hz) {
+      lpf->lpf_filter = (1.0f / (2.0f * M_PI * (float)lpf_hz));
+      lpf->lpf_hz = lpf_hz;
+   }
 
+   lpf->cycle_time = lpf->cur_time - lpf->last_time;
+   lpf->last_time = lpf->cur_time;
+
+   lpf->input = lpf->last_input + (lpf->cycle_time / (lpf->lpf_filter + lpf->cycle_time)) * (lpf->input - lpf->last_input);
    lpf->last_input = lpf->input;
    return lpf->input;
 }
@@ -91,21 +108,20 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t msg_pos_vel_Z = {0,};
 
 
+   int flight_mode = MISSION_POSHOLD;
+
    /****************************************************
     *       Check and save the time.
     *       Calculate the velocity
     *       Publish the velocity
     */
-   msg_pos_vel_X.cur_time = ros::Time::now().toSec();
+   msg_pos_vel_X.cur_time = msg_pos_vel_Y.cur_time = msg_pos_vel_Z.cur_time = ros::Time::now().toSec();
    msg_pos_vel_X.cur_pos = msg.x;
-   calc_velocity(&msg_pos_vel_X);
-
-   msg_pos_vel_Y.cur_time = msg_pos_vel_X.cur_time;
    msg_pos_vel_Y.cur_pos = msg.y;
-   calc_velocity(&msg_pos_vel_Y);
-
-   msg_pos_vel_Z.cur_time = msg_pos_vel_X.cur_time;
    msg_pos_vel_Z.cur_pos = msg.z;
+
+   calc_velocity(&msg_pos_vel_X);
+   calc_velocity(&msg_pos_vel_Y);
    calc_velocity(&msg_pos_vel_Z);
 
 
@@ -114,7 +130,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    velocity_msg.y = msg_pos_vel_Y.cur_vel;
    velocity_msg.z = msg_pos_vel_Z.cur_vel;
    velocity_pub.publish(velocity_msg);
-//***************************************************
+   //***************************************************
 
 
    /*
@@ -123,66 +139,52 @@ void position_Callback(const geometry_msgs::Point& msg) {
    */
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
    float limited_target_vel = 200;
-   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    double target_pos_x = -500;
    double target_pos_y = 700;
    double target_pos_z = -1700;
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-
 
 
    // DECLARE the pid output
    std_msgs::UInt16MultiArray pid_output_msg;
    pid_output_msg.data.resize(5, 1000);
-   // DECLARE the pid output
-
 
    // DECLARE the inner pid message
-
    geometry_msgs::Inertia pid_inner_y_msg;
    geometry_msgs::Inertia pid_inner_z_msg;
-   // DECLARE the inner pid message
-
-
-
-
 
    // DECLARE the X, Y, Z pid calculation variables.
+   //X
    static pid_calc_t pid_pos_X = {0, };
    static pid_calc_t pid_rate_X = {0, };
    static target_pos_vel_t target_pos_vel_X = {0, };
-
+   //Y
    static pid_calc_t pid_pos_Y = {0, };
    static pid_calc_t pid_rate_Y = {0, };
    static target_pos_vel_t target_pos_vel_Y = {0, };
-
+   //Z
    static pid_calc_t pid_pos_Z = {0, };
    static pid_calc_t pid_rate_Z = {0, };
    static target_pos_vel_t target_pos_vel_Z = {0, };
-   // DECLARE the X, Y, Z pid calculation variables.
-
-
-
 
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    target_pos_vel_X.target_pos = target_pos_x;
    target_pos_vel_Y.target_pos = target_pos_y;
    target_pos_vel_Z.target_pos = target_pos_z;
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
 
 
 
+   if (flight_mode == MISSION_NAV) {
+      calc_navi_set_target(&target_pos_vel_X, &msg_pos_vel_X, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel);
+   }
+   else if (flight_mode == MISSION_POSHOLD) {
+      //Calculate the pos_hold mod
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
+      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
+   }
 
-
-
-   pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
-
-   pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
-   pos_hold(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
-
-
-
+   //Write the pid_output
    pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
    pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
    pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_Z.output, 0.0, 1000.0); // THROTTLE
@@ -191,19 +193,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+   //
    int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
    static int is_start = 0;
 
@@ -218,6 +208,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pid_output_msg.data[4] = 1000;
       pid_output_msg.data[3] = 1000;
       reset_PID(&pid_rate_Z);
+      reset_PID(&pid_pos_Z);
    }
 
    std_msgs::Float32 float_msg;
@@ -305,7 +296,7 @@ int main(int argc, char **argv) {
    pid_inner_z_pub   = n.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Z", 100);
 
 
-// std_msgs/UInt16MultiArray
+   // std_msgs/UInt16MultiArray
 
    /*
    "FIRST/OUTPUT_PID/"

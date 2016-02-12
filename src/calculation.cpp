@@ -23,8 +23,8 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
 static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
-   if(pid->cycle_time)
-   pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
+   if (pid->cycle_time)
+      pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
 
 // #define DEBUG
 #ifdef DEBUG
@@ -47,9 +47,9 @@ static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    pid->last_derivative = pid->derivative;
    // add in derivative component
 
-   #ifdef DEBUG
+#ifdef DEBUG
    cout << "  Param_D:" << pid_param->pid_D;
-   #endif
+#endif
 
    return pid_param->pid_D * pid->derivative;
 }
@@ -171,3 +171,36 @@ void pos_hold(pid_calc_t *pid_pos_p, pid_calc_t *pid_rate_p, target_pos_vel_t *t
    pid_inner_msg.izz = pid_rate_p->output;
    pid_inner_pub->publish(pid_inner_msg);
 }
+
+
+
+void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, float nav_target_vel) {
+
+   float vector_x = target_x->target_pos - cur_x->cur_pos;
+   float vector_y = target_y->target_pos - cur_y->cur_pos;
+
+   float norm_xy = sqrt(vector_x * vector_x + vector_y * vector_y);
+
+   if (norm_xy) {
+      target_x->target_vel = vector_x / norm_xy * nav_target_vel;
+      target_y->target_vel = vector_y / norm_xy * nav_target_vel;
+   }
+}
+
+void navi_rate(pid_calc_t *pid_rate_p, target_pos_vel_t *target_pos_vel_p, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
+
+   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+   calc_rate_error(pid_rate_p, target_pos_vel_p, current);
+   calc_pid(pid_rate_p, &pid_rate_param_X);
+
+
+   geometry_msgs::Inertia pid_inner_msg;
+   pid_inner_msg.m = target_pos_vel_p->target_vel;
+   pid_inner_msg.ixx = pid_rate_p->inner_p;
+   pid_inner_msg.ixy = pid_rate_p->inner_i;
+   pid_inner_msg.ixz = pid_rate_p->inner_d;
+   pid_inner_msg.izz = pid_rate_p->output;
+   pid_inner_pub->publish(pid_inner_msg);
+}
+
+
