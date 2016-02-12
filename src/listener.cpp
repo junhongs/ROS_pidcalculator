@@ -207,118 +207,94 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-   /*
-
-    */
-   pid_calc_t *pid_pos_p = &pid_pos_X;
-   pid_calc_t  *pid_rate_p = &pid_rate_X;
-   target_pos_vel_t *target_pos_vel_p = &target_pos_vel_X;
-
-
-   geometry_msgs::Inertia pid_inner_x_msg;
+   // pid_calc_t *pid_pos_p = &pid_pos_X;
+   // pid_calc_t  *pid_rate_p = &pid_rate_X;
+   // target_pos_vel_t *target_pos_vel_p = &target_pos_vel_X;
 
    pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
+   pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
 
-   //calculate the target velocity
-   calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_X);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
-   calc_pid(pid_pos_p, &pid_pos_param_X);
-   target_pos_vel_p->target_vel = pid_pos_p->output;
-
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
-   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-
-   calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_X);
-   calc_pid(pid_rate_p, &pid_rate_param_X);
-
-   pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_p->output, -500.0, 500.0); // ROLL
-
-
-
-   pid_inner_x_msg.m = target_pos_vel_p->target_vel;
-   pid_inner_x_msg.ixx = pid_rate_p->inner_p;
-   pid_inner_x_msg.ixy = pid_rate_p->inner_i;
-   pid_inner_x_msg.ixz = pid_rate_p->inner_d;
-   pid_inner_x_msg.izz = pid_rate_p->output;
-   pid_inner_x_pub.publish(pid_inner_x_msg);
+   // geometry_msgs::Inertia pid_inner_x_msg;
+   // pid_inner_x_msg.m = target_pos_vel_p->target_vel;
+   // pid_inner_x_msg.ixx = pid_rate_p->inner_p;
+   // pid_inner_x_msg.ixy = pid_rate_p->inner_i;
+   // pid_inner_x_msg.ixz = pid_rate_p->inner_d;
+   // pid_inner_x_msg.izz = pid_rate_p->output;
+   // pid_inner_x_pub.publish(pid_inner_x_msg);
 
 
 
 
 
+   pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
+ 
+
+   // pid_pos_p = &pid_pos_Y;
+   // pid_rate_p = &pid_rate_Y;
+   // target_pos_vel_p = &target_pos_vel_Y;
+
+   // //calculate the target velocity
+   // calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Y);
+   // // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
+   // calc_pid(pid_pos_p, &pid_pos_param_X);
+   // target_pos_vel_p->target_vel = pid_pos_p->output;
+
+   // target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
+
+   // calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
+   // calc_pid(pid_rate_p, &pid_rate_param_X);
+
+   // pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_p->output, -500.0, 500.0); // PITCH
+
+   // pid_inner_y_msg.m = target_pos_vel_p->target_vel;
+   // pid_inner_y_msg.ixx = pid_rate_p->inner_p;
+   // pid_inner_y_msg.ixy = pid_rate_p->inner_i;
+   // pid_inner_y_msg.ixz = pid_rate_p->inner_d;
+   // pid_inner_y_msg.izz = pid_rate_p->output;
+
+   // pid_inner_y_pub.publish(pid_inner_y_msg);
+
+
+   pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
 
 
 
 
+   pos_hold(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
+
+   pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_Z.output, 0.0, 1000.0); // THROTTLE
+
+
+   // pid_pos_p = &pid_pos_Z;
+   // pid_rate_p = &pid_rate_Z;
+   // target_pos_vel_p = &target_pos_vel_Z;
+
+
+   // // std::cout<< "T" <<  target_pos_vel_p->target_pos << " : C"<<msg_pos_vel_Z.cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
+   // //target->target_pos - current->cur_pos
+   // //calculate the target velocity
+   // calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Z);
+   // // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
+   // calc_pid(pid_pos_p, &pid_pos_param_Z);
+   // target_pos_vel_p->target_vel = pid_pos_p->output;
 
 
 
+   // target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
 
+   // // std::cout <<  "inner_P" << pid_pos_p->inner_p << " ::inner_I" << pid_pos_p->inner_i<< " ::inner_D"  << pid_pos_p->inner_d<<" target_vel :" << target_pos_vel_p->target_vel << std::endl;
 
-   pid_pos_p = &pid_pos_Y;
-   pid_rate_p = &pid_rate_Y;
-   target_pos_vel_p = &target_pos_vel_Y;
+   // calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
+   // calc_pid(pid_rate_p, &pid_rate_param_Z);
 
-   //calculate the target velocity
-   calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Y);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
-   calc_pid(pid_pos_p, &pid_pos_param_X);
-   target_pos_vel_p->target_vel = pid_pos_p->output;
+   // pid_inner_z_msg.m = target_pos_vel_p->target_vel;
+   // pid_inner_z_msg.ixx = pid_rate_p->inner_p;
+   // pid_inner_z_msg.ixy = pid_rate_p->inner_i;
+   // pid_inner_z_msg.ixz = pid_rate_p->inner_d;
+   // pid_inner_z_msg.izz = pid_rate_p->output;
 
-
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
-
-
-   calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Y);
-   calc_pid(pid_rate_p, &pid_rate_param_X);
-
-   pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_p->output, -500.0, 500.0); // PITCH
-
-   pid_inner_y_msg.m = target_pos_vel_p->target_vel;
-   pid_inner_y_msg.ixx = pid_rate_p->inner_p;
-   pid_inner_y_msg.ixy = pid_rate_p->inner_i;
-   pid_inner_y_msg.ixz = pid_rate_p->inner_d;
-   pid_inner_y_msg.izz = pid_rate_p->output;
-
-   pid_inner_y_pub.publish(pid_inner_y_msg);
-
-
-
-
-
-
-
-
-
-   pid_pos_p = &pid_pos_Z;
-   pid_rate_p = &pid_rate_Z;
-   target_pos_vel_p = &target_pos_vel_Z;
-
-
-   // std::cout<< "T" <<  target_pos_vel_p->target_pos << " : C"<<msg_pos_vel_Z.cur_pos<< "  :  ERR"<<pid_pos_p->error <<" : ";
-   //target->target_pos - current->cur_pos
-   //calculate the target velocity
-   calc_pos_error(pid_pos_p, target_pos_vel_p , &msg_pos_vel_Z);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
-   calc_pid(pid_pos_p, &pid_pos_param_Z);
-   target_pos_vel_p->target_vel = pid_pos_p->output;
-
-
-
-   target_pos_vel_p->target_vel = constrain(target_pos_vel_p->target_vel, -limited_target_vel, limited_target_vel);
-
-   // std::cout <<  "inner_P" << pid_pos_p->inner_p << " ::inner_I" << pid_pos_p->inner_i<< " ::inner_D"  << pid_pos_p->inner_d<<" target_vel :" << target_pos_vel_p->target_vel << std::endl;
-
-   calc_rate_error(pid_rate_p, target_pos_vel_p , &msg_pos_vel_Z);
-   calc_pid(pid_rate_p, &pid_rate_param_Z);
-
-   pid_inner_z_msg.m = target_pos_vel_p->target_vel;
-   pid_inner_z_msg.ixx = pid_rate_p->inner_p;
-   pid_inner_z_msg.ixy = pid_rate_p->inner_i;
-   pid_inner_z_msg.ixz = pid_rate_p->inner_d;
-   pid_inner_z_msg.izz = pid_rate_p->output;
-
-   pid_inner_z_pub.publish(pid_inner_z_msg);
+   // pid_inner_z_pub.publish(pid_inner_z_msg);
+   // pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_p->output, 0.0, 1000.0); // THROTTLE
 
 
 
@@ -326,7 +302,6 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-   pid_output_msg.data[3] = 1000 + (unsigned short)constrain(pid_rate_p->output, 0.0, 1000.0); // THROTTLE
    pid_output_msg.data[2] = 1500;   // YAW
    // pid_output_msg.data[4] = 1000;//ARM
 
