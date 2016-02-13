@@ -136,24 +136,19 @@ void keyLoop() {
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_U:
-
-			
-			param_msg.data = get_param_num(pr, xyz, pidi);
-			param_pub.publish(param_msg);
-
 			*db_pt += scale;
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
-			break;
-		case KEYCODE_D:
-			
-
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
-
+			break;
+		case KEYCODE_D:
 			*db_pt -= scale;
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+
 			break;
 
 

@@ -111,7 +111,7 @@ void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *curre
 void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
    pid->output += pid->inner_i = get_I(pid, pid_param);
-   pid->output += pid->inner_d = constrain( get_D(pid, pid_param), -200 , 200);
+   pid->output += pid->inner_d = constrain( get_D(pid, pid_param), -200.0 , 200.0);
 }
 
 void calc_velocity( pos_vel_t* pos_vel) {
