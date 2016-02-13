@@ -6,13 +6,13 @@
 using namespace std;
 
 // pid_calc_t -> error
-static int get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
+static float get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;
 }
 
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
-static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
+static float get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    pid->integrator += (pid->error * pid_param->pid_I) * pid->cycle_time;
    pid->integrator = constrain(pid->integrator, -pid_param->pid_Imax, pid_param->pid_Imax);
    return pid->integrator;
@@ -22,7 +22,7 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
-static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
+static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    if (pid->cycle_time)
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
 
@@ -33,7 +33,7 @@ static int get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 
    // Low pass filter cut frequency for derivative calculation
    // Set to  "1 / ( 2 * PI * gps_lpf )"
-#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)50))
+#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)5))
    // discrete low pass filter, cuts out the
    // high frequency noise that can drive the controller crazy
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
