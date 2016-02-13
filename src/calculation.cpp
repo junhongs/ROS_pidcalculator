@@ -18,6 +18,12 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
+void calc_takeoff_altitude(pid_calc_t *pid){
+   if( pid->integrator < 50 ){
+      pid->integrator += 300*pid->cycle_time;
+   }
+}
+
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
@@ -181,6 +187,8 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
 void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
 
    float err_pos = target->target_pos - current->cur_pos;
+
+   // If current position is in a 50mm target range, change the mode to the pos_hold
    if( err_pos < 50 || err_pos > -50 )
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
