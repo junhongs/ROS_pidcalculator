@@ -93,16 +93,13 @@ float constrain(float amt, float low, float high) {
 }
 
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
-// if (target->target_pos && current->cur_pos )
    pid->error = target->target_pos - current->cur_pos;
    if (current->cycle_time)
       pid->cycle_time = current->cycle_time;
 }
 
 void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
-// if ( target->target_vel && current->cur_vel )
    pid->error = target->target_vel - current->cur_vel;
-// if ( current->cur_vel_raw )
    pid->derivative = current->cur_vel_raw;
    if (current->cycle_time)
       pid->cycle_time = current->cycle_time;
@@ -122,7 +119,7 @@ void calc_velocity( pos_vel_t* pos_vel) {
    if (pos_vel->last_time && pos_vel->cur_time) {
       pos_vel->cycle_time = pos_vel->cur_time - pos_vel->last_time;
 
-      //if ros's cycle period is fast (in my case, about 1000hz), sometime the cycle period might have some noize over 30%. it must be corrected.
+      //if ros's cycle period is fast (in my case, about 1000hz), sometime the cycle period might have some noize over 30% of the period time. it must be corrected.
       // if( pos_vel->cycle_time > 0.0013 || pos_vel->cycle_time < 0.0007){
       //         pos_vel->last_vel = pos_vel->cur_vel;
       //         pos_vel->last_time = pos_vel->cur_time;
@@ -130,7 +127,6 @@ void calc_velocity( pos_vel_t* pos_vel) {
       //     return;
       // }
    }
-   // if (pos_vel->cur_pos && pos_vel->last_pos)
    pos_vel->cur_vel = pos_vel->cur_pos - pos_vel->last_pos;
 
    if (pos_vel->cycle_time)
@@ -138,14 +134,12 @@ void calc_velocity( pos_vel_t* pos_vel) {
 
    pos_vel->cur_vel_raw = pos_vel->cur_vel;
 
-   // if (pos_vel->last_vel && is_lpf)
    if ( is_lpf )
       pos_vel->cur_vel = ( pos_vel->cur_vel + pos_vel->last_vel) / 2;
 
    pos_vel->last_vel = pos_vel->cur_vel;
    pos_vel->last_time = pos_vel->cur_time;
    pos_vel->last_pos = pos_vel->cur_pos;
-   pos_vel->last_vel_raw = pos_vel->cur_vel_raw;
 }
 
 void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, float nav_target_vel) {

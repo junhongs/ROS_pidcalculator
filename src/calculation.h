@@ -31,7 +31,6 @@ typedef struct pos_vel_t {
    double last_time;
    double cycle_time;
 
-   float last_vel_raw;
    float cur_vel_raw;
 } pos_vel_t;
 
