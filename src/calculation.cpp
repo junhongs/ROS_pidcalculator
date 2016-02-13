@@ -18,9 +18,9 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
-void calc_takeoff_altitude(pid_calc_t *pid){
-   if( pid->integrator < 50 ){
-      pid->integrator += 300*pid->cycle_time;
+void calc_takeoff_altitude(pid_calc_t *pid) {
+   if ( pid->integrator < 50 ) {
+      pid->integrator += 300 * pid->cycle_time;
    }
 }
 
@@ -173,7 +173,7 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    float vector_y = target_y->target_pos - cur_y->cur_pos;
    float vector_z = target_z->target_pos - cur_z->cur_pos;
 
-   float norm_xyz = sqrt(vector_x*vector_x + vector_y*vector_y + vector_z*vector_z);
+   float norm_xyz = sqrt(vector_x * vector_x + vector_y * vector_y + vector_z * vector_z);
 
    if (norm_xyz) {
       target_x->target_vel = vector_x / norm_xyz * nav_target_vel;
@@ -189,21 +189,22 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    float err_pos = target->target_pos - current->cur_pos;
 
    // If current position is in a 50mm target range, change the mode to the pos_hold
-   if( err_pos < 50 || err_pos > -50 ){
+   if ( err_pos < 50 || err_pos > -50 ) {
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub);
    }
-   else{
-   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+   else {
+      // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
       calc_rate_error(pid_rate, target, current);
       calc_pid(pid_rate, &pid_rate_param_X);
+
+      geometry_msgs::Inertia pid_inner_msg;
+      pid_inner_msg.m = target->target_vel;
+      pid_inner_msg.ixx = pid_rate->inner_p;
+      pid_inner_msg.ixy = pid_rate->inner_i;
+      pid_inner_msg.ixz = pid_rate->inner_d;
+      pid_inner_msg.izz =  pid_rate->output;
+      pid_inner_pub->publish(pid_inner_msg);
    }
-   geometry_msgs::Inertia pid_inner_msg;
-   pid_inner_msg.m = target->target_vel;
-   pid_inner_msg.ixx = pid_rate->inner_p;
-   pid_inner_msg.ixy = pid_rate->inner_i;
-   pid_inner_msg.ixz = pid_rate->inner_d;
-   pid_inner_msg.izz =  pid_rate->output;
-   pid_inner_pub->publish(pid_inner_msg);
 }
 
 
