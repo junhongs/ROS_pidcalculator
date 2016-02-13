@@ -177,8 +177,23 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_pos_vel_Z.target_pos = target_pos_z;
 
 
-   if (flight_mode == MISSION_NAV) {
-      calc_navi_set_target(&target_pos_vel_X, &msg_pos_vel_X, &target_pos_vel_Y, &msg_pos_vel_Y,&target_pos_vel_Z, &msg_pos_vel_Z ,limited_target_vel);
+   if (flight_mode == GROUND) {
+
+      reset_PID(&pid_pos_X);
+      reset_PID(&pid_rate_X);
+
+      reset_PID(&pid_pos_Y);
+      reset_PID(&pid_rate_Y);
+
+      reset_PID(&pid_pos_Z);
+      reset_PID(&pid_rate_Z);
+
+      pid_rate_X.output = 0;
+      pid_rate_Y.output = 0;
+      pid_rate_Z.output = -500;
+   }
+   else if (flight_mode == MISSION_NAV) {
+      calc_navi_set_target(&target_pos_vel_X, &msg_pos_vel_X, &target_pos_vel_Y, &msg_pos_vel_Y, &target_pos_vel_Z, &msg_pos_vel_Z , limited_target_vel);
 // navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
       navi_rate(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);
       navi_rate(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
@@ -195,6 +210,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_pos_vel_Y, &msg_pos_vel_Y, limited_target_vel, &pid_inner_y_pub);
       target_pos_vel_Z.target_vel = TAKEOFF_SPEED;
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_pos_vel_Z, &msg_pos_vel_Z, limited_target_vel, &pid_inner_z_pub);
+      calc_takeoff_altitude(&pid_rate_Z);
    }
    else if (flight_mode == MISSION_LANDING) {
       pos_hold(&pid_pos_X, &pid_rate_X, &target_pos_vel_X, &msg_pos_vel_X, limited_target_vel, &pid_inner_x_pub);

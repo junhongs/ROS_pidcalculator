@@ -18,11 +18,6 @@ static int get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
-void calc_takeoff_altitude(pid_calc_t *pid) {
-   if ( pid->integrator < 50 ) {
-      pid->integrator += 300 * pid->cycle_time;
-   }
-}
 
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
@@ -165,8 +160,6 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    }
 }
 
-
-
 void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, target_pos_vel_t *target_z, pos_vel_t *cur_z, float nav_target_vel) {
 
    float vector_x = target_x->target_pos - cur_x->cur_pos;
@@ -181,7 +174,6 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
       target_z->target_vel = vector_z / norm_xyz * nav_target_vel;
    }
 }
-
 
 
 void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
@@ -207,14 +199,12 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    }
 }
 
-
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
    calc_pid(pid_pos, &pid_pos_param_X);
    target->target_vel = pid_pos->output;
-
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
 
@@ -232,5 +222,8 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
 
 
-
-
+void calc_takeoff_altitude(pid_calc_t *pid) {
+   if ( pid->integrator < 50 ) {
+      pid->integrator += 300 * pid->cycle_time;
+   }
+}

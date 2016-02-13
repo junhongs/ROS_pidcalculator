@@ -41,6 +41,7 @@ typedef struct target_pos_vel_t {
 } target_pos_vel_t;
 
 enum mission_e{
+   GROUND,
    MISSION_TAKEOFF,
    MISSION_POSHOLD,
    MISSION_NAV,
