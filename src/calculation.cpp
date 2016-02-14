@@ -112,6 +112,8 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
    pid->output += pid->inner_i = get_I(pid, pid_param);
    pid->output += pid->inner_d = constrain( get_D(pid, pid_param), -200.0 , 200.0);
+
+
 }
 
 void calc_velocity( pos_vel_t* pos_vel) {
@@ -213,12 +215,14 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    pid_inner_msg.ixz = pid_rate->inner_d;
    pid_inner_msg.izz = pid_rate->output;
    pid_inner_pub->publish(pid_inner_msg);
+
+
 }
 
 
 
 void calc_takeoff_altitude(pid_calc_t *pid) {
    if ( pid->integrator < 50 ) {
-      pid->integrator += 300 * pid->cycle_time;
+      pid->integrator += 400 * pid->cycle_time;
    }
 }

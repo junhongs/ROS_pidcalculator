@@ -391,7 +391,7 @@ void delete_param( ) {
    ros::param::del("FIRST/RATE/X/PID_P");
    ros::param::del("FIRST/RATE/X/PID_I");
    ros::param::del("FIRST/RATE/X/PID_D");
-   ros::param::del("FFIRST/RATE/X/PID_IMAX");
+   ros::param::del("FIRST/RATE/X/PID_IMAX");
 
    ros::param::del("FIRST/POS/Y/PID_P");
    ros::param::del("FIRST/POS/Y/PID_I");
@@ -400,7 +400,7 @@ void delete_param( ) {
    ros::param::del("FIRST/RATE/Y/PID_P");
    ros::param::del("FIRST/RATE/Y/PID_I");
    ros::param::del("FIRST/RATE/Y/PID_D");
-   ros::param::del("FFIRST/RATE/Y/PID_IMAX");
+   ros::param::del("FIRST/RATE/Y/PID_IMAX");
 
    ros::param::del("FIRST/POS/Z/PID_P");
    ros::param::del("FIRST/POS/Z/PID_I");
@@ -409,5 +409,5 @@ void delete_param( ) {
    ros::param::del("FIRST/RATE/Z/PID_P");
    ros::param::del("FIRST/RATE/Z/PID_I");
    ros::param::del("FIRST/RATE/Z/PID_D");
-   ros::param::del("FFIRST/RATE/Z/PID_IMAX");
+   ros::param::del("FIRST/RATE/Z/PID_IMAX");
 }

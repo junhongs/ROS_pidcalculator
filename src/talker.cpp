@@ -3,6 +3,7 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Point32.h"
+#include "geometry_msgs/Point.h"
 #include "pcl_msgs/Vertices.h"
 #include "iostream"
 #include <sstream>
@@ -68,8 +69,13 @@ int main(int argc, char **argv)
 	ros::Publisher chat_float_pub = n.advertise<std_msgs::Float32>("generate_sin_pulse", 100);
 	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
 	ros::Publisher float_pub = n.advertise<std_msgs::Float32>("calculated_pid_talker", 100);
-	ros::Rate loop_rate(1000);
-	//ros::Rate loop_rate(30);
+
+
+	ros::Publisher position_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_POS", 100);
+
+
+	//ros::Rate loop_rate(1000);
+	ros::Rate loop_rate(30);
 
 
 
@@ -87,6 +93,15 @@ int main(int argc, char **argv)
 		// std::cout  <<  ros_time - ros_time_last << std::endl;
 
 		// ros_time_last = ros_time;
+
+		geometry_msgs::Point pt_msg;
+
+		pt_msg.x = 0;
+		pt_msg.y = 0;
+		pt_msg.z = -3000;
+		position_pub.publish(pt_msg);
+
+
 
 
 		std_msgs::String msg;
@@ -120,7 +135,7 @@ int main(int argc, char **argv)
 		geometry_msgs::Point32 position1;
 		position1.x = 0;
 		position1.y = 0;
-		position1.z = 0;
+		position1.z = -3000;
 
 		chatter_pub.publish(msg);
 		chat_float_pub.publish(float_msg);
