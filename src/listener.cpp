@@ -110,7 +110,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t msg_pos_vel_Y = {0,};
    static pos_vel_t msg_pos_vel_Z = {0,};
 
-   static int flight_mode = GROUND;
+   // static int flight_mode = GROUND;
+   static int flight_mode = MISSION_POSHOLD;
 
    /*
     *       Check and save the time.

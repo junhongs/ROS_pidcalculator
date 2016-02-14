@@ -56,8 +56,8 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 
 void reset_PID(pid_calc_t *pid) {
    pid->integrator = 0;
-   pid->last_derivative = 0;
-   pid->last_error = 0;
+   //pid->last_derivative = 0;
+   //pid->last_error = 0;
 }
 
 double calc_dist(double x, double y, double z, double xx, double yy, double zz) {
