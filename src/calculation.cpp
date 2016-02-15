@@ -5,6 +5,28 @@
 #include <iostream>
 using namespace std;
 
+
+int get_lpf(lpf_t *lpf, int lpf_hz = 15) {
+   if (!lpf->last_time || !lpf_hz) {
+      lpf->last_time = lpf->cur_time;
+      return 0;
+   }
+   if (!lpf->lpf_filter || lpf_hz != lpf->lpf_hz) {
+      lpf->lpf_filter = (1.0f / (2.0f * M_PI * (float)lpf_hz));
+      lpf->lpf_hz = lpf_hz;
+   }
+
+   lpf->cycle_time = lpf->cur_time - lpf->last_time;
+   lpf->last_time = lpf->cur_time;
+
+   lpf->input = lpf->last_input + (lpf->cycle_time / (lpf->lpf_filter + lpf->cycle_time)) * (lpf->input - lpf->last_input);
+   lpf->last_input = lpf->input;
+   return lpf->input;
+}
+
+
+
+
 // pid_calc_t -> error
 static float get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;

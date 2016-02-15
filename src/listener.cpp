@@ -68,34 +68,6 @@ static ros::Publisher pid_inner_z_pub;
 
 // target_pos_vel_t *target;
 // pos_vel_t *current;
-typedef struct lpf_t {
-   double input;
-   double cur_time;
-
-   double last_input;
-   double last_time;
-   double cycle_time;
-   double lpf_filter;
-   int lpf_hz;
-} lpf_t;
-
-static int get_lpf(lpf_t *lpf, int lpf_hz = 15) {
-   if (!lpf->last_time || !lpf_hz) {
-      lpf->last_time = lpf->cur_time;
-      return 0;
-   }
-   if (!lpf->lpf_filter || lpf_hz != lpf->lpf_hz) {
-      lpf->lpf_filter = (1.0f / (2.0f * M_PI * (float)lpf_hz));
-      lpf->lpf_hz = lpf_hz;
-   }
-
-   lpf->cycle_time = lpf->cur_time - lpf->last_time;
-   lpf->last_time = lpf->cur_time;
-
-   lpf->input = lpf->last_input + (lpf->cycle_time / (lpf->lpf_filter + lpf->cycle_time)) * (lpf->input - lpf->last_input);
-   lpf->last_input = lpf->input;
-   return lpf->input;
-}
 
 void timerCallback(const ros::TimerEvent&) {
    update_param(&pid_param);
@@ -111,7 +83,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t current_Y = {0,};
    static pos_vel_t current_Z = {0,};
    // static int flight_mode = GROUND;
-   static int flight_mode = MISSION_TAKEOFF;
+   static int flight_mode = MISSION_POSHOLD;
 
    /*
     *       Check and save the time.

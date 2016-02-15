@@ -5,6 +5,21 @@
 #include "param.h"
 #include "geometry_msgs/Inertia.h"
 
+
+typedef struct lpf_t {
+   double input;
+   double cur_time;
+
+   double last_input;
+   double last_time;
+   double cycle_time;
+   double lpf_filter;
+   int lpf_hz;
+} lpf_t;
+
+
+
+
 typedef struct {
    float error;
    double cycle_time;
@@ -32,6 +47,8 @@ typedef struct pos_vel_t {
    double cycle_time;
 
    float cur_vel_raw;
+
+   lpf_t lpf;
 } pos_vel_t;
 
 typedef struct target_pos_vel_t {
@@ -62,5 +79,8 @@ void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, p
 void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void calc_takeoff_altitude(pid_calc_t *);
 
+
+
+int get_lpf(lpf_t *, int);
 
 #endif
