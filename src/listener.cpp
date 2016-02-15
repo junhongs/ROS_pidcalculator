@@ -85,12 +85,18 @@ void position_Callback(const geometry_msgs::Point& msg) {
    // static int flight_mode = GROUND;
    static int flight_mode = MISSION_POSHOLD;
 
+
+
+
    /*
     *       Check and save the time.
     *       Calculate the velocity
     *       Publish the velocity
     */
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = ros::Time::now().toSec();
+
+   current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = ros::Time::now().toSec();
+
    current_X.cur_pos = msg.x;
    current_Y.cur_pos = msg.y;
    current_Z.cur_pos = msg.z;
@@ -98,6 +104,17 @@ void position_Callback(const geometry_msgs::Point& msg) {
    calc_velocity(&current_X);
    calc_velocity(&current_Y);
    calc_velocity(&current_Z);
+
+   current_X.lpf.input = current_X.cur_vel;
+   current_Y.lpf.input = current_Y.cur_vel;
+   current_Z.lpf.input = current_Z.cur_vel;
+
+
+   current_X.cur_vel = get_lpf(&(current_X.lpf), 5);
+   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 5);
+   current_Z.cur_vel = get_lpf(&(current_Z.lpf), 5);
+
+
 
    geometry_msgs::Point velocity_msg;
    velocity_msg.x = current_X.cur_vel;
@@ -209,7 +226,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
    std::cout << "inner_I   " <<pid_rate_Z.inner_i << "  :::target_vel " << target_Z.target_vel << std::endl;
    // //
-   // int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
+   int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
    // static int is_start = 0;
 
    // if (distance < 50.0)
