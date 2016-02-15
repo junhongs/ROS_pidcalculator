@@ -150,7 +150,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
       flight_mode = MISSION_POSHOLD;
 
 
-
+   std_msgs::Float32 float_msg;
+   float_msg.data = distance ;
+   //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
+   float_pub.publish(float_msg);
 
 
 
@@ -248,8 +251,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    
 
 //target->target_pos - current->cur_pos
-   std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
-   std::cout << "inner_I   " <<pid_rate_Z.inner_i << "  :::target_vel " << target_Z.target_vel << std::endl;
+   // std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
+   // std::cout << "inner_I   " <<pid_rate_Z.inner_i << "  :::target_vel " << target_Z.target_vel << std::endl;
    // //
 
    // if (is_start == 1) {
@@ -261,10 +264,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //    reset_PID(&pid_rate_Z);
    //    reset_PID(&pid_pos_Z);
    // }
-   // std_msgs::Float32 float_msg;
-   // float_msg.data = distance ;
-   // //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
-   // float_pub.publish(float_msg);
+
 
 
 }
