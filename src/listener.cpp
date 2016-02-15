@@ -75,7 +75,7 @@ void timerCallback(const ros::TimerEvent&) {
 
 void paramCallback(const std_msgs::Int32& msg) {
    update_param(msg.data);
-   std::cout << "number param ::" << msg.data << std::endl << "data::" << *get_param_n(msg.data)<< std::endl;
+   std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data)<< std::endl;
 }
 
 void position_Callback(const geometry_msgs::Point& msg) {
