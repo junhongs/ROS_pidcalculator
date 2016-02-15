@@ -146,7 +146,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
    int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
-   if (distance < 50.0)
+   if (distance < 150.0)
       flight_mode = MISSION_POSHOLD;
 
 
