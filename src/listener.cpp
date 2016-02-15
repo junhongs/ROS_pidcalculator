@@ -132,8 +132,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
    float limited_target_vel = 200;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-   double target_pos_x = -500;
-   double target_pos_y = 700;
+   double target_pos_x = -570;
+   double target_pos_y = 460;
    double target_pos_z = -1700;
 
 
@@ -203,7 +203,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
       reset_PID(&pid_rate_Y);
 
       reset_PID(&pid_pos_Z);
-      reset_PID(&pid_rate_Z);
+
+      // reset_PID(&pid_rate_Z);
+
+      
 
       pid_rate_X.output = 0;
       pid_rate_Y.output = 0;
