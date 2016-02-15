@@ -82,8 +82,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t current_X = {0,};
    static pos_vel_t current_Y = {0,};
    static pos_vel_t current_Z = {0,};
-   // static int flight_mode = GROUND;
-   static int flight_mode = MISSION_POSHOLD;
+   static int flight_mode = GROUND;
+
+
 
 
 
@@ -134,6 +135,30 @@ void position_Callback(const geometry_msgs::Point& msg) {
    double target_pos_x = -500;
    double target_pos_y = 700;
    double target_pos_z = -1700;
+
+
+
+
+
+
+
+
+
+
+   int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
+   if (distance < 50.0)
+      flight_mode = MISSION_POSHOLD;
+
+
+
+
+
+
+
+
+
+
+
 
    int is_arm = 1000;
 
@@ -226,11 +251,6 @@ void position_Callback(const geometry_msgs::Point& msg) {
    std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
    std::cout << "inner_I   " <<pid_rate_Z.inner_i << "  :::target_vel " << target_Z.target_vel << std::endl;
    // //
-   int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
-   // static int is_start = 0;
-
-   // if (distance < 50.0)
-   //    is_start = 1;
 
    // if (is_start == 1) {
    //    pid_output_msg.data[4] = 1950;
