@@ -242,8 +242,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    }
 
    //Write the pid_output
-   pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
-   pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
+   pid_output_msg.data[0] = 1500 + (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
+   pid_output_msg.data[1] = 1500 + (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
    pid_output_msg.data[3] = 1500 + (unsigned short)constrain(pid_rate_Z.output, -500.0, 500.0); // THROTTLE
    pid_output_msg.data[2] = 1500;   // YAW
    pid_output_msg.data[4] = is_arm;
