@@ -82,7 +82,7 @@ void key_debug(std::string str, int n) {
 void key_debug(int n) {
 	std::cout << "DEBUG-" << current_program << ":" <<  n << std::endl;
 }
-void key_debug(std::string str, float n) {
+void key_debug(std::string str, double n) {
 	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
 }
 
@@ -96,7 +96,7 @@ void keyLoop() {
 
 	static int pr = 0, xyz = 0, pidi = 0;
 
-	static float scale = 0.001;
+	static double scale = 0.001;
 	static std_msgs::Int32 param_msg;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -112,7 +112,7 @@ void keyLoop() {
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
 	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
-	float *db_pt = get_param_n( pr,  xyz, pidi);
+	double *db_pt = get_param_n( pr,  xyz, pidi);
 
 
 	while (is_loop) {

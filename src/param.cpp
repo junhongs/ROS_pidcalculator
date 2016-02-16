@@ -52,35 +52,35 @@ pid_parameter_t pid_rate_param_Z = {0, };
 
 
 pid_parameter_t default_param_pos_X = {
-   1.0,
-   0.0,
-   0.0,
-   200.0
+   1.0l,
+   0.0l,
+   0.0l,
+   200.0l
 };
 
 
 pid_parameter_t default_param_rate_X = {
-   0.1,
-   0.007,
-   0.03,
-   300.0
+   0.1l,
+   0.007l,
+   0.03l,
+   300.0l
 };
 pid_parameter_t default_param_pos_Y = default_param_pos_X;
 pid_parameter_t default_param_rate_Y = default_param_rate_X;
 pid_parameter_t default_param_pos_Z = {
-   2.5,
-   0.0,
-   0.0,
-   200.0
+   2.5l,
+   0.0l,
+   0.0l,
+   200.0l
 };
 
 
 
 pid_parameter_t default_param_rate_Z = {
-   0.1,
-   0.05,
-   0.02,
-   500.0
+   0.1l,
+   0.05l,
+   0.02l,
+   500.0l
 };
 
 
@@ -108,18 +108,18 @@ pos_pid_parameter_t pid_param = {
 
 
 
-float *get_param_n(int n) {
+double *get_param_n(int n) {
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
-float *get_param_n(int pr, int xyz, int pidi) {
+double *get_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 
-float *get_default_param_n(int n) {
+double *get_default_param_n(int n) {
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
-float *get_default_param_n(int pr, int xyz, int pidi) {
+double *get_default_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
@@ -129,10 +129,10 @@ int get_param_num(int pr, int xyz, int pidi) {
 }
 
 
-void set_param_n(int n, float data) {
+void set_param_n(int n, double data) {
    ros::param::set(param_list[n], data);
 }
-void set_param_n(int pr, int xyz, int pidi, float data) {
+void set_param_n(int pr, int xyz, int pidi, double data) {
    int n = get_param_num(pr, xyz, pidi);
    ros::param::set(param_list[n], data);
 }
@@ -160,7 +160,7 @@ void reset_param() {
    }
 
 }
-void init_param(const std::string& param_name, float *param_ptr, float *default_ptr) {
+void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
 
    if (ros::param::has(param_name)) {
       ros::param::get(param_name, *param_ptr);

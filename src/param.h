@@ -5,10 +5,10 @@
 
 
 typedef struct pid_parameter_t {
-	float pid_P;
-	float pid_I;
-	float pid_D;
-	float pid_Imax;
+	double pid_P;
+	double pid_I;
+	double pid_D;
+	double pid_Imax;
 } pid_parameter_t;
 
 typedef struct pos_pid_parameter_t {
@@ -34,19 +34,19 @@ void delete_param(void);
 void update_param(int);
 void update_param();
 
-void init_param(std::string&, float *, float *);
+void init_param(std::string&, double *, double *);
 void init_param();
 
 int get_param_num(int pr, int xyz, int pidi);
-float *get_param_n(int n);
-float *get_param_n(int pr, int xyz, int pidi);
+double *get_param_n(int n);
+double *get_param_n(int pr, int xyz, int pidi);
 
-float *get_default_param_n(int n);
-float *get_default_param_n(int pr, int xyz, int pidi);
+double *get_default_param_n(int n);
+double *get_default_param_n(int pr, int xyz, int pidi);
 
 
-void set_param_n(int n, float data);
-void set_param_n(int pr, int xyz, int pidi, float data);
+void set_param_n(int n, double data);
+void set_param_n(int pr, int xyz, int pidi, double data);
 
 extern char param_list[][50];
 extern pos_pid_parameter_t pid_param;
