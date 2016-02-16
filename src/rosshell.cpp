@@ -96,7 +96,7 @@ void keyLoop() {
 
 	static int pr = 0, xyz = 0, pidi = 0;
 
-	static double scale = 0.001;
+	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -128,11 +128,11 @@ void keyLoop() {
 
 		switch (c) {
 		case KEYCODE_L:
-			scale *= 10.0;
+			scale *= 10.0l;
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_R:
-			scale /= 10.0;
+			scale /= 10.0l;
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_U:
