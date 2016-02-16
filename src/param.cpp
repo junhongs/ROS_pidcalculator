@@ -75,7 +75,7 @@ pid_parameter_t default_param_rate_Z = {
 };
 
 
-pos_pid_parameter_t pid_param = {
+pos_pid_parameter_t pid_default_param = {
    &default_param_pos_X,
    &default_param_rate_X,
    &default_param_pos_Y,
@@ -85,7 +85,7 @@ pos_pid_parameter_t pid_param = {
 };
 
 
-pos_pid_parameter_t pid_default_param = {
+pos_pid_parameter_t pid_param = {
    &pid_pos_param_X,
    &pid_rate_param_X,
    &pid_pos_param_Y,
@@ -158,7 +158,9 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
       *default_ptr = *param_ptr;
    }
    else {
+      std::cout << *default_ptr;
       ros::param::set(param_name, *default_ptr);
+      
       *param_ptr = *default_ptr;
    }
 
