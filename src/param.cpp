@@ -37,6 +37,9 @@ char param_list[][50] =
 
 
 
+
+
+
 pid_parameter_t pid_pos_param_X = {0, };
 pid_parameter_t pid_rate_param_X = {0, };
 
@@ -62,27 +65,25 @@ pid_parameter_t default_param_pos = {
    200
 };
 
-pid_parameter_t default_param_rate = {
-//Z value!
-   0.2,
+pid_parameter_t default_param_rate_X = {
+   0.1,
+   0.1,
+   0.005,
+   300
+};
+pid_parameter_t default_param_rate_Z = {
+   0.1,
    0.3,
    0.005,
-   600
-
-   // 0.2,
-   // 0.008,
-   // 0.0045,
-   // 200
-
-
+   500
 };
 
 pid_parameter_t reset_param_pos_X = default_param_pos;
-pid_parameter_t reset_param_rate_X = default_param_rate;
+pid_parameter_t reset_param_rate_X = default_param_rate_X;
 pid_parameter_t reset_param_pos_Y = default_param_pos;
-pid_parameter_t reset_param_rate_Y = default_param_rate;
+pid_parameter_t reset_param_rate_Y = default_param_rate_X;
 pid_parameter_t reset_param_pos_Z = default_param_pos;
-pid_parameter_t reset_param_rate_Z = default_param_rate;
+pid_parameter_t reset_param_rate_Z = default_param_rate_Z;
 
 
 double *get_param_n(int n) {
@@ -267,7 +268,7 @@ void init_param(  pos_pid_parameter_t *pid_param) {
 
 
    pid_param_tmp = pid_param->rate_pid_X;
-   default_param_tmp = &default_param_rate;
+   default_param_tmp = &default_param_rate_X;
    if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P))  )
       ros::param::set("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
    if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/X/PID_I", pid_param_tmp->pid_I)) )
@@ -309,7 +310,7 @@ void init_param(  pos_pid_parameter_t *pid_param) {
 
 
    pid_param_tmp = pid_param->rate_pid_Y;
-   default_param_tmp = &default_param_rate;
+   default_param_tmp = &default_param_rate_X;
    if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/Y/PID_P", pid_param_tmp->pid_P))  )
       ros::param::set("FIRST/RATE/Y/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
    if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/Y/PID_I", pid_param_tmp->pid_I)) )
@@ -360,7 +361,7 @@ void init_param(  pos_pid_parameter_t *pid_param) {
 
 
    pid_param_tmp = pid_param->rate_pid_Z;
-   default_param_tmp = &default_param_rate;
+   default_param_tmp = &default_param_rate_Z;
    if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/Z/PID_P", pid_param_tmp->pid_P))  )
       ros::param::set("FIRST/RATE/Z/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
    if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/Z/PID_I", pid_param_tmp->pid_I)) )

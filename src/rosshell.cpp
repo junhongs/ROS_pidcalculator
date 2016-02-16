@@ -128,11 +128,11 @@ void keyLoop() {
 
 		switch (c) {
 		case KEYCODE_L:
-			scale *= 10;
+			scale *= 10.0;
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_R:
-			scale /= 10;
+			scale /= 10.0;
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_U:

@@ -133,7 +133,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    float limited_target_vel = 200;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    double target_pos_x = -570;
-   double target_pos_y = 460;
+   double target_pos_y = 900;
    double target_pos_z = -1700;
 
 
@@ -196,13 +196,14 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    if (flight_mode == GROUND) {
 
-      reset_PID(&pid_pos_X);
-      reset_PID(&pid_rate_X);
+      reset_PID(&pid_pos_X, 0.0);
+      reset_PID(&pid_rate_X, 0.0);
 
-      reset_PID(&pid_pos_Y);
-      reset_PID(&pid_rate_Y);
+      reset_PID(&pid_pos_Y, 0.0);
+      reset_PID(&pid_rate_Y,0.0);
 
-      reset_PID(&pid_pos_Z);
+      reset_PID(&pid_pos_Z,0.0);
+      reset_PID(&pid_rate_Z,-500.0);
 
       pid_rate_X.output = 0;
       pid_rate_Y.output = 0;

@@ -76,8 +76,8 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid_param->pid_D * pid->derivative;
 }
 
-void reset_PID(pid_calc_t *pid) {
-   pid->integrator = 0;
+void reset_PID(pid_calc_t *pid, double integrator) {
+   pid->integrator = integrator;
    //pid->last_derivative = 0;
    //pid->last_error = 0;
 }
