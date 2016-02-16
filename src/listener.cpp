@@ -70,7 +70,7 @@ static ros::Publisher pid_inner_z_pub;
 // pos_vel_t *current;
 
 void timerCallback(const ros::TimerEvent&) {
-   update_param(&pid_param);
+   // update_param();
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
@@ -329,7 +329,8 @@ void positionCallback(const std_msgs::Float32& msg) {
 int main(int argc, char **argv) {
    ros::init(argc, argv, "listener");
    ros::NodeHandle n;
-   init_param(&pid_param);
+   // init_param(&pid_param);
+   init_param();
 
 
    // Creat Timer to update the parameter.

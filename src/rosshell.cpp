@@ -289,7 +289,8 @@ int main(int argc, char **argv) {
 
 	int count = 0;
 
-	init_param(&pid_param);
+	init_param();
+	// init_param(&pid_param);
 	printf("\033[K"); // Erase to end of line
 	printf("\033[2J\n"); // Clear the screen, move to (0,0)
 

@@ -2,7 +2,7 @@
 #include "param.h"
 
 
-char param_list[][50] = 
+char param_list[][50] =
 {
    "FIRST/POS/X/PID_P",    //0
    "FIRST/POS/X/PID_I",    //1
@@ -49,7 +49,43 @@ pid_parameter_t pid_rate_param_Y = {0, };
 pid_parameter_t pid_pos_param_Z = {0, };
 pid_parameter_t pid_rate_param_Z = {0, };
 
+
+
+pid_parameter_t default_param_pos_X = {
+   1.0,
+   0.0,
+   0.0,
+   200.0
+};
+
+pid_parameter_t default_param_rate_X = {
+   0.1,
+   0.1,
+   0.005,
+   300.0
+};
+pid_parameter_t default_param_pos_Y = default_param_pos_X;
+pid_parameter_t default_param_rate_Y = default_param_rate_X;
+pid_parameter_t default_param_pos_Z = default_param_pos_X;
+pid_parameter_t default_param_rate_Z = {
+   0.3,
+   0.15,
+   0.05,
+   500.0
+};
+
+
 pos_pid_parameter_t pid_param = {
+   &default_param_pos_X,
+   &default_param_rate_X,
+   &default_param_pos_Y,
+   &default_param_rate_Y,
+   &default_param_pos_Z,
+   &default_param_rate_Z
+};
+
+
+pos_pid_parameter_t pid_default_param = {
    &pid_pos_param_X,
    &pid_rate_param_X,
    &pid_pos_param_Y,
@@ -58,323 +94,86 @@ pos_pid_parameter_t pid_param = {
    &pid_rate_param_Z
 };
 
-pid_parameter_t default_param_pos = {
-   1,
-   0,
-   0,
-   200
-};
 
-pid_parameter_t default_param_rate_X = {
-   0.1,
-   0.1,
-   0.005,
-   300
-};
-pid_parameter_t default_param_rate_Z = {
-   0.1,
-   0.3,
-   0.005,
-   500
-};
 
-pid_parameter_t reset_param_pos_X = default_param_pos;
-pid_parameter_t reset_param_rate_X = default_param_rate_X;
-pid_parameter_t reset_param_pos_Y = default_param_pos;
-pid_parameter_t reset_param_rate_Y = default_param_rate_X;
-pid_parameter_t reset_param_pos_Z = default_param_pos;
-pid_parameter_t reset_param_rate_Z = default_param_rate_Z;
+
 
 
 double *get_param_n(int n) {
-   return &((&((&(pid_param.pos_pid_X)[n / 4])->pid_P))[n % 4]);
+   return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 double *get_param_n(int pr, int xyz, int pidi) {
-   int n = get_param_num(pr,xyz,pidi);
-   return &((&((&(pid_param.pos_pid_X)[n / 4])->pid_P))[n % 4]);
+   int n = get_param_num(pr, xyz, pidi);
+   return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 
-void update_param(int n){
-   *get_param_n(n) = ros::param::param( (param_list[n]),*get_param_n(n));
+double *get_default_param_n(int n) {
+   return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
+}
+double *get_default_param_n(int pr, int xyz, int pidi) {
+   int n = get_param_num(pr, xyz, pidi);
+   return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 
 int get_param_num(int pr, int xyz, int pidi) {
    return pr * 4 + xyz * 8 + pidi;
 }
-void set_param_n(int n, double data){
+
+
+void set_param_n(int n, double data) {
    ros::param::set(param_list[n], data);
 }
-void set_param_n(int pr, int xyz, int pidi, double data){
-   int n = get_param_num(pr,xyz,pidi);
+void set_param_n(int pr, int xyz, int pidi, double data) {
+   int n = get_param_num(pr, xyz, pidi);
    ros::param::set(param_list[n], data);
 }
 
 
-void update_param(  pos_pid_parameter_t *pid_param) {
-   pid_parameter_t *pid_param_tmp;
-   pid_param_tmp = pid_param->pos_pid_X;
-   ros::param::param("FIRST/POS/X/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/POS/X/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/POS/X/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/POS/X/PID_IMAX", pid_param_tmp->pid_Imax);
 
-   pid_param_tmp = pid_param->rate_pid_X;
-   ros::param::param("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/RATE/X/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/RATE/X/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/RATE/X/PID_IMAX", pid_param_tmp->pid_Imax);
+void update_param(int n) {
+   *get_param_n(n) = ros::param::param( (param_list[n]), *get_param_n(n));
+}
+void update_param(){
+   int i = 0;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      update_param(i++);
+   }
 
-
-   pid_param_tmp = pid_param->pos_pid_Y;
-   ros::param::param("FIRST/POS/Y/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/POS/Y/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/POS/Y/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/POS/Y/PID_IMAX", pid_param_tmp->pid_Imax);
-
-   pid_param_tmp = pid_param->rate_pid_Y;
-   ros::param::param("FIRST/RATE/Y/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/RATE/Y/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/RATE/Y/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/RATE/Y/PID_IMAX", pid_param_tmp->pid_Imax);
-
-
-   pid_param_tmp = pid_param->pos_pid_Z;
-   ros::param::param("FIRST/POS/Z/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/POS/Z/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/POS/Z/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/POS/Z/PID_IMAX", pid_param_tmp->pid_Imax);
-
-   pid_param_tmp = pid_param->rate_pid_Z;
-   ros::param::param("FIRST/RATE/Z/PID_P", pid_param_tmp->pid_P);
-   ros::param::param("FIRST/RATE/Z/PID_I", pid_param_tmp->pid_I);
-   ros::param::param("FIRST/RATE/Z/PID_D", pid_param_tmp->pid_D);
-   ros::param::param("FIRST/RATE/Z/PID_IMAX", pid_param_tmp->pid_Imax);
 }
 
-void set_param(pos_pid_parameter_t *pid_param) {
-   pid_parameter_t *pid_param_tmp;
+void reset_param() {
+   int i = 0;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      //init_param(param_list[i], get_param_n(i), get_default_param_n(i));
+      ros::param::set(param_list[i], *get_default_param_n(i));
 
-   pid_param_tmp = pid_param->pos_pid_X;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/POS/X/PID_P", reset_param_pos_X.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/POS/X/PID_I", reset_param_pos_X.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/POS/X/PID_D", reset_param_pos_X.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/POS/X/PID_IMAX", reset_param_pos_X.pid_Imax = pid_param_tmp->pid_Imax);
+      i++;
+   }
 
-   pid_param_tmp = pid_param->rate_pid_X;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/RATE/X/PID_P", reset_param_rate_X.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/RATE/X/PID_I", reset_param_rate_X.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/RATE/X/PID_D", reset_param_rate_X.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/RATE/X/PID_IMAX", reset_param_rate_X.pid_Imax = pid_param_tmp->pid_Imax);
-
-
-
-
-
-   pid_param_tmp = pid_param->pos_pid_Y;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/POS/Y/PID_P", reset_param_pos_Y.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/POS/Y/PID_I", reset_param_pos_Y.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/POS/Y/PID_D", reset_param_pos_Y.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/POS/Y/PID_IMAX", reset_param_pos_Y.pid_Imax = pid_param_tmp->pid_Imax);
-
-   pid_param_tmp = pid_param->rate_pid_Y;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/RATE/Y/PID_P", reset_param_rate_Y.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/RATE/Y/PID_I", reset_param_rate_Y.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/RATE/Y/PID_D", reset_param_rate_Y.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/RATE/Y/PID_IMAX", reset_param_rate_Y.pid_Imax = pid_param_tmp->pid_Imax);
-
-
-
-
-
-
-   pid_param_tmp = pid_param->pos_pid_Z;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/POS/Z/PID_P", reset_param_pos_Z.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/POS/Z/PID_I", reset_param_pos_Z.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/POS/Z/PID_D", reset_param_pos_Z.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/POS/Z/PID_IMAX", reset_param_pos_Z.pid_Imax = pid_param_tmp->pid_Imax);
-
-   pid_param_tmp = pid_param->rate_pid_Z;
-   if (pid_param_tmp->pid_P != -1)
-      ros::param::set("FIRST/RATE/Z/PID_P", reset_param_rate_Z.pid_P = pid_param_tmp->pid_P);
-   if (pid_param_tmp->pid_I != -1)
-      ros::param::set("FIRST/RATE/Z/PID_I", reset_param_rate_Z.pid_I = pid_param_tmp->pid_I);
-   if (pid_param_tmp->pid_D != -1)
-      ros::param::set("FIRST/RATE/Z/PID_D", reset_param_rate_Z.pid_D = pid_param_tmp->pid_D);
-   if (pid_param_tmp->pid_Imax != -1)
-      ros::param::set("FIRST/RATE/Z/PID_IMAX", reset_param_rate_Z.pid_Imax = pid_param_tmp->pid_Imax);
 }
+void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
 
+   if (ros::param::has(param_name)) {
+      ros::param::get(param_name, *param_ptr);
+      *default_ptr = *param_ptr;
+   }
+   else {
+      ros::param::set(param_name, *default_ptr);
+      *param_ptr = *default_ptr;
+   }
 
-void reset_param( pos_pid_parameter_t *pid_param ) {
-   pid_parameter_t *pid_param_tmp;
-   pid_param_tmp = &reset_param_pos_X;
-   ros::param::set("FIRST/POS/X/PID_P", pid_param_tmp->pid_P);
-   ros::param::set("FIRST/POS/X/PID_I", pid_param_tmp->pid_I);
-   ros::param::set("FIRST/POS/X/PID_D", pid_param_tmp->pid_D);
-   ros::param::set("FIRST/POS/X/PID_IMAX", pid_param_tmp->pid_Imax);
-
-   pid_param_tmp = &reset_param_rate_X;
-   ros::param::set("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P);
-   ros::param::set("FIRST/RATE/X/PID_I", pid_param_tmp->pid_I);
-   ros::param::set("FIRST/RATE/X/PID_D", pid_param_tmp->pid_D);
-   ros::param::set("FIRST/RATE/X/PID_IMAX", pid_param_tmp->pid_Imax);
 }
 
 
 
-void init_param(  pos_pid_parameter_t *pid_param) {
-   pid_parameter_t *pid_param_tmp;
-   pid_parameter_t *default_param_tmp;
-   /*
-      if params are not exist, make and set the parameters.
-      if exist, get the parameters.
-   */
-   pid_param_tmp = pid_param->pos_pid_X;
-   default_param_tmp = &default_param_pos;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/POS/X/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/POS/X/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/POS/X/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/POS/X/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/POS/X/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/POS/X/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/POS/X/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/POS/X/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_pos_X.pid_P = pid_param_tmp->pid_P;
-   reset_param_pos_X.pid_I = pid_param_tmp->pid_I;
-   reset_param_pos_X.pid_D = pid_param_tmp->pid_D;
-   reset_param_pos_X.pid_Imax = pid_param_tmp->pid_Imax;
-
-
-
-   pid_param_tmp = pid_param->rate_pid_X;
-   default_param_tmp = &default_param_rate_X;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/RATE/X/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/X/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/RATE/X/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/RATE/X/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/RATE/X/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/RATE/X/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/RATE/X/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_rate_X.pid_P = pid_param_tmp->pid_P;
-   reset_param_rate_X.pid_I = pid_param_tmp->pid_I;
-   reset_param_rate_X.pid_D = pid_param_tmp->pid_D;
-   reset_param_rate_X.pid_Imax = pid_param_tmp->pid_Imax;
-
-
-
-
-
-
-
-
-
-   pid_param_tmp = pid_param->pos_pid_Y;
-   default_param_tmp = &default_param_pos;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/POS/Y/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/POS/Y/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/POS/Y/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/POS/Y/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/POS/Y/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/POS/Y/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/POS/Y/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/POS/Y/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_pos_Y.pid_P = pid_param_tmp->pid_P;
-   reset_param_pos_Y.pid_I = pid_param_tmp->pid_I;
-   reset_param_pos_Y.pid_D = pid_param_tmp->pid_D;
-   reset_param_pos_Y.pid_Imax = pid_param_tmp->pid_Imax;
-
-
-
-   pid_param_tmp = pid_param->rate_pid_Y;
-   default_param_tmp = &default_param_rate_X;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/Y/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/RATE/Y/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/Y/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/RATE/Y/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/RATE/Y/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/RATE/Y/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/RATE/Y/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/RATE/Y/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_rate_Y.pid_P = pid_param_tmp->pid_P;
-   reset_param_rate_Y.pid_I = pid_param_tmp->pid_I;
-   reset_param_rate_Y.pid_D = pid_param_tmp->pid_D;
-   reset_param_rate_Y.pid_Imax = pid_param_tmp->pid_Imax;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   pid_param_tmp = pid_param->pos_pid_Z;
-   default_param_tmp = &default_param_pos;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/POS/Z/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/POS/Z/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/POS/Z/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/POS/Z/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/POS/Z/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/POS/Z/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/POS/Z/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/POS/Z/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_pos_Z.pid_P = pid_param_tmp->pid_P;
-   reset_param_pos_Z.pid_I = pid_param_tmp->pid_I;
-   reset_param_pos_Z.pid_D = pid_param_tmp->pid_D;
-   reset_param_pos_Z.pid_Imax = pid_param_tmp->pid_Imax;
-
-
-
-   pid_param_tmp = pid_param->rate_pid_Z;
-   default_param_tmp = &default_param_rate_Z;
-   if ( !(pid_param_tmp->pid_P = ros::param::param("FIRST/RATE/Z/PID_P", pid_param_tmp->pid_P))  )
-      ros::param::set("FIRST/RATE/Z/PID_P", pid_param_tmp->pid_P = default_param_tmp->pid_P);
-   if ( !(pid_param_tmp->pid_I = ros::param::param("FIRST/RATE/Z/PID_I", pid_param_tmp->pid_I)) )
-      ros::param::set("FIRST/RATE/Z/PID_I", pid_param_tmp->pid_I = default_param_tmp->pid_I);
-   if ( !(pid_param_tmp->pid_D = ros::param::param("FIRST/RATE/Z/PID_D", pid_param_tmp->pid_D)) )
-      ros::param::set("FIRST/RATE/Z/PID_D", pid_param_tmp->pid_D = default_param_tmp->pid_D);
-   if ( !(pid_param_tmp->pid_Imax = ros::param::param("FIRST/RATE/Z/PID_IMAX", pid_param_tmp->pid_Imax)) )
-      ros::param::set("FIRST/RATE/Z/PID_IMAX", pid_param_tmp->pid_Imax = default_param_tmp->pid_Imax);
-
-   reset_param_rate_Z.pid_P = pid_param_tmp->pid_P;
-   reset_param_rate_Z.pid_I = pid_param_tmp->pid_I;
-   reset_param_rate_Z.pid_D = pid_param_tmp->pid_D;
-   reset_param_rate_Z.pid_Imax = pid_param_tmp->pid_Imax;
+void init_param() {
+   int i = 0;
+   //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      init_param(param_list[i], get_param_n(i), get_default_param_n(i));
+      // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << *get_default_param_n(i) << std::endl;
+      i++;
+   }
 }
 
 // pos_P = 11 / 100
@@ -384,31 +183,15 @@ void init_param(  pos_pid_parameter_t *pid_param) {
 // pos_rate_I = 8 / 100;
 // pos_rate_d = 45 / 1000;
 
-void delete_param( ) {
-   ros::param::del("FIRST/POS/X/PID_P");
-   ros::param::del("FIRST/POS/X/PID_I");
-   ros::param::del("FIRST/POS/X/PID_D");
-   ros::param::del("FIRST/POS/X/PID_IMAX");
-   ros::param::del("FIRST/RATE/X/PID_P");
-   ros::param::del("FIRST/RATE/X/PID_I");
-   ros::param::del("FIRST/RATE/X/PID_D");
-   ros::param::del("FIRST/RATE/X/PID_IMAX");
+void delete_param() {
 
-   ros::param::del("FIRST/POS/Y/PID_P");
-   ros::param::del("FIRST/POS/Y/PID_I");
-   ros::param::del("FIRST/POS/Y/PID_D");
-   ros::param::del("FIRST/POS/Y/PID_IMAX");
-   ros::param::del("FIRST/RATE/Y/PID_P");
-   ros::param::del("FIRST/RATE/Y/PID_I");
-   ros::param::del("FIRST/RATE/Y/PID_D");
-   ros::param::del("FIRST/RATE/Y/PID_IMAX");
+   int i = 0;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      //init_param(param_list[i], get_param_n(i), get_default_param_n(i));
+      ros::param::del(param_list[i]);
 
-   ros::param::del("FIRST/POS/Z/PID_P");
-   ros::param::del("FIRST/POS/Z/PID_I");
-   ros::param::del("FIRST/POS/Z/PID_D");
-   ros::param::del("FIRST/POS/Z/PID_IMAX");
-   ros::param::del("FIRST/RATE/Z/PID_P");
-   ros::param::del("FIRST/RATE/Z/PID_I");
-   ros::param::del("FIRST/RATE/Z/PID_D");
-   ros::param::del("FIRST/RATE/Z/PID_IMAX");
+      i++;
+   }
+
+
 }
