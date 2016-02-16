@@ -58,19 +58,28 @@ pid_parameter_t default_param_pos_X = {
    200.0
 };
 
+
 pid_parameter_t default_param_rate_X = {
    0.1,
-   0.1,
-   0.005,
+   0.007,
+   0.03,
    300.0
 };
 pid_parameter_t default_param_pos_Y = default_param_pos_X;
 pid_parameter_t default_param_rate_Y = default_param_rate_X;
-pid_parameter_t default_param_pos_Z = default_param_pos_X;
+pid_parameter_t default_param_pos_Z = {
+   2.5,
+   0.0,
+   0.0,
+   200.0
+};
+
+
+
 pid_parameter_t default_param_rate_Z = {
-   0.3,
-   0.15,
+   0.1,
    0.05,
+   0.02,
    500.0
 };
 
@@ -99,18 +108,18 @@ pos_pid_parameter_t pid_param = {
 
 
 
-double *get_param_n(int n) {
+float *get_param_n(int n) {
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
-double *get_param_n(int pr, int xyz, int pidi) {
+float *get_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 
-double *get_default_param_n(int n) {
+float *get_default_param_n(int n) {
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
-double *get_default_param_n(int pr, int xyz, int pidi) {
+float *get_default_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
@@ -120,10 +129,10 @@ int get_param_num(int pr, int xyz, int pidi) {
 }
 
 
-void set_param_n(int n, double data) {
+void set_param_n(int n, float data) {
    ros::param::set(param_list[n], data);
 }
-void set_param_n(int pr, int xyz, int pidi, double data) {
+void set_param_n(int pr, int xyz, int pidi, float data) {
    int n = get_param_num(pr, xyz, pidi);
    ros::param::set(param_list[n], data);
 }
@@ -151,7 +160,7 @@ void reset_param() {
    }
 
 }
-void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
+void init_param(const std::string& param_name, float *param_ptr, float *default_ptr) {
 
    if (ros::param::has(param_name)) {
       ros::param::get(param_name, *param_ptr);
