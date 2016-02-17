@@ -94,7 +94,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
     *       Calculate the velocity
     *       Publish the velocity
     */
-   int is_reset = 0;
+   static int is_reset = 0;
    double node_cur_time = ros::Time::now().toSec();
    static double node_last_time = 0;
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
@@ -163,6 +163,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
       flight_mode = MISSION_POSHOLD;
       target_pos_x = msg.x;
       target_pos_y = msg.y;
+      is_reset = 0;
+
    }
 
    std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
