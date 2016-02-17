@@ -151,24 +151,97 @@ void keyLoop() {
 
 			break;
 
+		case 'y':
 
-		case 'u'://pid up
-			// key_debug("DOWN");
+			pr = 0;
+			pidi = 0;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt += scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			break;
+		case 'h':
+
+			pr = 0;
+			pidi = 0;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			break;
+		case 'u':
+
+			pr = 1;
+			pidi = 0;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt += scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+
 			break;
 		case 'j':
-			// key_debug("DOWN");
+			pr = 1;
+			pidi = 0;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 		case 'i':
-			// key_debug("DOWN");
+			pr = 1;
+			pidi = 1;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt += scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 		case 'k':
-			// key_debug("DOWN");
+			pr = 1;
+			pidi = 1;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 		case 'o':
-			// key_debug("DOWN");
+			pr = 1;
+			pidi = 2;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt += scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 		case 'l':
-			// key_debug("DOWN");
+			pr = 1;
+			pidi = 2;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+			
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 
 
@@ -186,37 +259,37 @@ void keyLoop() {
 
 
 
-		case 'z':
+		case 'w':
 			key_debug("::X is selected");
 			xyz = 0;
 			break;
-		case 'x':
+		case 's':
 			key_debug("::Y is selected");
 			xyz = 1;
 			break;
-		case 'c':
+		case 'x':
 			key_debug("::Z is selected");
 			xyz = 2;
 			break;
 //X or Y or Z :: z x c
 
 
-		case 'a':
-			key_debug("P");
-			pidi = 0;
-			break;
-		case 's':
-			key_debug("I");
-			pidi = 1;
-			break;
-		case 'd':
-			key_debug("D");
-			pidi = 2;
-			break;
-		case 'f':
-			key_debug("Imax");
-			pidi = 3;
-			break;
+		// case 'a':
+		// 	key_debug("P");
+		// 	pidi = 0;
+		// 	break;
+		// case 's':
+		// 	key_debug("I");
+		// 	pidi = 1;
+		// 	break;
+		// case 'd':
+		// 	key_debug("D");
+		// 	pidi = 2;
+		// 	break;
+		// case 'f':
+		// 	key_debug("Imax");
+		// 	pidi = 3;
+		// 	break;
 
 //P or I or D or Imax :: a s d f
 
@@ -236,7 +309,14 @@ void keyLoop() {
 			break;
 		}
 		db_pt = get_param_n( pr,  xyz, pidi);
-		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
+
+
+		printf("%d,%d,%d\n", pr,  xyz, pidi);
+		printf(":::  P   :   P   :   I   :   D\n");
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n",*get_param_n(0, 0, 0),*get_param_n(1, 0, 0),*get_param_n(1, 0, 1),*get_param_n(1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n",*get_param_n(0, 1, 0),*get_param_n(1, 1, 0),*get_param_n(1, 1, 1),*get_param_n(1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n",*get_param_n(0, 2, 0),*get_param_n(1, 2, 0),*get_param_n(1, 2, 1),*get_param_n(1, 2, 2));
+//		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
