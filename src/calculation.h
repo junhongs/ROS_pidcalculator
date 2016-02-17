@@ -66,6 +66,7 @@ enum mission_e{
 
 
 void reset_PID(pid_calc_t *,double);
+void reset_I(pid_calc_t *, double);
 double calc_dist(double,double,double,double,double,double);
 void calc_velocity( pos_vel_t* pos_vel);
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);

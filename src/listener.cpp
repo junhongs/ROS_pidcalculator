@@ -132,9 +132,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
    float limited_target_vel = 300;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-   double target_pos_x = 0;
-   double target_pos_y = 1000;
-   double target_pos_z = -1600;
+   static double target_pos_x = 0;
+   static double target_pos_y = 1000;
+   static double target_pos_z = -1600;
 
 
 
@@ -145,9 +145,18 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-   int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
-   if (distance < 150.0)
+   // int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
+   // if (distance < 150.0)
+   //    flight_mode = MISSION_POSHOLD;
+
+
+   int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
+   if (distance < 100.0){
       flight_mode = MISSION_POSHOLD;
+
+      target_pos_x = msg.x;
+      target_pos_y = msg.y;
+   }
 
 
    std_msgs::Float32 float_msg;
@@ -213,31 +222,52 @@ void position_Callback(const geometry_msgs::Point& msg) {
    else if (flight_mode == MISSION_NAV) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
 // navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      if(pid_rate_Z.output < 0){
+         reset_I(&pid_rate_X,0);
+         reset_I(&pid_rate_Y,0);
+      }
       navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
       navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
       is_arm = 1950;
    }
    else if (flight_mode == MISSION_POSHOLD) {
       //Calculate the pos_hold mod
+      calc_takeoff_altitude(&pid_rate_Z);
+      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      if(pid_rate_Z.output < 0){
+         reset_I(&pid_rate_X,0);
+         reset_I(&pid_rate_Y,0);
+      }
+
       pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
-      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
       is_arm = 1950;
    }
    else if (flight_mode == MISSION_TAKEOFF) {
       calc_takeoff_altitude(&pid_rate_Z);
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
       target_Z.target_vel = TAKEOFF_SPEED;
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      if(pid_rate_Z.output < 0){
+         reset_I(&pid_rate_X,0);
+         reset_I(&pid_rate_Y,0);
+      }
+
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
       is_arm = 1950;
    }
    else if (flight_mode == MISSION_LANDING) {
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      if(pid_rate_Z.output < 0){
+         reset_I(&pid_rate_X,0);
+         reset_I(&pid_rate_Y,0);
+      }
+
       pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
       target_Z.target_vel = LANDING_SPEED;
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+
       is_arm = 1950;
    }
 
