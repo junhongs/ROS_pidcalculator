@@ -52,7 +52,7 @@ pid_parameter_t pid_rate_param_Z = {0, };
 
 
 pid_parameter_t default_param_pos_X = {
-   1.0l,
+   1.5l,
    0.0l,
    0.0l,
    200.0l
@@ -60,9 +60,9 @@ pid_parameter_t default_param_pos_X = {
 
 
 pid_parameter_t default_param_rate_X = {
-   0.1l,
-   0.007l,
-   0.03l,
+   0.12l,
+   0.018l,
+   0.06l,
    300.0l
 };
 pid_parameter_t default_param_pos_Y = default_param_pos_X;
@@ -78,8 +78,8 @@ pid_parameter_t default_param_pos_Z = {
 
 pid_parameter_t default_param_rate_Z = {
    0.1l,
-   0.05l,
-   0.02l,
+   0.04l,
+   0.04l,
    500.0l
 };
 
