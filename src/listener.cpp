@@ -94,6 +94,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
     *       Calculate the velocity
     *       Publish the velocity
     */
+   if( ros::Time::now().toSec() - current_X.cur_time > 10.0 ){
+      flight_mode = GROUND;      
+   }
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = ros::Time::now().toSec();
 
    current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = ros::Time::now().toSec();
