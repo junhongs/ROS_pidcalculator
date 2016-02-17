@@ -94,7 +94,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
     *       Calculate the velocity
     *       Publish the velocity
     */
+   int is_reset = 0;
    if( ros::Time::now().toSec() - current_X.cur_time > 10.0 ){
+      is_reset = 1;
       flight_mode = GROUND;      
    }
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = ros::Time::now().toSec();
@@ -154,13 +156,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
    int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
-   if (distance < 100.0){
+   if (distance < 100.0 || is_reset){
       flight_mode = MISSION_POSHOLD;
-
       target_pos_x = msg.x;
       target_pos_y = msg.y;
-
-
    }
    std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
 
