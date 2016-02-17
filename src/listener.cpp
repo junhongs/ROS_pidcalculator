@@ -159,6 +159,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
       target_pos_x = msg.x;
       target_pos_y = msg.y;
+
+      std::cout << "set the target position to  " << target_pos_x << " , " << target_pos_y <<std::endl;
    }
 
 
