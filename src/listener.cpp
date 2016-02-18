@@ -131,7 +131,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
 }
 
-int manage_target(unsigned int getset, float *x, float *y, float *z , float cur_x, float cur_y, float cur_z) {
+int manage_target(unsigned int getset, float *x, float *y, float *z ) {
    static float current_target_x = 0;
    static float current_target_y = 0;
    static float current_target_z = 0;
@@ -165,7 +165,39 @@ int manage_target(unsigned int getset, float *x, float *y, float *z , float cur_
 
    return ret;
 }
+int manage_current_pos(unsigned int getset, float *x, float *y, float *z ) {
+   static float current_position_x = 0;
+   static float current_position_y = 0;
+   static float current_position_z = 0;
+   static int is_changed = 0;
+   int ret = 0;
 
+   if (getset == GET) {
+
+      // std::cout << "GET the TARGET" <<current_position_x<<","<<current_position_x<<","<<current_position_x << std::endl;
+
+
+      ret = is_changed;
+      *x = current_position_x;
+      *y = current_position_y;
+      *z = current_position_z;
+      is_changed = 0;
+   }
+   else if (getset == SET) {
+
+      
+      //do i consider the mode???
+      is_changed = 1;
+      current_position_x = *x;
+      current_position_y = *y;
+      current_position_z = *z;
+   }
+
+
+
+
+   return ret;
+}
 
 // target_pos_vel_t *target;
 // pos_vel_t *current;
@@ -241,7 +273,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-
+   manage_current_pos(SET,&(current_X.cur_pos),&(current_Y.cur_pos),&(current_Z.cur_pos));
 
 
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
@@ -305,7 +337,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       target_pos_x = msg.x;
       target_pos_y = msg.y;
 
-      manage_target(SET,&target_pos_x,&target_pos_y,&target_pos_z,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+      manage_target(SET,&target_pos_x,&target_pos_y,&target_pos_z);
 
       is_reset = 0;
 
@@ -319,10 +351,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
    float_pub.publish(float_msg);
 
 
-   int is_changed_target = manage_target(GET,&target_pos_x,&target_pos_y,&target_pos_z,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+   int is_changed_target = manage_target(GET,&target_pos_x,&target_pos_y,&target_pos_z);
 
    if( target_pos_x == 0 && target_pos_y == 0 && target_pos_z == 0){
-      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos);
    }
 
 
@@ -381,7 +413,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X,max_vel);
       manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y,max_vel);
 
-      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos);
       is_arm = 1950;
    }
 
@@ -475,6 +507,13 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    float target_y = msg.y;
    float target_z = msg.z;
 
+   float current_x = 0;
+   float current_y = 0;
+   float current_z = 0;
+
+
+   manage_current_pos(GET,&current_x,&current_y,&current_z);
+
    unsigned int mod = msg.w;
    unsigned int tmp_mod = GROUND;
 
@@ -495,22 +534,28 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    if (mod == TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
+      if(target_z)
+         manage_target(SET,&current_x,&current_y,&target_z);
+      else{
+         current_z += 500;
+         manage_target(SET,&current_x,&current_y,&current_z);
+      }
    }
    else if (mod == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
    else if (mod == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
    else if (mod == LANDING) {
       tmp_mod = MODE_LANDING;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
+      target_z = -3000;
+      manage_target(SET,&current_x,&current_y,&target_z);
    }
 
 }
@@ -626,7 +671,6 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
    ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
-
 
    ros::Subscriber target_sub = n.subscribe("/FIRST/TARGET_POS", 100, targetCallback);
 
