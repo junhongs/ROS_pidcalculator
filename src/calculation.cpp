@@ -196,13 +196,19 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    }
 }
 
-
-void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ,pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
+//if the mode is not changed, the changed poshold is not return to the navi_rate
+void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target) {
 
    float err_pos = target->target_pos - current->cur_pos;
 
+   static int changed_to_poshold = 0;
+
+   if(changed_target)
+      changed_to_poshold = 0;
+
    // If current position is in a 50mm target range, change the mode to the pos_hold
-   if ( err_pos < 50 || err_pos > -50 ) {
+   if ( (err_pos < 50 && err_pos > -50) || changed_to_poshold ) {
+      changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, pos_param, rate_param);
    }
    else {
@@ -220,7 +226,7 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    }
 }
 
-void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub ,pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
+void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
    // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);

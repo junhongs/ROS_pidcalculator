@@ -32,6 +32,10 @@ static std::vector<std::string> argvector;
 
 static ros::Publisher param_pub;
 
+static ros::Publisher target_pub;
+
+
+
 static int is_received_float = 0;
 static float float_data = 0;
 

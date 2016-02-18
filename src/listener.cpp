@@ -1,8 +1,12 @@
 #include "ros/ros.h"
 
 #include "std_msgs/String.h"
+
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/Inertia.h"
+#include "geometry_msgs/PointStamped.h"
+
+
 #include "std_msgs/Float32.h"
 #include "std_msgs/Int32.h"
 #include "pcl_msgs/Vertices.h"
@@ -10,6 +14,9 @@
 
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
+
+
+
 
 #include <iostream>
 
@@ -82,7 +89,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t current_X = {0,};
    static pos_vel_t current_Y = {0,};
    static pos_vel_t current_Z = {0,};
-   static int flight_mode = GROUND;
+   static unsigned int flight_mode = GROUND;
 
 
 
@@ -133,7 +140,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
          2. set the target_position.               OK
    */
    //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
-   float limited_target_vel = 300;
+   float limited_target_vel = 400;
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    static double target_pos_x = 0;
    static double target_pos_y = 1000;
@@ -150,7 +157,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    // int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
    // if (distance < 150.0)
-   //    flight_mode = MISSION_POSHOLD;
+   //    flight_mode = MODE_POSHOLD;
 
 
    if( node_cur_time - node_last_time > 10.0 ){
@@ -160,14 +167,14 @@ void position_Callback(const geometry_msgs::Point& msg) {
    node_last_time = node_cur_time;
    int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
    if (distance < 100.0 && is_reset){
-      flight_mode = MISSION_POSHOLD;
+      flight_mode = MODE_POSHOLD;
       target_pos_x = msg.x;
       target_pos_y = msg.y;
       is_reset = 0;
 
    }
 
-   std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
+   // std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
 
    std_msgs::Float32 float_msg;
    float_msg.data = distance ;
@@ -212,7 +219,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
-
+   int is_changed_target = 0;
    if (flight_mode == GROUND) {
 
       reset_PID(&pid_pos_X, 0.0);
@@ -229,19 +236,19 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pid_rate_Z.output = -500;
       is_arm = 1000;
    }
-   else if (flight_mode == MISSION_NAV) {
+   else if (flight_mode == MODE_NAV) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
 // navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
       if(pid_rate_Z.output < 0){
          reset_I(&pid_rate_X,0);
          reset_I(&pid_rate_Y,0);
       }
-      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
-      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
+      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X,is_changed_target);
+      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y,is_changed_target);
       is_arm = 1950;
    }
-   else if (flight_mode == MISSION_POSHOLD) {
+   else if (flight_mode == MODE_POSHOLD) {
       //Calculate the pos_hold mod
       calc_takeoff_altitude(&pid_rate_Z);
       pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
@@ -254,10 +261,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
       is_arm = 1950;
    }
-   else if (flight_mode == MISSION_TAKEOFF) {
+   else if (flight_mode == MODE_TAKEOFF) {
       calc_takeoff_altitude(&pid_rate_Z);
       target_Z.target_vel = TAKEOFF_SPEED;
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
       if(pid_rate_Z.output < 0){
          reset_I(&pid_rate_X,0);
          reset_I(&pid_rate_Y,0);
@@ -267,8 +274,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
       is_arm = 1950;
    }
-   else if (flight_mode == MISSION_LANDING) {
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
+   else if (flight_mode == MODE_LANDING) {
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
       if(pid_rate_Z.output < 0){
          reset_I(&pid_rate_X,0);
          reset_I(&pid_rate_Y,0);
@@ -308,6 +315,94 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 }
+
+
+
+// enum flight_mode{
+//    TAKEOFF,
+//    MODE_AUTO,
+//    MODE_MANUAL,
+//    LANDING
+// };
+
+
+int manage_mode(unsigned int getset, unsigned int *mode){
+
+   static unsigned int current_mode = GROUND;
+   if(getset == GET){
+      *mode = current_mode;
+   }
+   else if(getset == SET){
+
+      if( current_mode == MODE_TAKEOFF && (*mode == MODE_NAV || *mode == MODE_POSHOLD))
+         current_mode = *mode;
+      if( ( current_mode == MODE_NAV || current_mode == MODE_POSHOLD) && current_mode == LANDING )
+         current_mode = *mode;
+   }
+
+
+
+   return 1;
+
+}
+
+int manage_target(unsigned int getset, float *x, float *y, float *z ){
+   static float current_target_x = 0;
+   static float current_target_y = 0;
+   static float current_target_z = 0;
+
+
+
+   if(getset == GET){
+
+      *x = current_target_x;
+      *y = current_target_y;
+      *z = current_target_z;
+   }
+   else if(getset == SET){
+      current_target_x = *x;  
+      current_target_y = *y;  
+      current_target_z = *z;  
+   }
+
+
+   return 1;
+}
+
+
+
+
+void targetCallback(const geometry_msgs::PointStamped& msg){
+   double target_x = msg.point.x;
+   double target_y = msg.point.y;
+   double target_z = msg.point.z;
+
+   unsigned int mod = msg.header.seq;
+
+
+   if(mod == TAKEOFF){
+
+   }
+   else if(mod == MISSION_AUTO){
+
+
+
+   }
+   else if(mod == MISSION_MANUAL){
+
+
+   }
+   else if(mod == LANDING){
+
+
+   }
+
+}
+
+
+
+
+
 
 
 void positionCallback(const std_msgs::Float32& msg) {
@@ -381,6 +476,12 @@ int main(int argc, char **argv) {
 
    velocity_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
 
+
+
+
+
+
+
    //pcl_msgs/ModelCoefficients
    pid_out_pub       = n.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
    pid_inner_x_pub   = n.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/X", 100);
@@ -410,6 +511,8 @@ int main(int argc, char **argv) {
 
    ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
+
+   ros::Subscriber target_sub = n.subscribe("/FIRST/TARGET_POS", 100, targetCallback);
 
    ros::spin();
 
