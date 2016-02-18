@@ -256,7 +256,7 @@ void keyLoop() {
 			pr = 0;
 			pidi = 1;
 			db_pt = get_param_n( pr,  xyz, pidi);
-			*db_pt -= scale;
+			*db_pt += scale;
 
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
