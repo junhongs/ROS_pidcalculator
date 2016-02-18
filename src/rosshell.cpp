@@ -252,15 +252,37 @@ void keyLoop() {
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 
-
-		case 'p':
-			key_debug("::POSE is selected");
+		case 'r':
 			pr = 0;
+			pidi = 1;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
-		case 'r'://pid up
-			key_debug("::RATE is selected");
-			pr = 1;
-			break;
+		case 'f':
+			pr = 0;
+			pidi = 1;
+			db_pt = get_param_n( pr,  xyz, pidi);
+			*db_pt -= scale;
+
+			set_param_n(pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			break;			
+
+		// case 'p':
+		// 	key_debug("::POSE is selected");
+		// 	pr = 0;
+		// 	break;
+		// case 'r'://pid up
+		// 	key_debug("::RATE is selected");
+		// 	pr = 1;
+		// 	break;
 
 //rate or pos :: r p
 //
