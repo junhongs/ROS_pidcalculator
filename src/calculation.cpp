@@ -226,6 +226,27 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    }
 }
 
+
+
+void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
+      // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+      calc_rate_error(pid_rate, target, current);
+      calc_pid(pid_rate, rate_param);
+
+      geometry_msgs::Inertia pid_inner_msg;
+      pid_inner_msg.m = target->target_vel;
+      pid_inner_msg.ixx = pid_rate->inner_p;
+      pid_inner_msg.ixy = pid_rate->inner_i;
+      pid_inner_msg.ixz = pid_rate->inner_d;
+      pid_inner_msg.izz =  pid_rate->output;
+      pid_inner_pub->publish(pid_inner_msg);
+
+}
+
+
+
+
+
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);

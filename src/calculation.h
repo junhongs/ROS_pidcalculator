@@ -60,6 +60,7 @@ enum mode_e{
    GROUND,
    MODE_TAKEOFF,
    MODE_POSHOLD,
+   MODE_MANUAL,
    MODE_NAV,
    MODE_LANDING
 };
@@ -92,6 +93,7 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
 int constrain(int amt, int low, int high);
 float constrain(float amt, float low, float high);
 void pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *,pid_parameter_t *,pid_parameter_t *);
+void manual(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *,pid_parameter_t *,pid_parameter_t *);
 void navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *,pid_parameter_t *, int);
 void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);

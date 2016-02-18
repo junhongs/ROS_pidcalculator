@@ -82,7 +82,7 @@ void timerCallback(const ros::TimerEvent&) {
 
 void paramCallback(const std_msgs::Int32& msg) {
    update_param(msg.data);
-   std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data)<< std::endl;
+   std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
 }
 
 void position_Callback(const geometry_msgs::Point& msg) {
@@ -160,13 +160,13 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //    flight_mode = MODE_POSHOLD;
 
 
-   if( node_cur_time - node_last_time > 10.0 ){
+   if ( node_cur_time - node_last_time > 10.0 ) {
       is_reset = 1;
-      flight_mode = GROUND;      
+      flight_mode = GROUND;
    }
    node_last_time = node_cur_time;
    int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
-   if (distance < 100.0 && is_reset){
+   if (distance < 100.0 && is_reset) {
       flight_mode = MODE_POSHOLD;
       target_pos_x = msg.x;
       target_pos_y = msg.y;
@@ -226,10 +226,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
       reset_PID(&pid_rate_X, 0.0);
 
       reset_PID(&pid_pos_Y, 0.0);
-      reset_PID(&pid_rate_Y,0.0);
+      reset_PID(&pid_rate_Y, 0.0);
 
-      reset_PID(&pid_pos_Z,0.0);
-      reset_PID(&pid_rate_Z,-500.0);
+      reset_PID(&pid_pos_Z, 0.0);
+      reset_PID(&pid_rate_Z, -500.0);
 
       pid_rate_X.output = 0;
       pid_rate_Y.output = 0;
@@ -239,22 +239,22 @@ void position_Callback(const geometry_msgs::Point& msg) {
    else if (flight_mode == MODE_NAV) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
 // navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
-      if(pid_rate_Z.output < 0){
-         reset_I(&pid_rate_X,0);
-         reset_I(&pid_rate_Y,0);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
+      if (pid_rate_Z.output < 0) {
+         reset_I(&pid_rate_X, 0);
+         reset_I(&pid_rate_Y, 0);
       }
-      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X,is_changed_target);
-      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y,is_changed_target);
+      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X, is_changed_target);
+      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y, is_changed_target);
       is_arm = 1950;
    }
    else if (flight_mode == MODE_POSHOLD) {
       //Calculate the pos_hold mod
       calc_takeoff_altitude(&pid_rate_Z);
       pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z);
-      if(pid_rate_Z.output < 0){
-         reset_I(&pid_rate_X,0);
-         reset_I(&pid_rate_Y,0);
+      if (pid_rate_Z.output < 0) {
+         reset_I(&pid_rate_X, 0);
+         reset_I(&pid_rate_Y, 0);
       }
 
       pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
@@ -264,10 +264,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
    else if (flight_mode == MODE_TAKEOFF) {
       calc_takeoff_altitude(&pid_rate_Z);
       target_Z.target_vel = TAKEOFF_SPEED;
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
-      if(pid_rate_Z.output < 0){
-         reset_I(&pid_rate_X,0);
-         reset_I(&pid_rate_Y,0);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
+      if (pid_rate_Z.output < 0) {
+         reset_I(&pid_rate_X, 0);
+         reset_I(&pid_rate_Y, 0);
       }
 
       pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
@@ -275,10 +275,10 @@ void position_Callback(const geometry_msgs::Point& msg) {
       is_arm = 1950;
    }
    else if (flight_mode == MODE_LANDING) {
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,is_changed_target);
-      if(pid_rate_Z.output < 0){
-         reset_I(&pid_rate_X,0);
-         reset_I(&pid_rate_Y,0);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
+      if (pid_rate_Z.output < 0) {
+         reset_I(&pid_rate_X, 0);
+         reset_I(&pid_rate_Y, 0);
       }
 
       pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
@@ -295,7 +295,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    pid_output_msg.data[2] = 1500;   // YAW
    pid_output_msg.data[4] = is_arm;
    pid_out_pub.publish(pid_output_msg);
-   
+
 
 //target->target_pos - current->cur_pos
    // std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
@@ -326,17 +326,17 @@ void position_Callback(const geometry_msgs::Point& msg) {
 // };
 
 
-int manage_mode(unsigned int getset, unsigned int *mode){
+int manage_mode(unsigned int getset, unsigned int *mode) {
 
    static unsigned int current_mode = GROUND;
-   if(getset == GET){
+   if (getset == GET) {
       *mode = current_mode;
    }
-   else if(getset == SET){
+   else if (getset == SET) {
 
-      if( current_mode == MODE_TAKEOFF && (*mode == MODE_NAV || *mode == MODE_POSHOLD))
+      if ( current_mode == MODE_TAKEOFF && (*mode == MODE_NAV || *mode == MODE_POSHOLD))
          current_mode = *mode;
-      if( ( current_mode == MODE_NAV || current_mode == MODE_POSHOLD) && current_mode == LANDING )
+      if ( ( current_mode == MODE_NAV || current_mode == MODE_POSHOLD) && current_mode == LANDING )
          current_mode = *mode;
    }
 
@@ -346,55 +346,63 @@ int manage_mode(unsigned int getset, unsigned int *mode){
 
 }
 
-int manage_target(unsigned int getset, float *x, float *y, float *z ){
+int manage_target(unsigned int getset, float *x, float *y, float *z ) {
    static float current_target_x = 0;
    static float current_target_y = 0;
    static float current_target_z = 0;
+   static int is_changed = 0;
+   int ret = 0;
 
-
-
-   if(getset == GET){
-
+   if (getset == GET) {
+      ret = is_changed;
       *x = current_target_x;
       *y = current_target_y;
       *z = current_target_z;
+      is_changed = 0;
    }
-   else if(getset == SET){
-      current_target_x = *x;  
-      current_target_y = *y;  
-      current_target_z = *z;  
+   else if (getset == SET) {
+
+      //do i consider the mode???
+      is_changed = 1;
+      current_target_x = *x;
+      current_target_y = *y;
+      current_target_z = *z;
    }
 
 
-   return 1;
+   return ret;
 }
 
 
 
 
-void targetCallback(const geometry_msgs::PointStamped& msg){
-   double target_x = msg.point.x;
-   double target_y = msg.point.y;
-   double target_z = msg.point.z;
+void targetCallback(const geometry_msgs::PointStamped& msg) {
+   float target_x = msg.point.x;
+   float target_y = msg.point.y;
+   float target_z = msg.point.z;
 
    unsigned int mod = msg.header.seq;
+   unsigned int tmp_mod = GROUND;
 
-
-   if(mod == TAKEOFF){
-
+   if (mod == TAKEOFF) {
+      tmp_mod = MODE_TAKEOFF;
+      manage_mode(SET, &tmp_mod);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
-   else if(mod == MISSION_AUTO){
-
-
-
+   else if (mod == MISSION_AUTO) {
+      tmp_mod = MODE_NAV;
+      manage_mode(SET, &tmp_mod);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
-   else if(mod == MISSION_MANUAL){
-
-
+   else if (mod == MISSION_MANUAL) {
+      tmp_mod = MODE_MANUAL;
+      manage_mode(SET, &tmp_mod);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
-   else if(mod == LANDING){
-
-
+   else if (mod == LANDING) {
+      tmp_mod = MODE_LANDING;
+      manage_mode(SET, &tmp_mod);
+      manage_target(SET,&target_x,&target_y,&target_z);
    }
 
 }
