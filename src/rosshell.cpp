@@ -4,6 +4,11 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Point.h"
+#include "geometry_msgs/PointStamped.h"
+
+#include "geometry_msgs/Quaternion.h"
+
+
 #include "pcl_msgs/ModelCoefficients.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
@@ -18,7 +23,7 @@
 #include <string>
 #include "math.h"
 #include "param.h"
-
+#include "calculation.h"
 
 
 
@@ -161,7 +166,7 @@ void keyLoop() {
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt += scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -173,7 +178,7 @@ void keyLoop() {
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt -= scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -185,7 +190,7 @@ void keyLoop() {
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt += scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -197,7 +202,7 @@ void keyLoop() {
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt -= scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -208,7 +213,7 @@ void keyLoop() {
 			pidi = 1;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt += scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -219,7 +224,7 @@ void keyLoop() {
 			pidi = 1;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt -= scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -230,7 +235,7 @@ void keyLoop() {
 			pidi = 2;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt += scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -241,7 +246,7 @@ void keyLoop() {
 			pidi = 2;
 			db_pt = get_param_n( pr,  xyz, pidi);
 			*db_pt -= scale;
-			
+
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -317,9 +322,9 @@ void keyLoop() {
 
 		printf("%d,%d,%d\n", pr,  xyz, pidi);
 		printf(":::  P   :   P   :   I   :   D\n");
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n",*get_param_n(0, 0, 0),*get_param_n(1, 0, 0),*get_param_n(1, 0, 1),*get_param_n(1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n",*get_param_n(0, 1, 0),*get_param_n(1, 1, 0),*get_param_n(1, 1, 1),*get_param_n(1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n",*get_param_n(0, 2, 0),*get_param_n(1, 2, 0),*get_param_n(1, 2, 1),*get_param_n(1, 2, 2));
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(0, 0, 0), *get_param_n(1, 0, 0), *get_param_n(1, 0, 1), *get_param_n(1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(0, 1, 0), *get_param_n(1, 1, 0), *get_param_n(1, 1, 1), *get_param_n(1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(0, 2, 0), *get_param_n(1, 2, 0), *get_param_n(1, 2, 1), *get_param_n(1, 2, 2));
 //		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}
@@ -363,6 +368,8 @@ int main(int argc, char **argv) {
 // <geometry_msgs::Point>
 // std_msgs::Float32MultiArray
 	param_pub = n.advertise<std_msgs::Int32>("/PARAM_CHANGE", 100);
+
+	target_pub = n.advertise<geometry_msgs::Quaternion>("/FIRST/TARGET_POS", 100);
 
 	ros::Rate loop_rate(1000);
 	//ros::Rate loop_rate(30);
@@ -484,6 +491,45 @@ int main(int argc, char **argv) {
 						break;
 					data_rate.sleep();
 				}
+			}
+			else if ( argvector[0] == "mod" ) {
+					geometry_msgs::Quaternion target_msgs;
+				if ( argvector.size() > 1 && argvector[1] == "1" ) {
+
+
+					target_msgs.x = 0;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = GROUND;
+				}
+				if ( argvector.size() > 1 && argvector[1] == "2" ) {
+
+
+					target_msgs.x = 0;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = MISSION_MANUAL;
+				}
+				if ( argvector.size() > 1 && argvector[1] == "3" ) {
+
+
+					target_msgs.x = 0;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = MISSION_AUTO;
+				}
+				if ( argvector.size() > 1 && argvector[1] == "4" ) {
+
+
+					target_msgs.x = 0;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = LANDING;
+				}
+
+
+
+				target_pub.publish(target_msgs);
 			}
 			else
 				std::cout << std::endl;
