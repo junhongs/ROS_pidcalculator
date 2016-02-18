@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "param.h"
 
-
+// RATE = 24
 char param_list[][50] =
 {
    "FIRST/POS/X/PID_P",    //0
@@ -32,7 +32,38 @@ char param_list[][50] =
    "FIRST/RATE/Z/PID_P",      //20
    "FIRST/RATE/Z/PID_I",      //21
    "FIRST/RATE/Z/PID_D",      //22
-   "FIRST/RATE/Z/PID_IMAX"    //23
+   "FIRST/RATE/Z/PID_IMAX",    //23
+
+
+   "FIRST/NAV/POS/X/PID_P",
+   "FIRST/NAV/POS/X/PID_I",
+   "FIRST/NAV/POS/X/PID_D",
+   "FIRST/NAV/POS/X/PID_IMAX",
+
+   "FIRST/NAV/RATE/X/PID_P",  
+   "FIRST/NAV/RATE/X/PID_I",  
+   "FIRST/NAV/RATE/X/PID_D",  
+   "FIRST/NAV/RATE/X/PID_IMAX",
+
+   "FIRST/NAV/POS/Y/PID_P",
+   "FIRST/NAV/POS/Y/PID_I",
+   "FIRST/NAV/POS/Y/PID_D",
+   "FIRST/NAV/POS/Y/PID_IMAX",
+
+   "FIRST/NAV/RATE/Y/PID_P",  
+   "FIRST/NAV/RATE/Y/PID_I",  
+   "FIRST/NAV/RATE/Y/PID_D",  
+   "FIRST/NAV/RATE/Y/PID_IMAX",
+
+   "FIRST/NAV/POS/Z/PID_P",
+   "FIRST/NAV/POS/Z/PID_I",
+   "FIRST/NAV/POS/Z/PID_D",
+   "FIRST/NAV/POS/Z/PID_IMAX",
+
+   "FIRST/NAV/RATE/Z/PID_P",  
+   "FIRST/NAV/RATE/Z/PID_I",  
+   "FIRST/NAV/RATE/Z/PID_D",  
+   "FIRST/NAV/RATE/Z/PID_IMAX"
 };
 
 
@@ -68,7 +99,7 @@ pid_parameter_t default_param_rate_X = {
 pid_parameter_t default_param_pos_Y = default_param_pos_X;
 pid_parameter_t default_param_rate_Y = default_param_rate_X;
 pid_parameter_t default_param_pos_Z = {
-   2.5l,
+   0.2l,
    0.0l,
    0.0l,
    200.0l
@@ -77,9 +108,9 @@ pid_parameter_t default_param_pos_Z = {
 
 
 pid_parameter_t default_param_rate_Z = {
-   0.1l,
-   0.04l,
-   0.04l,
+   0.12l,
+   0.11l,
+   0.023l,
    500.0l
 };
 
@@ -90,11 +121,28 @@ pos_pid_parameter_t pid_default_param = {
    &default_param_pos_Y,
    &default_param_rate_Y,
    &default_param_pos_Z,
+   &default_param_rate_Z,
+
+
+   &default_param_pos_X,
+   &default_param_rate_X,
+   &default_param_pos_Y,
+   &default_param_rate_Y,
+   &default_param_pos_Z,
    &default_param_rate_Z
+
+
 };
 
 
 pos_pid_parameter_t pid_param = {
+   &pid_pos_param_X,
+   &pid_rate_param_X,
+   &pid_pos_param_Y,
+   &pid_rate_param_Y,
+   &pid_pos_param_Z,
+   &pid_rate_param_Z,
+
    &pid_pos_param_X,
    &pid_rate_param_X,
    &pid_pos_param_Y,
@@ -167,7 +215,7 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
       *default_ptr = *param_ptr;
    }
    else {
-      std::cout << *default_ptr;
+      std::cout << *default_ptr << std::endl;
       ros::param::set(param_name, *default_ptr);
       
       *param_ptr = *default_ptr;

@@ -492,59 +492,58 @@ int main(int argc, char **argv) {
 				}
 			}
 			else if ( argvector[0] == "mod" ) {
-					geometry_msgs::Quaternion target_msgs;
-					target_msgs.x = 0;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = MISSION_AUTO;
+				geometry_msgs::Quaternion target_msgs;
+				target_msgs.x = 0;
+				target_msgs.y = 0;
+				target_msgs.z = 0;
+				target_msgs.w = MISSION_AUTO;
 
+				if ( argvector.size() > 1 ) {
+					if (  (argvector[1] == "1" || argvector[1] == "T" ) ) {
 
-				if ( argvector.size() > 1 && (argvector[1] == "1" || argvector[1] == "G" ) ) {
+						target_msgs.x = 0;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = TAKEOFF;
+					}
+					if (  ( argvector[1] == "2" || argvector[1] == "M" ) ) {
 
-					target_msgs.x = 0;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = GROUND;
+						target_msgs.x = 0;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = MISSION_MANUAL;
+					}
+					if (  ( argvector[1] == "3" || argvector[1] == "A" ) ) {
+
+						target_msgs.x = 0;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = MISSION_AUTO;
+					}
+					if (  ( argvector[1] == "4" || argvector[1] == "L" ) ) {
+
+						target_msgs.x = 0;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = LANDING;
+					}
+
+					if (  ( argvector[1] == "11" )) {
+
+						target_msgs.x = 500;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = 111;
+					}
+
+					if (  ( argvector[1] == "12" )) {
+
+						target_msgs.x = -500;
+						target_msgs.y = 0;
+						target_msgs.z = 0;
+						target_msgs.w = 112;
+					}
 				}
-				if ( argvector.size() > 1 && ( argvector[1] == "2" || argvector[1] == "M" ) ) {
-
-					target_msgs.x = 0;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = MISSION_MANUAL;
-				}
-				if ( argvector.size() > 1 && ( argvector[1] == "3" || argvector[1] == "A" ) ) {
-
-					target_msgs.x = 0;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = MISSION_AUTO;
-				}
-				if ( argvector.size() > 1 && ( argvector[1] == "4" || argvector[1] == "L" ) ) {
-
-					target_msgs.x = 0;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = LANDING;
-				}
-
-				if ( argvector.size() > 1 && ( argvector[1] == "11" )) {
-
-					target_msgs.x = 100;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = MISSION_AUTO;
-				}
-
-				if ( argvector.size() > 1 && ( argvector[1] == "12" )) {
-
-					target_msgs.x = -100;
-					target_msgs.y = 0;
-					target_msgs.z = 0;
-					target_msgs.w = MISSION_AUTO;
-				}
-
-
 
 
 				target_pub.publish(target_msgs);

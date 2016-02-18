@@ -20,6 +20,16 @@ typedef struct pos_pid_parameter_t {
 
 	pid_parameter_t *pos_pid_Z;
 	pid_parameter_t *rate_pid_Z;
+
+
+	pid_parameter_t *pos_nav_pid_X;
+	pid_parameter_t *rate_nav_pid_X;
+
+	pid_parameter_t *pos_nav_pid_Y;
+	pid_parameter_t *rate_nav_pid_Y;
+
+	pid_parameter_t *pos_nav_pid_Z;
+	pid_parameter_t *rate_nav_pid_Z;
 } pos_pid_parameter_t;
 
 

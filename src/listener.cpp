@@ -81,35 +81,41 @@ int manage_mode(unsigned int getset, unsigned int *state) {
    else if (getset == SET) {
 
 
-      #define PR_STATE(N) std::cout << "STATE :: " << #N;
+#define PR_STATE(N) std::cout << "STATE :: " << #N;
 
-      if( current_state == MODE_TAKEOFF) PR_STATE(MODE_TAKEOFF)
-      if( current_state == MODE_NAV) PR_STATE(MODE_NAV)
-      if( current_state == MODE_MANUAL) PR_STATE(MODE_MANUAL)
-      if( current_state == MODE_LANDING) PR_STATE(MODE_LANDING)
-      if( current_state == GROUND) PR_STATE(GROUND)
-      if( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD)
+      if ( current_state == MODE_TAKEOFF) PR_STATE(MODE_TAKEOFF)
+         if ( current_state == MODE_NAV) PR_STATE(MODE_NAV)
+            if ( current_state == MODE_MANUAL) PR_STATE(MODE_MANUAL)
+               if ( current_state == MODE_LANDING) PR_STATE(MODE_LANDING)
+                  if ( current_state == GROUND) PR_STATE(GROUND)
+                     if ( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD)
+
+
+                        if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
+                           std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
+                           return 0;
+                        }
 
 
       current_state = *state;
 
 
-      #define PR_STATE2(N) std::cout << "   TO    " << #N << std::endl;
+#define PR_STATE2(N) std::cout << "   TO    " << #N << std::endl;
 
-      if( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF)
-      if( current_state == MODE_NAV) PR_STATE2(MODE_NAV)
-      if( current_state == MODE_MANUAL) PR_STATE2(MODE_MANUAL)
-      if( current_state == MODE_LANDING) PR_STATE2(MODE_LANDING)
-      if( current_state == GROUND) PR_STATE2(GROUND)
-      if( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD)
+      if ( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF)
+         if ( current_state == MODE_NAV) PR_STATE2(MODE_NAV)
+            if ( current_state == MODE_MANUAL) PR_STATE2(MODE_MANUAL)
+               if ( current_state == MODE_LANDING) PR_STATE2(MODE_LANDING)
+                  if ( current_state == GROUND) PR_STATE2(GROUND)
+                     if ( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD)
 
 
 
-      // if ( current_state == MODE_TAKEOFF && (*state == MODE_NAV || *state == MODE_POSHOLD))
-      //    current_state = *state;
-      // if ( ( current_state == MODE_NAV || current_state == MODE_POSHOLD) && current_state == MODE_LANDING )
-      //    current_state = *state;
-   }
+                        // if ( current_state == MODE_TAKEOFF && (*state == MODE_NAV || *state == MODE_POSHOLD))
+                        //    current_state = *state;
+                        // if ( ( current_state == MODE_NAV || current_state == MODE_POSHOLD) && current_state == MODE_LANDING )
+                        //    current_state = *state;
+                     }
 
 
 
@@ -149,15 +155,16 @@ int manage_target(unsigned int getset, float *x, float *y, float *z ) {
       *z = current_target_z;
       is_changed = 0;
    }
-   else if (getset == SET) {
-
-      
+   else if (getset == SET ) {
+      if (*y == 0 || *z == 0) {
+         return -1;
+      }
       //do i consider the mode???
       is_changed = 1;
       current_target_x = *x;
       current_target_y = *y;
       current_target_z = *z;
-      std::cout << "SET the TARGET" <<current_target_x<<","<<current_target_y<<","<<current_target_z << std::endl;
+      std::cout << "SET the TARGET" << current_target_x << "," << current_target_y << "," << current_target_z << std::endl;
    }
 
 
@@ -185,7 +192,7 @@ int manage_current_pos(unsigned int getset, float *x, float *y, float *z ) {
    }
    else if (getset == SET) {
 
-      
+
       //do i consider the mode???
       is_changed = 1;
       current_position_x = *x;
@@ -217,11 +224,6 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t current_Z = {0,};
    static unsigned int flight_mode = GROUND;
 
-
-
-
-
-
    /*
     *       Check and save the time.
     *       Calculate the velocity
@@ -229,7 +231,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
     */
    static int is_reset = 0;
    double node_cur_time = ros::Time::now().toSec();
-   static double node_last_time = 0; 
+   static double node_last_time = 0;
 
 
 
@@ -273,7 +275,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-   manage_current_pos(SET,&(current_X.cur_pos),&(current_Y.cur_pos),&(current_Z.cur_pos));
+   manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
 
 
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
@@ -306,38 +308,32 @@ void position_Callback(const geometry_msgs::Point& msg) {
    velocity_pub.publish(velocity_msg);
    //
 
-
-
-
-
-
-
-
-
-
-
-
-
    // int distance = calc_dist(target_pos_x, target_pos_y, target_pos_z, msg.x, msg.y, msg.z);
    // if (distance < 150.0)
    //    flight_mode = MODE_POSHOLD;
 
 
-   if ( node_cur_time - node_last_time > 10.0 ) {
+   if ( node_cur_time - node_last_time > 5.0 ) {
       is_reset = 1;
       flight_mode = GROUND;
-      manage_mode(SET,&flight_mode);
+      manage_mode(SET, &flight_mode);
    }
    node_last_time = node_cur_time;
+
+
+
+
+
+
    int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
    if (distance < 100.0 && is_reset) {
       flight_mode = MODE_POSHOLD;
-      manage_mode(SET,&flight_mode);
+      manage_mode(SET, &flight_mode);
 
       target_pos_x = msg.x;
       target_pos_y = msg.y;
 
-      manage_target(SET,&target_pos_x,&target_pos_y,&target_pos_z);
+      manage_target(SET, &target_pos_x, &target_pos_y, &target_pos_z);
 
       is_reset = 0;
 
@@ -351,26 +347,18 @@ void position_Callback(const geometry_msgs::Point& msg) {
    float_pub.publish(float_msg);
 
 
-   int is_changed_target = manage_target(GET,&target_pos_x,&target_pos_y,&target_pos_z);
+   int is_changed_target = manage_target(GET, &target_pos_x, &target_pos_y, &target_pos_z);
 
-   if( target_pos_x == 0 && target_pos_y == 0 && target_pos_z == 0){
-      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos);
+   if ( target_pos_x == 0 && target_pos_y == 0 && target_pos_z == 0) {
+      manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
    }
 
-
-   manage_mode(GET,&flight_mode);
-
+   manage_mode(GET, &flight_mode);
 
 
-
-
-
-
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    target_X.target_pos = target_pos_x;
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
-
 
    if (flight_mode == GROUND) {
 
@@ -400,20 +388,20 @@ void position_Callback(const geometry_msgs::Point& msg) {
       navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y, is_changed_target);
       is_arm = 1950;
    }
-   
+
 
    else if (flight_mode == MODE_MANUAL) {
 
 
-      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z,max_vel);
+      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, max_vel);
       if (pid_rate_Z.output < 0) {
          reset_I(&pid_rate_X, 0);
          reset_I(&pid_rate_Y, 0);
       }
-      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X,max_vel);
-      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y,max_vel);
+      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X, max_vel);
+      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y, max_vel);
 
-      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos);
+      manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
       is_arm = 1950;
    }
 
@@ -466,24 +454,6 @@ void position_Callback(const geometry_msgs::Point& msg) {
    pid_output_msg.data[4] = is_arm;
    pid_out_pub.publish(pid_output_msg);
 
-
-//target->target_pos - current->cur_pos
-   // std::cout << target_Z.target_pos << "::::" <<  current_Z.cur_pos << std::endl;;
-   // std::cout << "inner_I   " <<pid_rate_Z.inner_i << "  :::target_vel " << target_Z.target_vel << std::endl;
-   // //
-
-   // if (is_start == 1) {
-   //    pid_output_msg.data[4] = 1950;
-   // }
-   // else {
-   //    pid_output_msg.data[4] = 1000;
-   //    pid_output_msg.data[3] = 1000;
-   //    reset_PID(&pid_rate_Z);
-   //    reset_PID(&pid_pos_Z);
-   // }
-
-
-
 }
 
 
@@ -500,7 +470,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 void targetCallback(const geometry_msgs::Quaternion& msg) {
-   std::cout << "TARGET::" <<std::endl;;
+   std::cout << "TARGET::" << std::endl;;
 
 
    float target_x = msg.x;
@@ -512,7 +482,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    float current_z = 0;
 
 
-   manage_current_pos(GET,&current_x,&current_y,&current_z);
+   manage_current_pos(GET, &current_x, &current_y, &current_z);
 
    unsigned int mod = msg.w;
    unsigned int tmp_mod = GROUND;
@@ -520,12 +490,12 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
 
 
 
-      #define PR_MOD(N) std::cout << "MSG MODE :: " << #N << std::endl;
-      std::cout << ":: " << mod << std::endl;
-      if( mod == TAKEOFF) PR_MOD(TAKEOFF)
-      if( mod == MISSION_AUTO) PR_MOD(MISSION_AUTO)
-      if( mod == MISSION_MANUAL) PR_MOD(MISSION_MANUAL)
-      if( mod == LANDING) PR_MOD(LANDING)
+#define PR_MOD(N) std::cout << "MSG MODE :: " << #N << std::endl;
+   std::cout << ":: " << mod << std::endl;
+   if ( mod == TAKEOFF) PR_MOD(TAKEOFF);
+   if ( mod == MISSION_AUTO) PR_MOD(MISSION_AUTO);
+   if ( mod == MISSION_MANUAL) PR_MOD(MISSION_MANUAL);
+   if ( mod == LANDING) PR_MOD(LANDING);
 
 
 
@@ -534,28 +504,40 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    if (mod == TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
       manage_mode(SET, &tmp_mod);
-      if(target_z)
-         manage_target(SET,&current_x,&current_y,&target_z);
-      else{
+      if (target_z)
+         manage_target(SET, &current_x, &current_y, &target_z);
+      else {
          current_z += 500;
-         manage_target(SET,&current_x,&current_y,&current_z);
+         manage_target(SET, &current_x, &current_y, &current_z);
       }
    }
    else if (mod == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      if (manage_target(SET, &target_x, &target_y, &target_z) == -1) {
+         tmp_mod = MODE_POSHOLD;
+         manage_mode(SET, &tmp_mod);
+         manage_target(SET, &current_x, &current_y, &target_z);
+
+      }
    }
    else if (mod == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      manage_target(SET, &target_x, &target_y, &target_z);
    }
    else if (mod == LANDING) {
       tmp_mod = MODE_LANDING;
       manage_mode(SET, &tmp_mod);
       target_z = -3000;
-      manage_target(SET,&current_x,&current_y,&target_z);
+      manage_target(SET, &current_x, &current_y, &target_z);
+   }
+
+   else if (mod == 111 || mod == 112) {
+      tmp_mod = MODE_NAV;
+      manage_mode(SET, &tmp_mod);
+      current_z += target_z;
+      manage_target(SET, &current_x, &current_y, &current_z);
    }
 
 }

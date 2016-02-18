@@ -57,12 +57,12 @@ typedef struct target_pos_vel_t {
 } target_pos_vel_t;
 
 enum mode_e{
-   GROUND,
    MODE_TAKEOFF,
-   MODE_POSHOLD,
-   MODE_MANUAL,
    MODE_NAV,
-   MODE_LANDING
+   MODE_MANUAL,
+   MODE_LANDING,   
+   MODE_POSHOLD,
+   GROUND   
 };
 
 
