@@ -131,7 +131,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
 }
 
-int manage_target(unsigned int getset, float *x, float *y, float *z ) {
+int manage_target(unsigned int getset, float *x, float *y, float *z , float cur_x, float cur_y, float cur_z) {
    static float current_target_x = 0;
    static float current_target_y = 0;
    static float current_target_z = 0;
@@ -161,6 +161,8 @@ int manage_target(unsigned int getset, float *x, float *y, float *z ) {
    }
 
 
+
+
    return ret;
 }
 
@@ -182,7 +184,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static pos_vel_t current_Y = {0,};
    static pos_vel_t current_Z = {0,};
    static unsigned int flight_mode = GROUND;
-   manage_mode(SET,&flight_mode);
+
 
 
 
@@ -195,7 +197,53 @@ void position_Callback(const geometry_msgs::Point& msg) {
     */
    static int is_reset = 0;
    double node_cur_time = ros::Time::now().toSec();
-   static double node_last_time = 0;
+   static double node_last_time = 0; 
+
+
+
+   int is_arm = 1000;
+
+   // DECLARE the pid output
+   std_msgs::UInt16MultiArray pid_output_msg;
+   pid_output_msg.data.resize(5, 1000);
+
+   // DECLARE the inner pid message
+   geometry_msgs::Inertia pid_inner_y_msg;
+   geometry_msgs::Inertia pid_inner_z_msg;
+
+   // DECLARE the X, Y, Z pid calculation variables.
+   //X
+   static pid_calc_t pid_pos_X = {0, };
+   static pid_calc_t pid_rate_X = {0, };
+   static target_pos_vel_t target_X = {0, };
+   //Y
+   static pid_calc_t pid_pos_Y = {0, };
+   static pid_calc_t pid_rate_Y = {0, };
+   static target_pos_vel_t target_Y = {0, };
+   //Z
+   static pid_calc_t pid_pos_Z = {0, };
+   static pid_calc_t pid_rate_Z = {0, 0, 0, -500, 0, 0, 0, 0, 0, 0};
+   //pid_rate_Z.integrator = -500;
+   static target_pos_vel_t target_Z = {0, };
+
+
+   /*
+         1. restrict the target velocity by 200.   OK
+         2. set the target_position.               OK
+   */
+   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
+   float limited_target_vel = 400;
+   float max_vel = 200;
+   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
+   static float target_pos_x = 0;
+   static float target_pos_y = 1000;
+   static float target_pos_z = -1600;
+
+
+
+
+
+
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
 
    current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
@@ -227,17 +275,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    //
 
 
-   /*
-         1. restrict the target velocity by 200.   OK
-         2. set the target_position.               OK
-   */
-   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
-   float limited_target_vel = 400;
-   float max_vel = 200;
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-   static float target_pos_x = 0;
-   static float target_pos_y = 1000;
-   static float target_pos_z = -1600;
+
 
 
 
@@ -267,7 +305,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       target_pos_x = msg.x;
       target_pos_y = msg.y;
 
-      manage_target(SET,&target_pos_x,&target_pos_y,&target_pos_z);
+      manage_target(SET,&target_pos_x,&target_pos_y,&target_pos_z,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
 
       is_reset = 0;
 
@@ -281,37 +319,20 @@ void position_Callback(const geometry_msgs::Point& msg) {
    float_pub.publish(float_msg);
 
 
-   int is_changed_target = manage_target(GET,&target_pos_x,&target_pos_y,&target_pos_z);
+   int is_changed_target = manage_target(GET,&target_pos_x,&target_pos_y,&target_pos_z,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+
+   if( target_pos_x == 0 && target_pos_y == 0 && target_pos_z == 0){
+      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
+   }
+
+
    manage_mode(GET,&flight_mode);
 
 
 
 
 
-   int is_arm = 1000;
 
-   // DECLARE the pid output
-   std_msgs::UInt16MultiArray pid_output_msg;
-   pid_output_msg.data.resize(5, 1000);
-
-   // DECLARE the inner pid message
-   geometry_msgs::Inertia pid_inner_y_msg;
-   geometry_msgs::Inertia pid_inner_z_msg;
-
-   // DECLARE the X, Y, Z pid calculation variables.
-   //X
-   static pid_calc_t pid_pos_X = {0, };
-   static pid_calc_t pid_rate_X = {0, };
-   static target_pos_vel_t target_X = {0, };
-   //Y
-   static pid_calc_t pid_pos_Y = {0, };
-   static pid_calc_t pid_rate_Y = {0, };
-   static target_pos_vel_t target_Y = {0, };
-   //Z
-   static pid_calc_t pid_pos_Z = {0, };
-   static pid_calc_t pid_rate_Z = {0, 0, 0, -500, 0, 0, 0, 0, 0, 0};
-   //pid_rate_Z.integrator = -500;
-   static target_pos_vel_t target_Z = {0, };
 
    //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
    target_X.target_pos = target_pos_x;
@@ -360,7 +381,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X,max_vel);
       manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y,max_vel);
 
-      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos);
+      manage_target(SET,&current_X.cur_pos,&current_Y.cur_pos,&current_Z.cur_pos,current_X.cur_pos,current_Y.cur_pos,current_Z.cur_pos);
       is_arm = 1950;
    }
 
@@ -474,22 +495,22 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    if (mod == TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
    }
    else if (mod == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
    }
    else if (mod == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
    }
    else if (mod == LANDING) {
       tmp_mod = MODE_LANDING;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET,&target_x,&target_y,&target_z);
+      manage_target(SET,&target_x,&target_y,&target_z,0.0,0.0,0.0);
    }
 
 }

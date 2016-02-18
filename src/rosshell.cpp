@@ -161,7 +161,6 @@ void keyLoop() {
 			break;
 
 		case 'y':
-
 			pr = 0;
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
@@ -172,8 +171,8 @@ void keyLoop() {
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
-		case 'h':
 
+		case 'h':
 			pr = 0;
 			pidi = 0;
 			db_pt = get_param_n( pr,  xyz, pidi);
@@ -494,38 +493,57 @@ int main(int argc, char **argv) {
 			}
 			else if ( argvector[0] == "mod" ) {
 					geometry_msgs::Quaternion target_msgs;
-				if ( argvector.size() > 1 && argvector[1] == "1" ) {
+					target_msgs.x = 0;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = MISSION_AUTO;
 
+
+				if ( argvector.size() > 1 && (argvector[1] == "1" || argvector[1] == "G" ) ) {
 
 					target_msgs.x = 0;
 					target_msgs.y = 0;
 					target_msgs.z = 0;
 					target_msgs.w = GROUND;
 				}
-				if ( argvector.size() > 1 && argvector[1] == "2" ) {
-
+				if ( argvector.size() > 1 && ( argvector[1] == "2" || argvector[1] == "M" ) ) {
 
 					target_msgs.x = 0;
 					target_msgs.y = 0;
 					target_msgs.z = 0;
 					target_msgs.w = MISSION_MANUAL;
 				}
-				if ( argvector.size() > 1 && argvector[1] == "3" ) {
-
+				if ( argvector.size() > 1 && ( argvector[1] == "3" || argvector[1] == "A" ) ) {
 
 					target_msgs.x = 0;
 					target_msgs.y = 0;
 					target_msgs.z = 0;
 					target_msgs.w = MISSION_AUTO;
 				}
-				if ( argvector.size() > 1 && argvector[1] == "4" ) {
-
+				if ( argvector.size() > 1 && ( argvector[1] == "4" || argvector[1] == "L" ) ) {
 
 					target_msgs.x = 0;
 					target_msgs.y = 0;
 					target_msgs.z = 0;
 					target_msgs.w = LANDING;
 				}
+
+				if ( argvector.size() > 1 && ( argvector[1] == "11" )) {
+
+					target_msgs.x = 100;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = MISSION_AUTO;
+				}
+
+				if ( argvector.size() > 1 && ( argvector[1] == "12" )) {
+
+					target_msgs.x = -100;
+					target_msgs.y = 0;
+					target_msgs.z = 0;
+					target_msgs.w = MISSION_AUTO;
+				}
+
 
 
 
