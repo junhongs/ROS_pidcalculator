@@ -83,18 +83,18 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
 #define PR_STATE(N) std::cout << "STATE :: " << #N;
 
-      if ( current_state == MODE_TAKEOFF) PR_STATE(MODE_TAKEOFF)
-         if ( current_state == MODE_NAV) PR_STATE(MODE_NAV)
-            if ( current_state == MODE_MANUAL) PR_STATE(MODE_MANUAL)
-               if ( current_state == MODE_LANDING) PR_STATE(MODE_LANDING)
-                  if ( current_state == GROUND) PR_STATE(GROUND)
-                     if ( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD)
+      if ( current_state == MODE_TAKEOFF) PR_STATE(MODE_TAKEOFF);
+      if ( current_state == MODE_NAV) PR_STATE(MODE_NAV);
+      if ( current_state == MODE_MANUAL) PR_STATE(MODE_MANUAL);
+      if ( current_state == MODE_LANDING) PR_STATE(MODE_LANDING);
+      if ( current_state == GROUND) PR_STATE(GROUND);
+      if ( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD);
 
 
-                        if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
-                           std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
-                           return 0;
-                        }
+      if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
+         std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
+         return 0;
+      }
 
 
       current_state = *state;
@@ -102,20 +102,20 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
 #define PR_STATE2(N) std::cout << "   TO    " << #N << std::endl;
 
-      if ( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF)
-         if ( current_state == MODE_NAV) PR_STATE2(MODE_NAV)
-            if ( current_state == MODE_MANUAL) PR_STATE2(MODE_MANUAL)
-               if ( current_state == MODE_LANDING) PR_STATE2(MODE_LANDING)
-                  if ( current_state == GROUND) PR_STATE2(GROUND)
-                     if ( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD)
+      if ( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF);
+      if ( current_state == MODE_NAV) PR_STATE2(MODE_NAV);
+      if ( current_state == MODE_MANUAL) PR_STATE2(MODE_MANUAL);
+      if ( current_state == MODE_LANDING) PR_STATE2(MODE_LANDING);
+      if ( current_state == GROUND) PR_STATE2(GROUND);
+      if ( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD);
 
 
 
-                        // if ( current_state == MODE_TAKEOFF && (*state == MODE_NAV || *state == MODE_POSHOLD))
-                        //    current_state = *state;
-                        // if ( ( current_state == MODE_NAV || current_state == MODE_POSHOLD) && current_state == MODE_LANDING )
-                        //    current_state = *state;
-                     }
+      // if ( current_state == MODE_TAKEOFF && (*state == MODE_NAV || *state == MODE_POSHOLD))
+      //    current_state = *state;
+      // if ( ( current_state == MODE_NAV || current_state == MODE_POSHOLD) && current_state == MODE_LANDING )
+      //    current_state = *state;
+   }
 
 
 
@@ -155,12 +155,13 @@ int manage_target(unsigned int getset, float *x, float *y, float *z ) {
       *z = current_target_z;
       is_changed = 0;
    }
-   else if (getset == SET ) {
+   else if (getset == SET || getset == SET_TARGET ) {
       if (*y == 0 || *z == 0) {
          return -1;
       }
       //do i consider the mode???
-      is_changed = 1;
+      if(getset == SET_TARGET)
+         is_changed = 1;
       current_target_x = *x;
       current_target_y = *y;
       current_target_z = *z;
@@ -325,26 +326,26 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
 
-   int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
-   if (distance < 100.0 && is_reset) {
-      flight_mode = MODE_POSHOLD;
-      manage_mode(SET, &flight_mode);
+   // int distance = calc_dist(0, 0, target_pos_z, 0, 0, msg.z);
+   // if (distance < 100.0 && is_reset) {
+   //    flight_mode = MODE_POSHOLD;
+   //    manage_mode(SET, &flight_mode);
 
-      target_pos_x = msg.x;
-      target_pos_y = msg.y;
+   //    target_pos_x = msg.x;
+   //    target_pos_y = msg.y;
 
-      manage_target(SET, &target_pos_x, &target_pos_y, &target_pos_z);
+   //    manage_target(SET, &target_pos_x, &target_pos_y, &target_pos_z);
 
-      is_reset = 0;
+   //    is_reset = 0;
 
-   }
+   // }
 
-   // std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
+   // // std::cout << "TARGET :: " << target_pos_x << " , " << target_pos_y << "                  CURRENT :: " << msg.x << " , " << msg.y << std::endl;
 
-   std_msgs::Float32 float_msg;
-   float_msg.data = distance ;
-   //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
-   float_pub.publish(float_msg);
+   // std_msgs::Float32 float_msg;
+   // float_msg.data = distance ;
+   // //float_msg.data = msg_pos_vel.cur_vel * 100/30 ;
+   // float_pub.publish(float_msg);
 
 
    int is_changed_target = manage_target(GET, &target_pos_x, &target_pos_y, &target_pos_z);
@@ -505,39 +506,39 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       tmp_mod = MODE_TAKEOFF;
       manage_mode(SET, &tmp_mod);
       if (target_z)
-         manage_target(SET, &current_x, &current_y, &target_z);
+         manage_target(SET_TARGET, &current_x, &current_y, &target_z);
       else {
          current_z += 500;
-         manage_target(SET, &current_x, &current_y, &current_z);
+         manage_target(SET_TARGET, &current_x, &current_y, &current_z);
       }
    }
    else if (mod == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
-      if (manage_target(SET, &target_x, &target_y, &target_z) == -1) {
+      if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == -1) {
          tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
-         manage_target(SET, &current_x, &current_y, &target_z);
+         manage_target(SET_TARGET, &current_x, &current_y, &target_z);
 
       }
    }
    else if (mod == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manage_mode(SET, &tmp_mod);
-      manage_target(SET, &target_x, &target_y, &target_z);
+      manage_target(SET_TARGET, &target_x, &target_y, &target_z);
    }
    else if (mod == LANDING) {
       tmp_mod = MODE_LANDING;
       manage_mode(SET, &tmp_mod);
       target_z = -3000;
-      manage_target(SET, &current_x, &current_y, &target_z);
+      manage_target(SET_TARGET, &current_x, &current_y, &target_z);
    }
 
    else if (mod == 111 || mod == 112) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
       current_z += target_z;
-      manage_target(SET, &current_x, &current_y, &current_z);
+      manage_target(SET_TARGET, &current_x, &current_y, &current_z);
    }
 
 }

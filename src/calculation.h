@@ -79,7 +79,8 @@ enum flight_mode{
 
 enum {
    GET,
-   SET
+   SET,
+   SET_TARGET
 };
 
 
