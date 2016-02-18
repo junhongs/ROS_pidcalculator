@@ -157,7 +157,7 @@ int manage_target(unsigned int getset, float *x, float *y, float *z , float cur_
       current_target_x = *x;
       current_target_y = *y;
       current_target_z = *z;
-      std::cout << "SET the TARGET" <<current_target_x<<","<<current_target_x<<","<<current_target_x << std::endl;
+      std::cout << "SET the TARGET" <<current_target_x<<","<<current_target_y<<","<<current_target_z << std::endl;
    }
 
 
