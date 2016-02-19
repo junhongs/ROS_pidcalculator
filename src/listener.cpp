@@ -301,8 +301,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    current_Z.lpf.input = current_Z.cur_vel;
 
 
-   current_X.cur_vel = get_lpf(&(current_X.lpf), 5);
-   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 5);
+   current_X.cur_vel = get_lpf(&(current_X.lpf), 2);
+   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 2);
    current_Z.cur_vel = get_lpf(&(current_Z.lpf), 5);
 
 
