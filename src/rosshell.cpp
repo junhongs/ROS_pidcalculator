@@ -550,7 +550,7 @@ int main(int argc, char **argv) {
 						target_msgs.w = LANDING;
 					}
 
-					if (  ( argvector[1] == "11" )) {
+					if (  ( argvector[1] == "E" )) {
 
 						target_msgs.x = 500;
 						target_msgs.y = 0;
@@ -558,13 +558,28 @@ int main(int argc, char **argv) {
 						target_msgs.w = 111;
 					}
 
-					if (  ( argvector[1] == "12" )) {
+					if (  ( argvector[1] == "W" )) {
 
 						target_msgs.x = -500;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
-						target_msgs.w = 112;
+						target_msgs.w = 111;
 					}
+					if (  ( argvector[1] == "N" )) {
+
+						target_msgs.x = 0;
+						target_msgs.y = -500;
+						target_msgs.z = 0;
+						target_msgs.w = 111;
+					}
+
+					if (  ( argvector[1] == "S" )) {
+
+						target_msgs.x = 0;
+						target_msgs.y = 500;
+						target_msgs.z = 0;
+						target_msgs.w = 111;
+					}					
 				}
 
 

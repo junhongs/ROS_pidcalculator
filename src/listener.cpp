@@ -107,7 +107,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
       if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
          std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
-         return 0;
+         return -1;
       }
 
 
@@ -156,6 +156,7 @@ int manage_target(unsigned int getset, float *x, float *y, float *z ) {
    }
    else if (getset == SET || getset == SET_TARGET ) {
       if (*y == 0 || *z == 0) {
+         std::cout << "SET the CURRENT TARGET" << std::endl;
          return -1;
       }
       //do i consider the mode???
@@ -513,7 +514,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
 
    if (mod == TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
-      manage_mode(SET, &tmp_mod);
+      if( manage_mode(SET, &tmp_mod) != -1 );
       if (target_z)
          manage_target(SET_TARGET, &current_x, &current_y, &target_z);
       else {
@@ -527,7 +528,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == -1) {
          tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
-         manage_target(SET_TARGET, &current_x, &current_y, &target_z);
+         manage_target(SET_TARGET, &current_x, &current_y, &current_y);
 
       }
    }
@@ -547,6 +548,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
       current_x += target_x;
+      current_y += target_y;
 
       std::cout << current_x << "," << current_y << "," << current_z << std::endl;
       manage_target(SET_TARGET, &current_x, &current_y, &current_z);
