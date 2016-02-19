@@ -101,7 +101,7 @@ void navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, floa
 void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void calc_takeoff_altitude(pid_calc_t *);
-
+void calc_takeoff_altitude_once(pid_calc_t *, int);
 
 
 int get_lpf(lpf_t *, int);

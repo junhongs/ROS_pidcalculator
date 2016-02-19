@@ -55,7 +55,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 
    // Low pass filter cut frequency for derivative calculation
    // Set to  "1 / ( 2 * PI * gps_lpf )"
-#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)5))
+#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)2))
    // discrete low pass filter, cuts out the
    // high frequency noise that can drive the controller crazy
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
@@ -274,7 +274,15 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
 
 void calc_takeoff_altitude(pid_calc_t *pid) {
-   if ( pid->integrator < 50 ) {
+   if ( pid->integrator < 100 ) {
+      pid->integrator += 400 * pid->cycle_time;
+   }
+}
+
+
+void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
+
+   if ( pid->integrator < 250 && is_changed_to_takeoff ) {
       pid->integrator += 400 * pid->cycle_time;
    }
 }

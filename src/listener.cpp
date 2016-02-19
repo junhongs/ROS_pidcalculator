@@ -75,11 +75,22 @@ static ros::Publisher pid_inner_z_pub;
 int manage_mode(unsigned int getset, unsigned int *state) {
 
    static unsigned int current_state = GROUND;
+
+   static int is_changed = 0;
+   int ret = 0;
+
    if (getset == GET) {
+
+      ret = is_changed;
+      is_changed = 0;
       *state = current_state;
    }
    else if (getset == SET) {
 
+
+
+      if( current_state != *state)
+         is_changed = 1;
 
 #define PR_STATE(N) std::cout << "STATE :: " << #N;
 
@@ -109,22 +120,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
       if ( current_state == GROUND) PR_STATE2(GROUND);
       if ( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD);
 
-
-
-      // if ( current_state == MODE_TAKEOFF && (*state == MODE_NAV || *state == MODE_POSHOLD))
-      //    current_state = *state;
-      // if ( ( current_state == MODE_NAV || current_state == MODE_POSHOLD) && current_state == MODE_LANDING )
-      //    current_state = *state;
    }
-
-
-
-   // #define PR_MOD(N) if(*mode == ##N) std::cout << "CHANGE THE MODE TO" << #N << std::endl;
-
-
-
-
-
 
 // enum flight_mode{
 //    TAKEOFF,
@@ -133,7 +129,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 //    LANDING
 // };
 
-   return 1;
+   return ret;
 
 }
 
@@ -296,9 +292,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    current_Z.lpf.input = current_Z.cur_vel;
 
 
-   current_X.cur_vel = get_lpf(&(current_X.lpf), 5);
-   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 5);
-   current_Z.cur_vel = get_lpf(&(current_Z.lpf), 5);
+   current_X.cur_vel = get_lpf(&(current_X.lpf), 3);
+   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 3);
+   current_Z.cur_vel = get_lpf(&(current_Z.lpf), 3);
 
 
 
@@ -354,7 +350,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
    }
 
-   manage_mode(GET, &flight_mode);
+   int is_changed_mode = manage_mode(GET, &flight_mode);
 
 
    target_X.target_pos = target_pos_x;
@@ -422,6 +418,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode == MODE_TAKEOFF) {
       calc_takeoff_altitude(&pid_rate_Z);
+      calc_takeoff_altitude_once(&pid_rate_Z,is_changed_mode);
       target_Z.target_vel = TAKEOFF_SPEED;
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
       if (pid_rate_Z.output < 0) {
@@ -538,6 +535,8 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
       current_z += target_z;
+
+      std::cout << current_x << "," << current_y << "," << current_z << std::endl;
       manage_target(SET_TARGET, &current_x, &current_y, &current_z);
    }
 
