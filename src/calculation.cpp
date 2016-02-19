@@ -40,22 +40,28 @@ static float get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
-
+#define DEBUG
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
 static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
-   if (pid->cycle_time)
+   if (pid->cycle_time){
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
+#ifdef DEBUG
+      cout << " comin_cycletime : " << pid->cycle_time;
+      cout << " error : " << pid->error;
+      cout << " last_error : " << pid->last_error;
+#endif
+   }
 
-// #define DEBUG
+
 #ifdef DEBUG
    cout << " Deriv:" << pid->derivative;
 #endif
 
    // Low pass filter cut frequency for derivative calculation
    // Set to  "1 / ( 2 * PI * gps_lpf )"
-#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)0.2))
+#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)1))
    // discrete low pass filter, cuts out the
    // high frequency noise that can drive the controller crazy
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
@@ -68,9 +74,12 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    pid->last_error = pid->error;
    pid->last_derivative = pid->derivative;
    // add in derivative component
-
 #ifdef DEBUG
-   cout << "  Param_D:" << pid_param->pid_D;
+      cout << " LastDeriv" << pid->derivative;
+
+#endif
+#ifdef DEBUG
+   cout << "  Param_D:" << pid_param->pid_D << endl;
 #endif
 
    return pid_param->pid_D * pid->derivative;
@@ -118,14 +127,14 @@ float constrain(float amt, float low, float high) {
 
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
    pid->error = target->target_pos - current->cur_pos;
-   if (current->cycle_time)
+   // if (current->cycle_time)
       pid->cycle_time = current->cycle_time;
 }
 
 void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
    pid->error = target->target_vel - current->cur_vel;
-   pid->derivative = current->cur_vel_raw;
-   if (current->cycle_time)
+//   pid->derivative = current->cur_vel_raw;
+   // if (current->cycle_time)
       pid->cycle_time = current->cycle_time;
 }
 // pid_calc_t -> error
