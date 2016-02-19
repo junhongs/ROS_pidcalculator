@@ -275,8 +275,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static float target_pos_z = -1600;
 
 
-   static int x_offset = -50;
-   static int y_offset = -50;
+   static int x_offset = 50;
+   static int y_offset = 50;
 
 
    int ground_altitude = GROUND_ALTITUDE;
