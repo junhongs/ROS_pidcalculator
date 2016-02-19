@@ -432,7 +432,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
       is_arm = 1950;
 
-      if ( current_Z.cur_pos < ground_altitude + 100) {
+      if ( current_Z.cur_pos < ground_altitude + 60) {
          flight_mode = GROUND;
          manage_mode(SET, &flight_mode);
       }
