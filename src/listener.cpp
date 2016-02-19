@@ -528,7 +528,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == -1) {
          tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
-         manage_target(SET_TARGET, &current_x, &current_y, &current_y);
+         manage_target(SET_TARGET, &current_x, &current_y, &current_z);
 
       }
    }
