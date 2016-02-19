@@ -282,19 +282,14 @@ void calc_takeoff_altitude(pid_calc_t *pid) {
 
 void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
    std::cout << "TAKEOFF TAKEOFF TAKEOFF TAKEOFFTAKEOFF TAKEOFF TAKEOFF" << std::endl;
-
    static int is_takeoff = 0;
 
    if(is_changed_to_takeoff)
       is_takeoff = 1;
-
-
-   if ( pid->integrator < 250 && is_takeoff ) {
+   if ( pid->integrator >= 220){
+      is_takeoff = 0;
+   }
+   if ( pid->integrator < 220 && is_takeoff ) {
       pid->integrator += 400 * pid->cycle_time;
    }
-
-   if ( pid->integrator >= 300)
-      is_takeoff = 0;
-
-
 }
