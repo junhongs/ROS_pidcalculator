@@ -23,6 +23,9 @@
 #include "param.h"
 #include "calculation.h"
 
+
+#define GROUND_ALTITUDE -2700
+
 static const float TAKEOFF_SPEED = 200;
 static const float LANDING_SPEED = -200;
 
@@ -89,7 +92,7 @@ int manage_mode(unsigned int getset, unsigned int *state) {
 
 
 
-      if( current_state != *state)
+      if ( current_state != *state)
          is_changed = 1;
 
 #define PR_STATE(N) std::cout << "STATE :: " << #N;
@@ -156,7 +159,7 @@ int manage_target(unsigned int getset, float *x, float *y, float *z ) {
          return -1;
       }
       //do i consider the mode???
-      if(getset == SET_TARGET)
+      if (getset == SET_TARGET)
          is_changed = 1;
       current_target_x = *x;
       current_target_y = *y;
@@ -270,7 +273,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static float target_pos_y = 1000;
    static float target_pos_z = -1600;
 
-
+   int ground_altitude = GROUND_ALTITUDE;
 
    manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
 
@@ -292,9 +295,9 @@ void position_Callback(const geometry_msgs::Point& msg) {
    current_Z.lpf.input = current_Z.cur_vel;
 
 
-   current_X.cur_vel = get_lpf(&(current_X.lpf), 3);
-   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 3);
-   current_Z.cur_vel = get_lpf(&(current_Z.lpf), 3);
+   current_X.cur_vel = get_lpf(&(current_X.lpf), 5);
+   current_Y.cur_vel = get_lpf(&(current_Y.lpf), 5);
+   current_Z.cur_vel = get_lpf(&(current_Z.lpf), 5);
 
 
 
@@ -357,23 +360,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
-   if (flight_mode == GROUND) {
 
-      reset_PID(&pid_pos_X, 0.0);
-      reset_PID(&pid_rate_X, 0.0);
-
-      reset_PID(&pid_pos_Y, 0.0);
-      reset_PID(&pid_rate_Y, 0.0);
-
-      reset_PID(&pid_pos_Z, 0.0);
-      reset_PID(&pid_rate_Z, -500.0);
-
-      pid_rate_X.output = 0;
-      pid_rate_Y.output = 0;
-      pid_rate_Z.output = -500;
-      is_arm = 1000;
-   }
-   else if (flight_mode == MODE_NAV) {
+   if (flight_mode == MODE_NAV) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
 // navi_rate(pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, ros::Publisher *pid_inner_pub )
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
@@ -418,7 +406,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode == MODE_TAKEOFF) {
       calc_takeoff_altitude(&pid_rate_Z);
-      calc_takeoff_altitude_once(&pid_rate_Z,is_changed_mode);
+      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode);
       target_Z.target_vel = TAKEOFF_SPEED;
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
       if (pid_rate_Z.output < 0) {
@@ -431,6 +419,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
       is_arm = 1950;
    }
    else if (flight_mode == MODE_LANDING) {
+
       navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
       if (pid_rate_Z.output < 0) {
          reset_I(&pid_rate_X, 0);
@@ -442,7 +431,30 @@ void position_Callback(const geometry_msgs::Point& msg) {
       target_Z.target_vel = LANDING_SPEED;
 
       is_arm = 1950;
+
+      if ( current_Z.cur_pos < ground_altitude + 100) {
+         flight_mode = GROUND;
+         manage_mode(SET, &flight_mode);
+      }
    }
+   if (flight_mode == GROUND) {
+
+      reset_PID(&pid_pos_X, 0.0);
+      reset_PID(&pid_rate_X, 0.0);
+
+      reset_PID(&pid_pos_Y, 0.0);
+      reset_PID(&pid_rate_Y, 0.0);
+
+      reset_PID(&pid_pos_Z, 0.0);
+      reset_PID(&pid_rate_Z, -500.0);
+
+      pid_rate_X.output = 0;
+      pid_rate_Y.output = 0;
+      pid_rate_Z.output = -500;
+      is_arm = 1000;
+   }
+
+
 
    //Write the pid_output
    pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
@@ -534,7 +546,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
    else if (mod == 111 || mod == 112) {
       tmp_mod = MODE_NAV;
       manage_mode(SET, &tmp_mod);
-      current_z += target_z;
+      current_x += target_x;
 
       std::cout << current_x << "," << current_y << "," << current_z << std::endl;
       manage_target(SET_TARGET, &current_x, &current_y, &current_z);
