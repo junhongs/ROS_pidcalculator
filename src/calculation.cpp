@@ -55,7 +55,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 
    // Low pass filter cut frequency for derivative calculation
    // Set to  "1 / ( 2 * PI * gps_lpf )"
-#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)0.5))
+#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)0.2))
    // discrete low pass filter, cuts out the
    // high frequency noise that can drive the controller crazy
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
