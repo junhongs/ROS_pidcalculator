@@ -281,7 +281,6 @@ void calc_takeoff_altitude(pid_calc_t *pid) {
 
 
 void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
-   std::cout << "TAKEOFF TAKEOFF TAKEOFF TAKEOFFTAKEOFF TAKEOFF TAKEOFF" << std::endl;
    static int is_takeoff = 0;
 
    if(is_changed_to_takeoff)

@@ -274,6 +274,11 @@ void position_Callback(const geometry_msgs::Point& msg) {
    static float target_pos_y = 1000;
    static float target_pos_z = -1600;
 
+
+   static int x_offset = -50;
+   static int y_offset = -50;
+
+
    int ground_altitude = GROUND_ALTITUDE;
 
    manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
@@ -458,8 +463,8 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
    //Write the pid_output
-   pid_output_msg.data[0] = 1500 - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
-   pid_output_msg.data[1] = 1500 - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
+   pid_output_msg.data[0] = 1500 - x_offset - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0); // ROLL
+   pid_output_msg.data[1] = 1500 - y_offset - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0); // PITCH
    pid_output_msg.data[3] = 1500 + (unsigned short)constrain(pid_rate_Z.output, -500.0, 500.0); // THROTTLE
    pid_output_msg.data[2] = 1500;   // YAW
    pid_output_msg.data[4] = is_arm;
@@ -549,6 +554,7 @@ void targetCallback(const geometry_msgs::Quaternion& msg) {
       manage_mode(SET, &tmp_mod);
       current_x += target_x;
       current_y += target_y;
+      current_z += target_z;
 
       std::cout << current_x << "," << current_y << "," << current_z << std::endl;
       manage_target(SET_TARGET, &current_x, &current_y, &current_z);

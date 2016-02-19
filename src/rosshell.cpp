@@ -520,29 +520,107 @@ int main(int argc, char **argv) {
 				target_msgs.z = 0;
 				target_msgs.w = MISSION_AUTO;
 
-				if ( argvector.size() > 1 ) {
-					if (  (argvector[1] == "1" || argvector[1] == "T" ) ) {
+				// if ( argvector.size() > 1 ) {
+				// 	if (  (argvector[1] == "1" || argvector[1] == "T" ) ) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = TAKEOFF;
+				// 	}
+				// 	if (  ( argvector[1] == "2" || argvector[1] == "M" ) ) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = MISSION_MANUAL;
+				// 	}
+				// 	if (  ( argvector[1] == "3" || argvector[1] == "A" ) ) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = MISSION_AUTO;
+				// 	}
+				// 	if (  ( argvector[1] == "4" || argvector[1] == "L" ) ) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = LANDING;
+				// 	}
+
+				// 	if (  ( argvector[1] == "W" )) {
+
+				// 		target_msgs.x = 500;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = 111;
+				// 	}
+
+				// 	if (  ( argvector[1] == "E" )) {
+
+				// 		target_msgs.x = -500;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = 111;
+				// 	}
+				// 	if (  ( argvector[1] == "N" )) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = -500;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = 111;
+				// 	}
+
+				// 	if (  ( argvector[1] == "S" )) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 500;
+				// 		target_msgs.z = 0;
+				// 		target_msgs.w = 111;
+				// 	}
+				// 	if (  ( argvector[1] == "U" )) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = 500;
+				// 		target_msgs.w = 111;
+				// 	}
+
+				// 	if (  ( argvector[1] == "D" )) {
+
+				// 		target_msgs.x = 0;
+				// 		target_msgs.y = 0;
+				// 		target_msgs.z = -500;
+				// 		target_msgs.w = 111;
+				// 	}	
+				// }
+				while ( argvector.size() > 1 ) {
+					std::string mod_command = argvector.back();
+					argvector.pop_back();
+					if (  (mod_command == "1" || mod_command == "T" ) ) {
 
 						target_msgs.x = 0;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
 						target_msgs.w = TAKEOFF;
 					}
-					if (  ( argvector[1] == "2" || argvector[1] == "M" ) ) {
+					if (  ( mod_command == "2" || mod_command == "M" ) ) {
 
 						target_msgs.x = 0;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
 						target_msgs.w = MISSION_MANUAL;
 					}
-					if (  ( argvector[1] == "3" || argvector[1] == "A" ) ) {
+					if (  ( mod_command == "3" || mod_command == "A" ) ) {
 
 						target_msgs.x = 0;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
 						target_msgs.w = MISSION_AUTO;
 					}
-					if (  ( argvector[1] == "4" || argvector[1] == "L" ) ) {
+					if (  ( mod_command == "4" || mod_command == "L" ) ) {
 
 						target_msgs.x = 0;
 						target_msgs.y = 0;
@@ -550,39 +628,40 @@ int main(int argc, char **argv) {
 						target_msgs.w = LANDING;
 					}
 
-					if (  ( argvector[1] == "E" )) {
+					if (  ( mod_command == "W" )) {
 
 						target_msgs.x = 500;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
 						target_msgs.w = 111;
 					}
-
-					if (  ( argvector[1] == "W" )) {
+					if (  ( mod_command == "E" )) {
 
 						target_msgs.x = -500;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
 						target_msgs.w = 111;
 					}
-					if (  ( argvector[1] == "N" )) {
+					if (  ( mod_command == "N" )) {
 
-						target_msgs.x = 0;
 						target_msgs.y = -500;
-						target_msgs.z = 0;
 						target_msgs.w = 111;
 					}
 
-					if (  ( argvector[1] == "S" )) {
+					if (  ( mod_command == "S" )) {
 
-						target_msgs.x = 0;
 						target_msgs.y = 500;
-						target_msgs.z = 0;
 						target_msgs.w = 111;
-					}					
+					}
+					if (  ( mod_command == "U" )) {
+
+						target_msgs.z = 500;
+						target_msgs.w = 111;
+					}
+
+					if (  ( mod_command == "D" )) {
+
+						target_msgs.z = -500;
+						target_msgs.w = 111;
+					}	
 				}
-
-
+				// std::cout << target_msgs.x << "," << target_msgs.y << "," << target_msgs.z <<std::endl;
 				target_pub.publish(target_msgs);
 			}
 			else
