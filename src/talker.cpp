@@ -58,10 +58,7 @@ void calc_velocity( pos_vel_t* pos_vel) {
 #endif
 int main(int argc, char **argv)
 {
-
 	ros::init(argc, argv, "talker");
-
-
 
 	ros::NodeHandle n;
 
@@ -69,10 +66,7 @@ int main(int argc, char **argv)
 	ros::Publisher chat_float_pub = n.advertise<std_msgs::Float32>("generate_sin_pulse", 100);
 	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
 	ros::Publisher float_pub = n.advertise<std_msgs::Float32>("calculated_pid_talker", 100);
-
-
 	ros::Publisher position_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_POS", 100);
-
 
 	//ros::Rate loop_rate(1000);
 	ros::Rate loop_rate(30);
@@ -80,20 +74,14 @@ int main(int argc, char **argv)
 
 
 	int count = 0;
-	while (ros::ok())
-	{
-
+	while (ros::ok()){
 		if ( argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
 		//std::cout  <<argv[0]  << std::endl;
-
 		// static ros::Time ros_time_last;
-
 		// ros::Time ros_time = ros::Time::now();
 		// std::cout  <<  ros_time - ros_time_last << std::endl;
-
 		// ros_time_last = ros_time;
-
 		geometry_msgs::Point pt_msg;
 
 		pt_msg.x = 0;
@@ -101,14 +89,9 @@ int main(int argc, char **argv)
 		pt_msg.z = -3000;
 		position_pub.publish(pt_msg);
 
-
-
-
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
 		pcl_msgs::Vertices param_msg;
-
-
 
 		float_msg.data = 0;
 		static float float_msg_tmp = 0;
@@ -129,9 +112,6 @@ int main(int argc, char **argv)
 		float_pub.publish(msg_float);
 #endif
 
-
-
-
 		geometry_msgs::Point32 position1;
 		position1.x = 0;
 		position1.y = 0;
@@ -145,7 +125,6 @@ int main(int argc, char **argv)
 		loop_rate.sleep();
 		++count;
 	}
-
 
 	return 0;
 }

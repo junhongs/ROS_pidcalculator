@@ -285,7 +285,6 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
 
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
-
    current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
 
    current_X.cur_pos = msg.x;
@@ -383,7 +382,7 @@ void position_Callback(const geometry_msgs::Point& msg) {
 
    else if (flight_mode == MODE_MANUAL) {
 
-
+      calc_takeoff_altitude(&pid_rate_Z);
       manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, max_vel);
       if (pid_rate_Z.output < 0) {
          reset_I(&pid_rate_X, 0);
