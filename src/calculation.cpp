@@ -40,7 +40,7 @@ static float get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->integrator;
 }
 
-#define DEBUG
+// #define DEBUG
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 // pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
@@ -59,7 +59,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
       cout << " Deriv:" << pid->derivative;
    #endif
 
-   #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)1))
+   #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)5))
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
 
    #ifdef DEBUG
