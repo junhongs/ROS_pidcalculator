@@ -83,34 +83,41 @@ pid_parameter_t pid_rate_param_Z = {0, };
 
 
 pid_parameter_t default_param_pos_X = {
-   1.5l,
+   1.980l,
+   0.005l,
    0.0l,
+   200.0l
+};
+pid_parameter_t default_param_pos_Y = {
+   2.465l,
+   0.004l,
+   0.0l,
+   200.0l
+};
+pid_parameter_t default_param_pos_Z = {
+   1.902l,
+   0.001l,
    0.0l,
    200.0l
 };
 
 
 pid_parameter_t default_param_rate_X = {
-   0.12l,
-   0.018l,
-   0.06l,
+   0.065l,
+   0.048l,
+   0.050l,
    300.0l
 };
-pid_parameter_t default_param_pos_Y = default_param_pos_X;
-pid_parameter_t default_param_rate_Y = default_param_rate_X;
-pid_parameter_t default_param_pos_Z = {
-   0.2l,
-   0.0l,
-   0.0l,
-   200.0l
+pid_parameter_t default_param_rate_Y = {
+   0.071l,
+   0.043l,
+   0.056l,
+   300.0l
 };
-
-
-
 pid_parameter_t default_param_rate_Z = {
-   0.12l,
-   0.11l,
-   0.023l,
+   0.094l,
+   0.031l,
+   0.010l,
    500.0l
 };
 
