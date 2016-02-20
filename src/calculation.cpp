@@ -59,7 +59,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
       cout << " Deriv:" << pid->derivative;
    #endif
 
-   #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)5))
+   #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)3))
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
 
    #ifdef DEBUG
@@ -79,6 +79,17 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 }
 
 
+static float get_D_L(pid_calc_t *pid, pid_parameter_t *pid_param) {
+   if (pid->cycle_time)
+      pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
+
+   #define PID_FILTER_L       (1.0f / (2.0f * M_PI * (float)0.5))
+   pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER_L + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
+   pid->last_error = pid->error;
+   pid->last_derivative = pid->derivative;
+   
+   return pid_param->pid_D * pid->derivative;
+}
 
 
 void reset_PID(pid_calc_t *pid, double integrator) {
@@ -141,8 +152,7 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
    pid->output += pid->inner_i = get_I(pid, pid_param);
    pid->output += pid->inner_d = constrain( get_D(pid, pid_param), -200.0 , 200.0);
-
-
+   pid->output += pid->inner_d = constrain( get_D_L(pid, pid_param), -200.0 , 200.0);   
 }
 
 void calc_velocity( pos_vel_t* pos_vel) {
@@ -175,17 +185,6 @@ void calc_velocity( pos_vel_t* pos_vel) {
    pos_vel->last_pos = pos_vel->cur_pos;
 }
 
-// static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
-//    if (pid->cycle_time)
-//       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
-
-//    #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)1))xinput set-prop <devnum> "Evdev Scrolling Distance" 8 1 1
-//    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
-//    pid->last_error = pid->error;
-//    pid->last_derivative = pid->derivative;
-   
-//    return pid_param->pid_D * pid->derivative;
-// }
 
 
 void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, float nav_target_vel) {
@@ -307,7 +306,7 @@ void calc_takeoff_altitude(pid_calc_t *pid) {
 void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
    static int is_takeoff = 0;
 
-   static int takeoff_throttle = 160;
+   static int takeoff_throttle = 170;
    if (is_changed_to_takeoff)
       is_takeoff = 1;
    if ( pid->integrator >= takeoff_throttle ) {
