@@ -351,7 +351,7 @@ private:
       velocity_pub.publish(velocity_msg);
 
       if ( node_cur_time - node_last_time > 3.0 ) {
-         flight_mode = MODE_LANDING;
+         flight_mode = MODE_GROUND;
          manage_mode(SET, &flight_mode);
          std::cout << "Position Input has been delayed more than 3 seconds.";
       }
@@ -459,6 +459,7 @@ private:
    }
 
    void reboot_drone(){
+      std::cout << "RESET_VALUE" << std::endl;
       pid_output_msg.data[0] = 1500; // ROLL
       pid_output_msg.data[1] = 1500; // PITCH
       pid_output_msg.data[3] = 0; // THROTTLE
