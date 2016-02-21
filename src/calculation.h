@@ -73,7 +73,9 @@ enum flight_mode{
    TAKEOFF,
    MISSION_AUTO,
    MISSION_MANUAL,
-   LANDING
+   LANDING,
+   MISSION_AUTO_N,
+   MISSION_GROUND
 };
 
 
