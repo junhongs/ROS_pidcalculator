@@ -15,7 +15,7 @@
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
 
-
+#include <string>
 
 
 #include <iostream>
@@ -73,34 +73,61 @@ static ros::Publisher float_pub;
 // static ros::Publisher pid_inner_x_pub;
 // static ros::Publisher pid_inner_y_pub;
 // static ros::Publisher pid_inner_z_pub;
+int making_drone() {
+   static int n = 0;
+   return n++;
+}
+
+std::string DRONE[4] = {
+   "/FIRST",
+   "/SECOND",
+   "/THIRD",
+   "/FOURTH"
+};
 
 class PIDCALCULATION
 {
-
-
 public:
-   PIDCALCULATION() {
+   PIDCALCULATION() :
+         x_offset(30),y_offset(30),limited_target_vel(300),max_vel(200)
+    {
+      std::string drone;
+      drone_num = making_drone();
+      drone = DRONE[drone_num];
+      std::string current_vel = drone + "/CURRENT_VEL";
+      std::string output_pid = drone +  "/OUTPUT_PID";
+      std::string output_inner_pid_x = drone + "/OUTPUT_INNER_PID/X";
+      std::string output_inner_pid_y = drone + "/OUTPUT_INNER_PID/Y";
+      std::string output_inner_pid_z = drone + "/OUTPUT_INNER_PID/Z";
+      std::string current_pos = drone + "/CURRENT_POS";
+      std::string target_pos = drone + "/TARGET_POS";
 
       velocity_pub = nod.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
-
+      // timer = n.createTimer(ros::Duration(1), timerCallback);
       pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
       pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/X", 100);
       pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Y", 100);
       pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Z", 100);
+      position_sub = nod.subscribe("/FIRST/CURRENT_POS", 100, &PIDCALCULATION::position_Callback, this);
+      target_sub = nod.subscribe("/FIRST/TARGET_POS", 100, &PIDCALCULATION::targetCallback, this);
 
-      position_sub = nod.subscribe("/FIRST/CURRENT_POS", 100, &PIDCALCULATION::position_Callback,this);
-      target_sub = nod.subscribe("/FIRST/TARGET_POS", 100, &PIDCALCULATION::targetCallback,this);
    }
 private:
+   ros::Timer timer;
    ros::Publisher velocity_pub;
    ros::Publisher pid_out_pub;
    ros::Publisher pid_inner_x_pub;
    ros::Publisher pid_inner_y_pub;
    ros::Publisher pid_inner_z_pub;
-
    ros::Subscriber position_sub;
    ros::Subscriber target_sub;
    ros::NodeHandle nod;
+   int x_offset;
+   int y_offset;
+   int drone_num;
+   float limited_target_vel;
+   float max_vel;
+   double node_cur_time;
    int manage_mode(unsigned int getset, unsigned int *state) {
       static unsigned int current_state = GROUND;
       static int is_changed = 0;
@@ -120,10 +147,15 @@ private:
          if ( current_state == MODE_LANDING) PR_STATE(MODE_LANDING);
          if ( current_state == GROUND) PR_STATE(GROUND);
          if ( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD);
+
+
          if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
             std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
             return -1;
          }
+
+
+         
          current_state = *state;
 #define PR_STATE2(N) std::cout << "   TO    " << #N << std::endl;
          if ( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF);
@@ -221,49 +253,33 @@ private:
       static float target_pos_y = 0;
       static float target_pos_z = 0;
 
-      static int x_offset = 30;
-      static int y_offset = 30;
+
       /*
        *       Check and save the time.
        *       Calculate the velocity
        *       Publish the velocity
        */
-      double node_cur_time = ros::Time::now().toSec();
-
-
-
-
+      node_cur_time = ros::Time::now().toSec();
       int is_arm = 1000;
-
       // DECLARE the pid output
       std_msgs::UInt16MultiArray pid_output_msg;
       pid_output_msg.data.resize(5, 1000);
-
       // DECLARE the inner pid message
       geometry_msgs::Inertia pid_inner_y_msg;
       geometry_msgs::Inertia pid_inner_z_msg;
-
       // DECLARE the X, Y, Z pid calculation variables.
       //X
-
-
-
       /*
             1. restrict the target velocity by 200.   OK
             2. set the target_position.               OK
       */
       //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
-      float limited_target_vel = 400;
-      float max_vel = 200;
+
       //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-
-
 
       int ground_altitude = GROUND_ALTITUDE;
 
       manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
-
-
       current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
       current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
 
@@ -498,6 +514,8 @@ void paramCallback(const std_msgs::Int32& msg) {
    update_param(msg.data);
    std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
 }
+
+
 int main(int argc, char **argv) {
    ros::init(argc, argv, "listener");
    ros::NodeHandle n;
@@ -519,7 +537,11 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
    // ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
    // ros::Subscriber target_sub = n.subscribe("/FIRST/TARGET_POS", 100, targetCallback);
-   PIDCALCULATION first;
+   PIDCALCULATION first();
+   PIDCALCULATION second();
+   PIDCALCULATION third();
+   PIDCALCULATION fourth();
+
    ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    spinner.spin(); // spin() will not return until the node has been shutdown
 
