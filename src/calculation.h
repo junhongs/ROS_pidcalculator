@@ -79,7 +79,8 @@ enum flight_mission_e{
 enum {
    GET,
    SET,
-   SET_TARGET
+   SET_TARGET,
+   SET_TIMER,
 };
 
 

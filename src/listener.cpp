@@ -157,12 +157,16 @@ private:
       static unsigned int current_mode = MODE_GROUND;
       static int is_changed = 0;
       int ret = 0;
+      if(getset == *state)
+         return ret;
+
+
       if (getset == GET) {
          ret = is_changed;
          is_changed = 0;
          *state = current_mode;
       }
-      else if (getset == SET) {
+      else if (getset == SET || getset == SET_TIMER) {
          std::cout << "CURRENT MODE : " << mode_str[current_mode] << std::endl;
          std::cout << "   TO   " << mode_str[*state] << std::endl;
 
@@ -252,11 +256,11 @@ private:
 
       if ( ros::Time::now().toSec() - node_cur_time > 1) {
          unsigned int flight_mode = MODE_LANDING;
-         manage_mode(SET, &flight_mode);
+         manage_mode(SET_TIMER, &flight_mode);
       }
       if ( ros::Time::now().toSec() - node_cur_time > 2) {
          unsigned int flight_mode = MODE_GROUND;
-         manage_mode(SET, &flight_mode);
+         manage_mode(SET_TIMER, &flight_mode);
          //Write the pid_output
          pid_output_msg.data[0] = 1500; // ROLL
          pid_output_msg.data[1] = 1500;
