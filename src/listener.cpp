@@ -494,6 +494,11 @@ private:
 
       if (mission == MISSION_TAKEOFF) {
          tmp_mod = MODE_TAKEOFF;
+
+         if(current_z > GROUND_ALTITUDE + 100 ){
+            std::cout << "NOT THE GROUND" << std::endl;
+         }
+
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
             if (target_z)
                manage_target(SET_TARGET, &current_x, &current_y, &target_z);
