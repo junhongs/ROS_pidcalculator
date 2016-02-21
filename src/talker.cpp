@@ -85,7 +85,7 @@ int main(int argc, char **argv)
 		geometry_msgs::Point pt_msg;
 
 		pt_msg.x = 0;
-		pt_msg.y = 0;
+		pt_msg.y = 500;
 		pt_msg.z = -3000;
 		position_pub.publish(pt_msg);
 

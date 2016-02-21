@@ -158,7 +158,10 @@ private:
       static unsigned int current_mode = MODE_GROUND;
       static int is_changed = 0;
       int ret = 0;
-      if (getset == *state)
+
+      // if( current_mode <= MODE_GROUND && *state <= MODE_GROUND)
+      // std::cout<< getset << ":" << mode_str[current_mode] << "  " <<mode_str[*state] << std::endl;
+      if (current_mode == *state)
          return ret;
 
 
@@ -352,7 +355,11 @@ private:
       if ( node_cur_time - node_last_time > 3.0 ) {
          flight_mode = MODE_GROUND;
          manage_mode(SET, &flight_mode);
-         std::cout << "Position Input has been delayed more than 3 seconds.";
+         static int is_first = 0;
+         if (is_first) {
+            std::cout << "Position Input has been delayed more than 3 seconds.";
+         }
+         is_first = 1;
       }
       node_last_time = node_cur_time;
 
@@ -457,7 +464,7 @@ private:
 
    }
 
-   void reboot_drone(){
+   void reboot_drone() {
       std::cout << "RESET_VALUE" << std::endl;
       pid_output_msg.data[0] = 1500; // ROLL
       pid_output_msg.data[1] = 1500; // PITCH
@@ -530,7 +537,7 @@ private:
          manage_mode(SET, &tmp_mod);
          manage_target(SET_TARGET, &current_x, &current_y, &current_z);
       }
-      else if(mission == MISSION_RESET)
+      else if (mission == MISSION_RESET)
       {
          reboot_drone();
       }
