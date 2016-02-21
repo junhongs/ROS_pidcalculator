@@ -72,6 +72,7 @@ enum flight_mission_e{
    MISSION_LANDING,
    MISSION_AUTO_N,
    MISSION_GROUND,
+   MISSION_RESET,
    MISSION_AUX
 };
 

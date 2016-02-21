@@ -39,6 +39,7 @@ std::string mission_str[MISSION_AUX + 1] =
    "MISSION_LANDING",
    "MISSION_AUTO_N",
    "MISSION_GROUND",
+   "MISSION_RESET",
    "MISSION_AUX"
 };
 std::string mode_str[MODE_GROUND + 1] =
@@ -134,8 +135,6 @@ public:
       pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
       position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
       target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
-
-      reboot_drone();
    }
 private:
    ros::Timer timer;
@@ -462,7 +461,7 @@ private:
       std::cout << "RESET_VALUE" << std::endl;
       pid_output_msg.data[0] = 1500; // ROLL
       pid_output_msg.data[1] = 1500; // PITCH
-      pid_output_msg.data[3] = 0; // THROTTLE
+      pid_output_msg.data[3] = 1000; // THROTTLE
       pid_output_msg.data[2] = 1500;   // YAW
       pid_output_msg.data[4] = 500;
       pid_out_pub.publish(pid_output_msg);
@@ -530,6 +529,10 @@ private:
          tmp_mod = MODE_GROUND;
          manage_mode(SET, &tmp_mod);
          manage_target(SET_TARGET, &current_x, &current_y, &current_z);
+      }
+      else if(mission == MISSION_RESET)
+      {
+         reboot_drone();
       }
    }
 };

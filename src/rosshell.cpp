@@ -270,7 +270,7 @@ void keyLoop() {
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
-			break;			
+			break;
 
 		// case 'p':
 		// 	key_debug("::POSE is selected");
@@ -579,7 +579,12 @@ int main(int argc, char **argv) {
 
 						target_msgs.z = -500;
 						target_msgs.w = MISSION_AUX;
-					}	
+					}
+					if (  ( mod_command == "RESET" )) {
+
+						target_msgs.x = 500;
+						target_msgs.w = MISSION_RESET;
+					}
 				}
 				// std::cout << target_msgs.x << "," << target_msgs.y << "," << target_msgs.z <<std::endl;
 				target_pub.publish(target_msgs);
