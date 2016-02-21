@@ -127,7 +127,7 @@ public:
       std::string target_pos = drone + "/TARGET_POS";
 
       velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
-      timer = nod.createTimer(ros::Duration(0.01), &PIDCONTROLLER::timerCallback,this);
+      // timer = nod.createTimer(ros::Duration(0.01), &PIDCONTROLLER::timerCallback,this);
       pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
       pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
       pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
