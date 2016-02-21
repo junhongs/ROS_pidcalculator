@@ -4,7 +4,7 @@
 #include "ros/ros.h"
 #include "param.h"
 #include "geometry_msgs/Inertia.h"
-
+#include <string>
 
 typedef struct lpf_t {
    double input;
@@ -56,27 +56,24 @@ typedef struct target_pos_vel_t {
    float target_vel;
 } target_pos_vel_t;
 
-enum mode_e{
+enum flight_mode_e{
    MODE_TAKEOFF,
    MODE_NAV,
    MODE_MANUAL,
    MODE_LANDING,   
    MODE_POSHOLD,
-   GROUND   
+   MODE_GROUND   
 };
 
-
-
-
-
-enum flight_mode{
-   TAKEOFF,
+enum flight_mission_e{
+   MISSION_TAKEOFF,
    MISSION_AUTO,
    MISSION_MANUAL,
-   LANDING,
+   MISSION_LANDING,
    MISSION_AUTO_N,
    MISSION_GROUND
 };
+
 
 
 enum {

@@ -23,15 +23,33 @@
 #include "param.h"
 #include "calculation.h"
 
-#define PR_STATE(N) std::cout << "STATE :: " << #N;
-#define PR_STATE2(N) std::cout << "   TO    " << #N << std::endl;
 #define PR_MOD(N) std::cout << "MSG MODE :: " << #N << std::endl;
 
 #define GROUND_ALTITUDE -2700
 #define MANAGE_MODE_ERROR -1
+#define MANAGE_TARGET_ERROR -1
 
 static const float TAKEOFF_SPEED = 200;
 static const float LANDING_SPEED = -200;
+
+std::string mission_str[MISSION_GROUND + 1] =
+{
+   "MISSION_TAKEOFF",
+   "MISSION_AUTO",
+   "MISSION_MANUAL",
+   "MISSION_LANDING",
+   "MISSION_AUTO_N",
+   "MISSION_GROUN"
+};
+std::string mode_str[MODE_GROUND + 1] =
+{
+   "MODE_TAKEOFF",
+   "MODE_NAV",
+   "MODE_MANUAL",
+   "MODE_LANDING",
+   "MODE_POSHOLD",
+   "MODE_GROUND"
+};
 
 // cfg.P8[PIDNAVR] = 14; // NAV_P * 10;
 // cfg.I8[PIDNAVR] = 20; // NAV_I * 100;
@@ -89,12 +107,14 @@ std::string DRONE[4] = {
    "/FOURTH"
 };
 
-class PIDCALCULATION
+class PIDCONTROLLER
 {
 public:
-   PIDCALCULATION() :
-      x_offset(30), y_offset(30), limited_target_vel(300), max_vel(200)
+   PIDCONTROLLER(int x_off, int y_off) :
+      x_offset(x_off), y_offset(y_off), limited_target_vel(300), max_vel(200)
    {
+      pid_output_msg.data.resize(5, 1000);
+
       std::string drone;
       drone_num = making_drone();
       drone = DRONE[drone_num];
@@ -106,15 +126,14 @@ public:
       std::string current_pos = drone + "/CURRENT_POS";
       std::string target_pos = drone + "/TARGET_POS";
 
-      velocity_pub = nod.advertise<geometry_msgs::Point>("/FIRST/CURRENT_VEL", 100);
-      // timer = n.createTimer(ros::Duration(1), timerCallback);
-      pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
-      pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/X", 100);
-      pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Y", 100);
-      pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>("/FIRST/OUTPUT_INNER_PID/Z", 100);
-      position_sub = nod.subscribe("/FIRST/CURRENT_POS", 100, &PIDCALCULATION::position_Callback, this);
-      target_sub = nod.subscribe("/FIRST/TARGET_POS", 100, &PIDCALCULATION::targetCallback, this);
-
+      velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
+      timer = nod.createTimer(ros::Duration(0.01), &PIDCONTROLLER::timerCallback,this);
+      pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
+      pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
+      pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
+      pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
+      position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
+      target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
    }
 private:
    ros::Timer timer;
@@ -132,59 +151,50 @@ private:
    float limited_target_vel;
    float max_vel;
    double node_cur_time;
-
-
+   std_msgs::UInt16MultiArray pid_output_msg;
 
    int manage_mode(unsigned int getset, unsigned int *state) {
-      static unsigned int current_state = GROUND;
+      static unsigned int current_mode = MODE_GROUND;
       static int is_changed = 0;
       int ret = 0;
       if (getset == GET) {
          ret = is_changed;
          is_changed = 0;
-         *state = current_state;
+         *state = current_mode;
       }
       else if (getset == SET) {
-         if ( current_state == MODE_TAKEOFF) PR_STATE(MODE_TAKEOFF);
-         if ( current_state == MODE_NAV) PR_STATE(MODE_NAV);
-         if ( current_state == MODE_MANUAL) PR_STATE(MODE_MANUAL);
-         if ( current_state == MODE_LANDING) PR_STATE(MODE_LANDING);
-         if ( current_state == GROUND) PR_STATE(GROUND);
-         if ( current_state == MODE_POSHOLD) PR_STATE(MODE_POSHOLD);
+         std::cout << "CURRENT MODE : " << mode_str[current_mode] << std::endl;
+         std::cout << "   TO   " << mode_str[*state] << std::endl;
 
-
-         if ( (*state == MODE_TAKEOFF && current_state != GROUND) ) {
+         if ( (*state == MODE_TAKEOFF && current_mode != MODE_GROUND) ) {
             std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
             return MANAGE_MODE_ERROR;
          }
-         if ( current_state == GROUND && *state != MODE_TAKEOFF ) {
+         if ( current_mode == MODE_GROUND && *state != MODE_TAKEOFF ) {
             std::cout << "NO PERMISSION" << std::endl;
             return MANAGE_MODE_ERROR;
          }
-
-         if ( current_state != *state)
+         if ( current_mode != *state)
             is_changed = 1;
 
+         current_mode = *state;
 
-         current_state = *state;
 
-         if ( current_state == MODE_TAKEOFF) PR_STATE2(MODE_TAKEOFF);
-         if ( current_state == MODE_NAV) PR_STATE2(MODE_NAV);
-         if ( current_state == MODE_MANUAL) PR_STATE2(MODE_MANUAL);
-         if ( current_state == MODE_LANDING) PR_STATE2(MODE_LANDING);
-         if ( current_state == GROUND) PR_STATE2(GROUND);
-         if ( current_state == MODE_POSHOLD) PR_STATE2(MODE_POSHOLD);
       }
       return ret;
    }
-
-
-
    int manage_target(unsigned int getset, float *x, float *y, float *z ) {
       static float current_target_x = 0;
       static float current_target_y = 0;
       static float current_target_z = 0;
       static int is_changed = 0;
+
+      float current_x = 0;
+      float current_y = 0;
+      float current_z = 0;
+
+      manage_current_pos(GET, &current_x, &current_y, &current_z);
+
       int ret = 0;
       if (getset == GET) {
          // std::cout << "GET the TARGET" <<current_target_x<<","<<current_target_x<<","<<current_target_x << std::endl;
@@ -196,8 +206,11 @@ private:
       }
       else if (getset == SET || getset == SET_TARGET ) {
          if (*y == 0 || *z == 0) {
-            std::cout << "SET the CURRENT TARGET" << std::endl;
-            return -1;
+            current_target_x = current_x;
+            current_target_y = current_y;
+            current_target_z = current_z;
+            std::cout << "ERROR TARGET. SET the CURRENT TARGET" << std::endl;
+            return MANAGE_TARGET_ERROR;
          }
          //do i consider the mode???
          if (getset == SET_TARGET)
@@ -233,15 +246,25 @@ private:
       }
       return ret;
    }
-
 // target_pos_vel_t *target;
 // pos_vel_t *current;
-
    void timerCallback(const ros::TimerEvent&) {
 
       if ( ros::Time::now().toSec() - node_cur_time > 1) {
-         unsigned int flight_mode = GROUND;
+         unsigned int flight_mode = MODE_LANDING;
          manage_mode(SET, &flight_mode);
+      }
+      if ( ros::Time::now().toSec() - node_cur_time > 2) {
+         unsigned int flight_mode = MODE_GROUND;
+         manage_mode(SET, &flight_mode);
+         //Write the pid_output
+         pid_output_msg.data[0] = 1500; // ROLL
+         pid_output_msg.data[1] = 1500;
+         pid_output_msg.data[3] = 1500;
+         pid_output_msg.data[2] = 1500;   // YAW
+         pid_output_msg.data[4] = 1050;
+         pid_out_pub.publish(pid_output_msg);
+
       }
       // update_param();
    }
@@ -249,7 +272,7 @@ private:
       static pos_vel_t current_X = {0,};
       static pos_vel_t current_Y = {0,};
       static pos_vel_t current_Z = {0,};
-      static unsigned int flight_mode = GROUND;
+      static unsigned int flight_mode = MODE_GROUND;
 
       static pid_calc_t pid_pos_X = {0, };
       static pid_calc_t pid_rate_X = {0, };
@@ -279,8 +302,7 @@ private:
       node_cur_time = ros::Time::now().toSec();
       int is_arm = 1000;
       // DECLARE the pid output
-      std_msgs::UInt16MultiArray pid_output_msg;
-      pid_output_msg.data.resize(5, 1000);
+
       // DECLARE the inner pid message
       geometry_msgs::Inertia pid_inner_y_msg;
       geometry_msgs::Inertia pid_inner_z_msg;
@@ -400,11 +422,11 @@ private:
          target_Z.target_vel = LANDING_SPEED;
          is_arm = 1950;
          if ( current_Z.cur_pos < ground_altitude + 60) {
-            flight_mode = GROUND;
+            flight_mode = MODE_GROUND;
             manage_mode(SET, &flight_mode);
          }
       }
-      if (flight_mode == GROUND) {
+      if (flight_mode == MODE_GROUND) {
          reset_PID(&pid_pos_X, 0.0);
          reset_PID(&pid_rate_X, 0.0);
          reset_PID(&pid_pos_Y, 0.0);
@@ -429,7 +451,7 @@ private:
 
    }
    void targetCallback(const geometry_msgs::Quaternion& msg) {
-      std::cout << "TARGET::" << std::endl;;
+      std::cout << "::TARGET MESSAGE::" << std::endl;;
       float target_x = msg.x;
       float target_y = msg.y;
       float target_z = msg.z;
@@ -440,17 +462,14 @@ private:
 
       manage_current_pos(GET, &current_x, &current_y, &current_z);
 
-      unsigned int mod = msg.w;
-      unsigned int tmp_mod = GROUND;
+      unsigned int mission = msg.w;
+      unsigned int tmp_mod = MODE_GROUND;
 
 
-      std::cout << ":: " << mod << std::endl;
-      if ( mod == TAKEOFF) PR_MOD(TAKEOFF);
-      if ( mod == MISSION_AUTO) PR_MOD(MISSION_AUTO);
-      if ( mod == MISSION_MANUAL) PR_MOD(MISSION_MANUAL);
-      if ( mod == LANDING) PR_MOD(LANDING);
+      std::cout << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
 
-      if (mod == TAKEOFF) {
+
+      if (mission == MISSION_TAKEOFF) {
          tmp_mod = MODE_TAKEOFF;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
             if (target_z)
@@ -460,40 +479,38 @@ private:
                manage_target(SET_TARGET, &current_x, &current_y, &current_z);
             }
       }
-      else if (mod == MISSION_AUTO) {
+      else if (mission == MISSION_AUTO) {
          tmp_mod = MODE_NAV;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
-            if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == -1) {
+            if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
                tmp_mod = MODE_POSHOLD;
                manage_mode(SET, &tmp_mod);
-               manage_target(SET_TARGET, &current_x, &current_y, &current_z);
+               //manage_target(SET_TARGET, &current_x, &current_y, &current_z);
             }
       }
-      else if (mod == MISSION_MANUAL) {
+      else if (mission == MISSION_MANUAL) {
          tmp_mod = MODE_MANUAL;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
             manage_target(SET_TARGET, &target_x, &target_y, &target_z);
       }
-      else if (mod == LANDING) {
+      else if (mission == MISSION_LANDING) {
          tmp_mod = MODE_LANDING;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
             target_z = -3000;
-            // std::cout << current_x << "," << current_y << "," << target_z << std::endl;
             manage_target(SET_TARGET, &current_x, &current_y, &target_z);
          }
       }
-      else if (mod == 111 || mod == 112) {
+      else if (mission == 111 || mission == 112) {
          tmp_mod = MODE_NAV;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
             current_x += target_x;
             current_y += target_y;
             current_z += target_z;
-            // std::cout << current_x << "," << current_y << "," << current_z << std::endl;
             manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
       }
-      else if (mod == MISSION_GROUND) {
-         tmp_mod = GROUND;
+      else if (mission == MISSION_GROUND) {
+         tmp_mod = MODE_GROUND;
          manage_mode(SET, &tmp_mod);
          manage_target(SET_TARGET, &current_x, &current_y, &current_z);
       }
@@ -561,10 +578,10 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
    // ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
    // ros::Subscriber target_sub = n.subscribe("/FIRST/TARGET_POS", 100, targetCallback);
-   PIDCALCULATION first();
-   PIDCALCULATION second();
-   PIDCALCULATION third();
-   PIDCALCULATION fourth();
+   PIDCONTROLLER first(0, 0);
+   PIDCONTROLLER second(0, 0);
+   PIDCONTROLLER third(0, 0);
+   PIDCONTROLLER fourth(0, 0);
 
    ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    spinner.spin(); // spin() will not return until the node has been shutdown

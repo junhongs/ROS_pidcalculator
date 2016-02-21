@@ -524,7 +524,7 @@ int main(int argc, char **argv) {
 						target_msgs.x = 0;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
-						target_msgs.w = TAKEOFF;
+						target_msgs.w = MISSION_TAKEOFF;
 					}
 					if (  ( mod_command == "2" || mod_command == "M" ) ) {
 
@@ -545,7 +545,7 @@ int main(int argc, char **argv) {
 						target_msgs.x = 0;
 						target_msgs.y = 0;
 						target_msgs.z = 0;
-						target_msgs.w = LANDING;
+						target_msgs.w = MISSION_LANDING;
 					}
 
 					if (  ( mod_command == "W" )) {
