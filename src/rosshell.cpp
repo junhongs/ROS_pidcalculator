@@ -551,34 +551,34 @@ int main(int argc, char **argv) {
 					if (  ( mod_command == "W" )) {
 
 						target_msgs.x = 500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}
 					if (  ( mod_command == "E" )) {
 
 						target_msgs.x = -500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}
 					if (  ( mod_command == "N" )) {
 
 						target_msgs.y = -500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}
 
 					if (  ( mod_command == "S" )) {
 
 						target_msgs.y = 500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}
 					if (  ( mod_command == "U" )) {
 
 						target_msgs.z = 500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}
 
 					if (  ( mod_command == "D" )) {
 
 						target_msgs.z = -500;
-						target_msgs.w = 111;
+						target_msgs.w = MISSION_AUX;
 					}	
 				}
 				// std::cout << target_msgs.x << "," << target_msgs.y << "," << target_msgs.z <<std::endl;

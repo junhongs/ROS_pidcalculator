@@ -23,7 +23,6 @@
 #include "param.h"
 #include "calculation.h"
 
-#define PR_MOD(N) std::cout << "MSG MODE :: " << #N << std::endl;
 
 #define GROUND_ALTITUDE -2700
 #define MANAGE_MODE_ERROR -1
@@ -32,14 +31,15 @@
 static const float TAKEOFF_SPEED = 200;
 static const float LANDING_SPEED = -200;
 
-std::string mission_str[MISSION_GROUND + 1] =
+std::string mission_str[MISSION_AUX + 1] =
 {
    "MISSION_TAKEOFF",
    "MISSION_AUTO",
    "MISSION_MANUAL",
    "MISSION_LANDING",
    "MISSION_AUTO_N",
-   "MISSION_GROUN"
+   "MISSION_GROUND",
+   "MISSION_AUX"
 };
 std::string mode_str[MODE_GROUND + 1] =
 {
@@ -111,7 +111,7 @@ class PIDCONTROLLER
 {
 public:
    PIDCONTROLLER(int x_off, int y_off) :
-      x_offset(x_off), y_offset(y_off), limited_target_vel(300), max_vel(200)
+      x_offset(x_off), y_offset(y_off), limited_target_vel(400), max_vel(200)
    {
       pid_output_msg.data.resize(5, 1000);
 
@@ -134,6 +134,8 @@ public:
       pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
       position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
       target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
+
+      reboot_drone();
    }
 private:
    ros::Timer timer;
@@ -157,7 +159,7 @@ private:
       static unsigned int current_mode = MODE_GROUND;
       static int is_changed = 0;
       int ret = 0;
-      if(getset == *state)
+      if (getset == *state)
          return ret;
 
 
@@ -228,8 +230,8 @@ private:
    }
    int manage_current_pos(unsigned int getset, float *x, float *y, float *z ) {
       static float current_position_x = 0;
-      static float current_position_y = 0;
-      static float current_position_z = 0;
+      static float current_position_y = 500;
+      static float current_position_z = GROUND_ALTITUDE;
       static int is_changed = 0;
 
       int ret = 0;
@@ -416,6 +418,7 @@ private:
          is_arm = 1950;
       }
       else if (flight_mode == MODE_LANDING) {
+         target_Z.target_vel = LANDING_SPEED;
          navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_pos_param_Z, &pid_rate_param_Z, is_changed_target);
          if (pid_rate_Z.output < 0) {
             reset_I(&pid_rate_X, 0);
@@ -423,7 +426,7 @@ private:
          }
          pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_pos_param_X, &pid_rate_param_X);
          pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_pos_param_Y, &pid_rate_param_Y);
-         target_Z.target_vel = LANDING_SPEED;
+
          is_arm = 1950;
          if ( current_Z.cur_pos < ground_altitude + 60) {
             flight_mode = MODE_GROUND;
@@ -454,6 +457,16 @@ private:
       pid_out_pub.publish(pid_output_msg);
 
    }
+
+   void reboot_drone(){
+      pid_output_msg.data[0] = 1500; // ROLL
+      pid_output_msg.data[1] = 1500; // PITCH
+      pid_output_msg.data[3] = 0; // THROTTLE
+      pid_output_msg.data[2] = 1500;   // YAW
+      pid_output_msg.data[4] = 500;
+      pid_out_pub.publish(pid_output_msg);
+   }
+
    void targetCallback(const geometry_msgs::Quaternion& msg) {
       std::cout << "::TARGET MESSAGE::" << std::endl;;
       float target_x = msg.x;
@@ -466,12 +479,11 @@ private:
 
       manage_current_pos(GET, &current_x, &current_y, &current_z);
 
-      unsigned int mission = msg.w;
+      unsigned int mission = (unsigned int)msg.w;
       unsigned int tmp_mod = MODE_GROUND;
 
-
-      std::cout << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
-
+      if ( mission <= MISSION_AUX )
+         std::cout << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
 
       if (mission == MISSION_TAKEOFF) {
          tmp_mod = MODE_TAKEOFF;
@@ -504,7 +516,7 @@ private:
             manage_target(SET_TARGET, &current_x, &current_y, &target_z);
          }
       }
-      else if (mission == 111 || mission == 112) {
+      else if (mission == MISSION_AUX ) {
          tmp_mod = MODE_NAV;
          if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
             current_x += target_x;
