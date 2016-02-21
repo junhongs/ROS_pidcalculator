@@ -5,10 +5,7 @@
 #include "std_msgs/Float32.h"
 #include "geometry_msgs/Point.h"
 #include "geometry_msgs/PointStamped.h"
-
 #include "geometry_msgs/Quaternion.h"
-
-
 #include "pcl_msgs/ModelCoefficients.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
@@ -350,7 +347,7 @@ void keyLoop() {
 
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
-	key_debug("QUIT THE PROGRAM\n");
+	key_debug("\nQUIT THE PROGRAM\n");
 	return;
 }
 
@@ -519,83 +516,6 @@ int main(int argc, char **argv) {
 				target_msgs.y = 0;
 				target_msgs.z = 0;
 				target_msgs.w = MISSION_AUTO;
-
-				// if ( argvector.size() > 1 ) {
-				// 	if (  (argvector[1] == "1" || argvector[1] == "T" ) ) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = TAKEOFF;
-				// 	}
-				// 	if (  ( argvector[1] == "2" || argvector[1] == "M" ) ) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = MISSION_MANUAL;
-				// 	}
-				// 	if (  ( argvector[1] == "3" || argvector[1] == "A" ) ) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = MISSION_AUTO;
-				// 	}
-				// 	if (  ( argvector[1] == "4" || argvector[1] == "L" ) ) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = LANDING;
-				// 	}
-
-				// 	if (  ( argvector[1] == "W" )) {
-
-				// 		target_msgs.x = 500;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = 111;
-				// 	}
-
-				// 	if (  ( argvector[1] == "E" )) {
-
-				// 		target_msgs.x = -500;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = 111;
-				// 	}
-				// 	if (  ( argvector[1] == "N" )) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = -500;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = 111;
-				// 	}
-
-				// 	if (  ( argvector[1] == "S" )) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 500;
-				// 		target_msgs.z = 0;
-				// 		target_msgs.w = 111;
-				// 	}
-				// 	if (  ( argvector[1] == "U" )) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = 500;
-				// 		target_msgs.w = 111;
-				// 	}
-
-				// 	if (  ( argvector[1] == "D" )) {
-
-				// 		target_msgs.x = 0;
-				// 		target_msgs.y = 0;
-				// 		target_msgs.z = -500;
-				// 		target_msgs.w = 111;
-				// 	}	
-				// }
 				while ( argvector.size() > 1 ) {
 					std::string mod_command = argvector.back();
 					argvector.pop_back();

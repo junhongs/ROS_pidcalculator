@@ -171,6 +171,15 @@ double *get_param_n(int pr, int xyz, int pidi) {
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
 
+double *get_param_n(int nav, int pr, int xyz, int pidi) {
+   int n = get_param_num(nav, pr, xyz, pidi);
+   return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
+}
+
+
+
+
+
 double *get_default_param_n(int n) {
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
@@ -178,9 +187,21 @@ double *get_default_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
+double *get_default_param_n(int nav, int pr, int xyz, int pidi) {
+   int n = get_param_num(pr, xyz, pidi);
+   return &((&(((&(pid_default_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
+}
+
+
+
+
 
 int get_param_num(int pr, int xyz, int pidi) {
    return pr * 4 + xyz * 8 + pidi;
+}
+
+int get_param_num(int nav, int pr, int xyz, int pidi) {
+   return nav * 24 + pr * 4 + xyz * 8 + pidi;
 }
 
 
@@ -189,6 +210,10 @@ void set_param_n(int n, double data) {
 }
 void set_param_n(int pr, int xyz, int pidi, double data) {
    int n = get_param_num(pr, xyz, pidi);
+   ros::param::set(param_list[n], data);
+}
+void set_param_n(int nav, int pr, int xyz, int pidi, double data) {
+   int n = get_param_num(nav, pr, xyz, pidi);
    ros::param::set(param_list[n], data);
 }
 
@@ -216,7 +241,6 @@ void reset_param() {
 
 }
 void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
-
    if (ros::param::has(param_name)) {
       ros::param::get(param_name, *param_ptr);
       *default_ptr = *param_ptr;

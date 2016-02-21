@@ -47,16 +47,20 @@ void update_param();
 void init_param(std::string&, double *, double *);
 void init_param();
 
-int get_param_num(int pr, int xyz, int pidi);
-double *get_param_n(int n);
-double *get_param_n(int pr, int xyz, int pidi);
+int get_param_num(int , int, int);
+int get_param_num(int , int, int, int);
+double *get_param_n(int );
+double *get_param_n(int , int , int);
+double *get_param_n(int, int, int, int);
 
-double *get_default_param_n(int n);
-double *get_default_param_n(int pr, int xyz, int pidi);
+double *get_default_param_n(int );
+double *get_default_param_n(int , int, int);
+double *get_default_param_n(int , int, int, int);
 
 
-void set_param_n(int n, double data);
-void set_param_n(int pr, int xyz, int pidi, double data);
+void set_param_n(int , double);
+void set_param_n(int , int , int , double);
+void set_param_n(int, int, int, int, double);
 
 extern char param_list[][50];
 extern pos_pid_parameter_t pid_param;

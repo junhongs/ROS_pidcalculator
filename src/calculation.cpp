@@ -290,8 +290,6 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
    pid_inner_msg.izz = pid_rate->output;
    pid_inner_pub->publish(pid_inner_msg);
-
-
 }
 
 
