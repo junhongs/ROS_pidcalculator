@@ -580,6 +580,10 @@ int main(int argc, char **argv) {
 						target_msgs.z = -500;
 						target_msgs.w = MISSION_AUX;
 					}
+					if (  ( mod_command == "G" )) {
+
+						target_msgs.w = MISSION_GROUND;
+					}					
 					if (  ( mod_command == "RESET" )) {
 
 						target_msgs.x = 500;

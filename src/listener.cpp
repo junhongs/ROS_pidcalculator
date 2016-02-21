@@ -326,7 +326,6 @@ private:
 
       int ground_altitude = GROUND_ALTITUDE;
 
-      manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
       current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
       current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
 
@@ -352,6 +351,7 @@ private:
       velocity_msg.z = current_Z.cur_vel;
       velocity_pub.publish(velocity_msg);
 
+      manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
       if ( node_cur_time - node_last_time > 3.0 ) {
          flight_mode = MODE_GROUND;
          manage_mode(SET, &flight_mode);
