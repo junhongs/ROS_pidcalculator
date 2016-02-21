@@ -233,7 +233,7 @@ private:
    int manage_current_pos(unsigned int getset, float *x, float *y, float *z ) {
       static float current_position_x = 0;
       static float current_position_y = 500;
-      static float current_position_z = GROUND_ALTITUDE;
+      static float current_position_z = -2000;
       static int is_changed = 0;
 
       int ret = 0;
@@ -344,6 +344,15 @@ private:
       // current_X.cur_vel = get_lpf(&(current_X.lpf), 2);
       // current_Y.cur_vel = get_lpf(&(current_Y.lpf), 2);
       // current_Z.cur_vel = get_lpf(&(current_Z.lpf), 5);
+
+      /* Position Low Pass Filter*/
+      current_X.lpf.input = current_X.cur_pos;
+      current_Y.lpf.input = current_Y.cur_pos;
+      current_Z.lpf.input = current_Z.cur_pos;
+      current_X.cur_pos = get_lpf(&(current_X.lpf), 4);
+      current_Y.cur_pos = get_lpf(&(current_Y.lpf), 3);
+      current_Z.cur_pos = get_lpf(&(current_Z.lpf), 5);
+
 
       geometry_msgs::Point velocity_msg;
       velocity_msg.x = current_X.cur_vel;
