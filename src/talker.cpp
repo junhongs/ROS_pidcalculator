@@ -56,12 +56,9 @@ void calc_velocity( pos_vel_t* pos_vel) {
 
 }
 #endif
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
 	ros::init(argc, argv, "talker");
-
 	ros::NodeHandle n;
-
 	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 100);
 	ros::Publisher chat_float_pub = n.advertise<std_msgs::Float32>("generate_sin_pulse", 100);
 	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
