@@ -527,9 +527,9 @@ int main(int argc, char **argv) {
    PIDCONTROLLER third(0, 0);
    PIDCONTROLLER fourth(0, 0);
 
-   // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
-   // spinner.spin(); // spin() will not return until the node has been shutdown
+   ros::MultiThreadedSpinner spinner(4); // Use 4 threads
+   spinner.spin(); // spin() will not return until the node has been shutdown
 
-   ros::spin();
+   // ros::spin();
    return 0;
 }
