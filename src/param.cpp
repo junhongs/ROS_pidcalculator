@@ -246,7 +246,7 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
       *default_ptr = *param_ptr;
    }
    else {
-      std::cout << *default_ptr << std::endl;
+      // std::cout << *default_ptr << std::endl;
       ros::param::set(param_name, *default_ptr);
       
       *param_ptr = *default_ptr;

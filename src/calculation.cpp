@@ -4,6 +4,32 @@
 
 #include <iostream>
 using namespace std;
+std::string mission_str[MISSION_AUX + 1] =
+{
+   "MISSION_TAKEOFF",
+   "MISSION_AUTO",
+   "MISSION_MANUAL",
+   "MISSION_LANDING",
+   "MISSION_AUTO_N",
+   "MISSION_GROUND",
+   "MISSION_RESET",
+   "MISSION_AUX"
+};
+std::string mode_str[MODE_GROUND + 1] =
+{
+   "MODE_TAKEOFF",
+   "MODE_NAV",
+   "MODE_MANUAL",
+   "MODE_LANDING",
+   "MODE_POSHOLD",
+   "MODE_GROUND"
+};
+std::string DRONE[4] = {
+   "/FIRST",
+   "/SECOND",
+   "/THIRD",
+   "/FOURTH"
+};
 
 
 int get_lpf(lpf_t *lpf, int lpf_hz = 15) {
