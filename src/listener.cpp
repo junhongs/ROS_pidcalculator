@@ -56,21 +56,17 @@ SERVICE{
 */
 static ros::Publisher float_pub;
 
-
 void positionCallback(const std_msgs::Float32& msg) {
-
-
 }
+
 void paramCallback(const std_msgs::Int32& msg) {
    update_param(msg.data);
    std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
 }
 
-
 int main(int argc, char **argv) {
    ros::init(argc, argv, "listener");
    ros::NodeHandle n;
-   // init_param(&pid_param);
    init_param();
 
    // Creat Timer to update the parameter.
@@ -80,10 +76,10 @@ int main(int argc, char **argv) {
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
-   PIDCONTROLLER first(0, 0);
-   PIDCONTROLLER second(0, 0);
-   PIDCONTROLLER third(0, 0);
-   PIDCONTROLLER fourth(0, 0);
+   PIDCONTROLLER first("/FIRST",0, 0);
+   PIDCONTROLLER second("/SECOND",0, 0);
+   PIDCONTROLLER third("/THIRD",0, 0);
+   PIDCONTROLLER fourth("/FOURTH",0, 0);
 
    ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    spinner.spin(); // spin() will not return until the node has been shutdown

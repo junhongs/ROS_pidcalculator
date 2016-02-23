@@ -23,12 +23,7 @@ std::string mode_str[MODE_GROUND + 1] =
    "MODE_POSHOLD",
    "MODE_GROUND"
 };
-std::string DRONE[4] = {
-   "/FIRST",
-   "/SECOND",
-   "/THIRD",
-   "/FOURTH"
-};
+
 
 float get_lpf(lpf_t *lpf, int lpf_hz = 15) {
    if (!lpf->last_time || !lpf_hz) {
@@ -66,7 +61,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    if (pid->cycle_time) {
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
    }
-   #define PID_FILTER       (1.0f / (2.0f * M_PI * (float)3))
+#define PID_FILTER       (1.0f / (2.0f * M_PI * (float)3))
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
    // update state
    pid->last_error = pid->error;
@@ -78,7 +73,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 static float get_D_L(pid_calc_t *pid, pid_parameter_t *pid_param) {
    if (pid->cycle_time)
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
-   #define PID_FILTER_L       (1.0f / (2.0f * M_PI * (float)0.5))
+#define PID_FILTER_L       (1.0f / (2.0f * M_PI * (float)0.5))
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER_L + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
    pid->last_error = pid->error;
    pid->last_derivative = pid->derivative;
@@ -145,32 +140,24 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
    pid->output += pid->inner_i = get_I(pid, pid_param);
    pid->output += pid->inner_d = constrain( get_D(pid, pid_param), -200.0 , 200.0);
-   pid->output += pid->inner_d = constrain( get_D_L(pid, pid_param), -200.0 , 200.0);   
+   pid->output += pid->inner_d = constrain( get_D_L(pid, pid_param), -200.0 , 200.0);
 }
 
-void calc_velocity( pos_vel_t* pos_vel) {
+void calc_velocity( pos_vel_t* current) {
    const int is_lpf = 1;
-   if (pos_vel->last_time && pos_vel->cur_time) {
-      pos_vel->cycle_time = pos_vel->cur_time - pos_vel->last_time;
-
-      //if ros's cycle period is fast (in my case, about 1000hz), sometime the cycle period might have some noize over 30% of the period time. it must be corrected.
-      // if( pos_vel->cycle_time > 0.0013 || pos_vel->cycle_time < 0.0007){
-      //         pos_vel->last_vel = pos_vel->cur_vel;
-      //         pos_vel->last_time = pos_vel->cur_time;
-      //         pos_vel->last_pos = pos_vel->cur_pos;
-      //     return;
-      // }
+   if (current->last_time && current->cur_time) {
+      current->cycle_time = current->cur_time - current->last_time;
    }
-   if (pos_vel->cycle_time){
-      pos_vel->cur_vel = pos_vel->cur_pos - pos_vel->last_pos;
-      pos_vel->cur_vel /= pos_vel->cycle_time;
+   if (current->cycle_time) {
+      current->cur_vel = current->cur_pos - current->last_pos;
+      current->cur_vel /= current->cycle_time;
    }
-   pos_vel->cur_vel_raw = pos_vel->cur_vel;
+   current->cur_vel_raw = current->cur_vel;
    if ( is_lpf )
-      pos_vel->cur_vel = ( pos_vel->cur_vel + pos_vel->last_vel) / 2;
-   pos_vel->last_vel = pos_vel->cur_vel;
-   pos_vel->last_time = pos_vel->cur_time;
-   pos_vel->last_pos = pos_vel->cur_pos;
+      current->cur_vel = ( current->cur_vel + current->last_vel) / 2.0f;
+   current->last_vel = current->cur_vel;
+   current->last_time = current->cur_time;
+   current->last_pos = current->cur_pos;
 }
 
 void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, float nav_target_vel) {
@@ -289,14 +276,129 @@ void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
    }
 }
 
+
+// PIDCONTROLLER::PIDCONTROLLER(float x_off, float y_off) :
+//    x_offset(x_off), y_offset(y_off), limited_target_vel(400), max_vel(200)
+// {
+//    pid_output_msg.data.resize(5, 1000);
+
+//    std::string drone;
+//    drone_num = making_drone();
+//    if (drone_num <= 4)
+//       drone = DRONE[drone_num];
+//    std::cout << "initializing.." << drone << std::endl;
+//    std::string current_vel = drone + "/CURRENT_VEL";
+//    std::string output_pid = drone +  "/OUTPUT_PID";
+//    std::string output_inner_pid_x = drone + "/OUTPUT_INNER_PID/X";
+//    std::string output_inner_pid_y = drone + "/OUTPUT_INNER_PID/Y";
+//    std::string output_inner_pid_z = drone + "/OUTPUT_INNER_PID/Z";
+//    std::string current_pos = drone + "/CURRENT_POS";
+//    std::string target_pos = drone + "/TARGET_POS";
+
+//    velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
+//    // timer = nod.createTimer(ros::Duration(0.08), &PIDCONTROLLER::timerCallback, this);
+//    pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
+//    pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
+//    pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
+//    pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
+//    position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
+//    target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
+
+//    current_mode = MODE_GROUND;
+//    is_changed_manage_mode = 0;
+//    is_changed_manage_target = 0;
+//    is_changed_manage_current_pos = 0;
+
+//    target_pos_x = 0;
+//    target_pos_y = 0;
+//    target_pos_z = 0;
+
+//    current_target_x = 0;
+//    current_target_y = 0;
+//    current_target_z = 0;
+
+//    current_position_x = 0;
+//    current_position_y = 500;
+//    current_position_z = -2000;
+
+//    tim1_timer = 0;
+//    tim2_timer = 0;
+
+//    flight_mode_position_callback = MODE_GROUND;
+
+//    pid_rate_Z.integrator = -500;
+
+//    node_cur_time = 0;
+//    node_last_time = 0;
+// }
+PIDCONTROLLER::~PIDCONTROLLER() {
+
+}
+PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
+   x_offset(x_off),
+   y_offset(y_off),
+   limited_target_vel(400),
+   max_vel(200),
+
+   is_changed_manage_mode(0),
+   is_changed_manage_target(0),
+   is_changed_manage_current_pos(0),
+
+   target_pos_x(0),
+   target_pos_y(0),
+   target_pos_z(0),
+
+   current_target_x(0),
+   current_target_y(0),
+   current_target_z(0),
+
+   current_position_x(0),
+   current_position_y(500),
+   current_position_z(-2000),
+
+   tim1_timer(0),
+   tim2_timer(0),
+
+   current_mode(MODE_GROUND),
+   flight_mode_position_callback(MODE_GROUND),
+
+   node_cur_time(0),
+   node_last_time(0),
+   ground_altitude(GROUND_ALTITUDE)
+{
+   pid_output_msg.data.resize(5, 1000);
+
+   drone_num = making_drone();
+
+   drone = DRONE;
+
+   std::cout << "initializing.." << drone << std::endl;
+   std::string current_vel = drone + "/CURRENT_VEL";
+   std::string output_pid = drone +  "/OUTPUT_PID";
+   std::string output_inner_pid_x = drone + "/OUTPUT_INNER_PID/X";
+   std::string output_inner_pid_y = drone + "/OUTPUT_INNER_PID/Y";
+   std::string output_inner_pid_z = drone + "/OUTPUT_INNER_PID/Z";
+   std::string current_pos = drone + "/CURRENT_POS";
+   std::string target_pos = drone + "/TARGET_POS";
+
+   velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
+   // timer = nod.createTimer(ros::Duration(0.08), &PIDCONTROLLER::timerCallback, this);
+   pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
+   pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
+   pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
+   pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
+   position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
+   target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
+
+   pid_rate_Z.integrator = -500;
+}
+
 int PIDCONTROLLER::making_drone() {
    static int making_drone_num = 0;
    return making_drone_num++;
 }
 
 int PIDCONTROLLER::manage_mode(unsigned int getset, unsigned int *state) {
-   // static unsigned int current_mode = MODE_GROUND;
-   // static int is_changed_manage_mode = 0;
    int ret = 0;
 
    // if( current_mode <= MODE_GROUND && *state <= MODE_GROUND)
@@ -310,15 +412,14 @@ int PIDCONTROLLER::manage_mode(unsigned int getset, unsigned int *state) {
       *state = current_mode;
    }
    else if (getset == SET || getset == SET_TIMER) {
-      std::cout << "CURRENT MODE : " << mode_str[current_mode] << std::endl;
-      std::cout << "   TO   " << mode_str[*state] << std::endl;
+      std::cout << drone << ":" << "CURRENT MODE : " << mode_str[current_mode] << ":" << "   TO   " << mode_str[*state] << std::endl;;
 
       if ( (*state == MODE_TAKEOFF && current_mode != MODE_GROUND) ) {
-         std::cout << "NO PERMISSION to TAKEOFF" << std::endl;
+         std::cout << drone << ":" << "NO PERMISSION to TAKEOFF" << std::endl;
          return MANAGE_MODE_ERROR;
       }
       if ( current_mode == MODE_GROUND && *state != MODE_TAKEOFF ) {
-         std::cout << "NO PERMISSION" << std::endl;
+         std::cout << drone << ":" << "NO PERMISSION" << std::endl;
          return MANAGE_MODE_ERROR;
       }
       if ( current_mode != *state)
@@ -327,19 +428,15 @@ int PIDCONTROLLER::manage_mode(unsigned int getset, unsigned int *state) {
    }
    return ret;
 }
+
 int PIDCONTROLLER::manage_target(unsigned int getset, float *x, float *y, float *z ) {
-   // static float current_target_x = 0;
-   // static float current_target_y = 0;
-   // static float current_target_z = 0;
-   // static int is_changed_manage_target = 0;
    float current_x = 0;
    float current_y = 0;
    float current_z = 0;
    manage_current_pos(GET, &current_x, &current_y, &current_z);
-
    int ret = 0;
    if (getset == GET) {
-      // std::cout << "GET the TARGET" <<current_target_x<<","<<current_target_x<<","<<current_target_x << std::endl;
+      // std::cout << drone << ":" <<"GET the TARGET" <<current_target_x<<","<<current_target_x<<","<<current_target_x << std::endl;
       ret = is_changed_manage_target;
       *x = current_target_x;
       *y = current_target_y;
@@ -351,7 +448,7 @@ int PIDCONTROLLER::manage_target(unsigned int getset, float *x, float *y, float 
          current_target_x = current_x;
          current_target_y = current_y;
          current_target_z = current_z;
-         std::cout << "ERROR TARGET. SET the CURRENT POSITION" << std::endl;
+         std::cout << drone << ":" << "ERROR TARGET. SET the CURRENT POSITION" << std::endl;
          return MANAGE_TARGET_ERROR;
       }
       //do i consider the mode???
@@ -360,18 +457,12 @@ int PIDCONTROLLER::manage_target(unsigned int getset, float *x, float *y, float 
       current_target_x = *x;
       current_target_y = *y;
       current_target_z = *z;
-      std::cout << "SET the TARGET" << current_target_x << "," << current_target_y << "," << current_target_z << std::endl;
+      std::cout << drone << ":" << "SET the TARGET" << current_target_x << "," << current_target_y << "," << current_target_z << std::endl;
    }
    return ret;
 }
 int PIDCONTROLLER::manage_current_pos(unsigned int getset, float *x, float *y, float *z ) {
-   // static float current_position_x = 0;
-   // static float current_position_y = 500;
-   // static float current_position_z = -2000;
-   // static int is_changed_manage_current_pos = 0;
-
    int ret = 0;
-
    if (getset == GET) {
       ret = is_changed_manage_current_pos;
       *x = current_position_x;
@@ -391,12 +482,9 @@ int PIDCONTROLLER::manage_current_pos(unsigned int getset, float *x, float *y, f
 // target_pos_vel_t *target;
 // pos_vel_t *current;
 void PIDCONTROLLER::timerCallback(const ros::TimerEvent&) {
-
-   // static int tim1_timer = 0, tim2_timer = 0;
-
    if ( ros::Time::now().toSec() - node_cur_time > 2 ) {
       if (!tim2_timer && node_cur_time) {
-         std::cout << drone_num <<"," <<tim2_timer <<":No Coordinate after 2 min" << std::endl;
+         std::cout << drone << ":" << drone_num << "," << tim2_timer << ":No Coordinate after 2 min" << std::endl;
          tim2_timer = 1;
          unsigned int flight_mode = MODE_GROUND;
          manage_mode(SET_TIMER, &flight_mode);
@@ -411,14 +499,14 @@ void PIDCONTROLLER::timerCallback(const ros::TimerEvent&) {
    }
    else if ( ros::Time::now().toSec() - node_cur_time > 1 ) {
       if (!tim1_timer && node_cur_time) {
-         std::cout << drone_num <<"," <<tim2_timer<< ":No Coordinate after 1 min" << std::endl;
+         std::cout << drone << ":" << drone_num << "," << tim2_timer << ":No Coordinate after 1 min" << std::endl;
          tim1_timer = 1;
          unsigned int flight_mode = MODE_LANDING;
          manage_mode(SET_TIMER, &flight_mode);
       }
    }
    else {
-      std::cout << drone_num <<"," <<tim2_timer<<  ":release" << std::endl;
+      std::cout << drone << ":" << drone_num << "," << tim2_timer <<  ":release" << std::endl;
       tim1_timer = 0;
       tim2_timer = 0;
    }
@@ -426,55 +514,9 @@ void PIDCONTROLLER::timerCallback(const ros::TimerEvent&) {
    // update_param();
 }
 void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
-   // static pos_vel_t current_X = {0,};
-   // static pos_vel_t current_Y = {0,};
-   // static pos_vel_t current_Z = {0,};
-   // static unsigned int flight_mode_position_callback = MODE_GROUND;
-
-   // static pid_calc_t pid_pos_X = {0, };
-   // static pid_calc_t pid_rate_X = {0, };
-   // static target_pos_vel_t target_X = {0, };
-   // //Y
-   // static pid_calc_t pid_pos_Y = {0, };
-   // static pid_calc_t pid_rate_Y = {0, };
-   // static target_pos_vel_t target_Y = {0, };
-   // //Z
-   // static pid_calc_t pid_pos_Z = {0, };
-   // static pid_calc_t pid_rate_Z = {0, 0, 0, -500, 0, 0, 0, 0, 0, 0};
-   // //pid_rate_Z.integrator = -500;
-   // static target_pos_vel_t target_Z = {0, };
-
-   // static double node_last_time = 0;
-
-   // static float target_pos_x = 0;
-   // static float target_pos_y = 0;
-   // static float target_pos_z = 0;
-
-
-   /*
-    *       Check and save the time.
-    *       Calculate the velocity
-    *       Publish the velocity
-    */
    node_cur_time = ros::Time::now().toSec();
+
    int is_arm = 1000;
-   // DECLARE the pid output
-
-   // DECLARE the inner pid message
-   geometry_msgs::Inertia pid_inner_y_msg;
-   geometry_msgs::Inertia pid_inner_z_msg;
-   // DECLARE the X, Y, Z pid calculation variables.
-   //X
-   /*
-         1. restrict the target velocity by 200.   OK
-         2. set the target_position.               OK
-   */
-   //JUST ADD MY TARGET VELOCITY. PLEASE CHANGE LATER
-
-   //JUST ADD MY TARGET POSITION. PLEASE CHANGE LATER
-
-   int ground_altitude = GROUND_ALTITUDE;
-
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
    current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
 
@@ -515,7 +557,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    //    manage_mode(SET, &flight_mode_position_callback);
    //    static int is_first = 0;
    //    if (is_first) {
-   //       std::cout << "Position Input has been delayed more than 3 seconds." << std::endl;
+   //       std::cout << drone << ":" <<"Position Input has been delayed more than 3 seconds." << std::endl;
    //    }
    //    is_first = 1;
    // }
@@ -623,7 +665,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 }
 
 void PIDCONTROLLER::reboot_drone() {
-   std::cout << "RESET_VALUE" << std::endl;
+   std::cout << drone << ":" << "RESET_VALUE" << std::endl;
    pid_output_msg.data[0] = 1500; // ROLL
    pid_output_msg.data[1] = 1500; // PITCH
    pid_output_msg.data[3] = 1000; // THROTTLE
@@ -633,7 +675,7 @@ void PIDCONTROLLER::reboot_drone() {
 }
 
 void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
-   std::cout << "::TARGET MESSAGE::" << std::endl;;
+   std::cout << drone << ":" << "::TARGET MESSAGE::" << std::endl;;
    float target_x = msg.x;
    float target_y = msg.y;
    float target_z = msg.z;
@@ -648,13 +690,13 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    unsigned int tmp_mod = MODE_GROUND;
 
    if ( mission <= MISSION_AUX )
-      std::cout << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
+      std::cout << drone << ":" << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
 
    if (mission == MISSION_TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
 
       if (current_z > GROUND_ALTITUDE + 100 ) {
-         std::cout << "NOT THE GROUND" << std::endl;
+         std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
       }
 
       if ( manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )

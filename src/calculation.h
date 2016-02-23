@@ -41,7 +41,7 @@ public:
    double last_time;
    double cycle_time;
    float lpf_filter;
-   int lpf_hz;
+   float lpf_hz;
 } ;
 
 class lpf_c {
@@ -123,14 +123,16 @@ public:
    }
    float cur_pos;
    float cur_vel;
+   double cur_time;
+
    float last_pos;
    float last_vel;
-   double cur_time;
    double last_time;
+   
    double cycle_time;
    float cur_vel_raw;
    lpf_t lpf;
-} ;
+};
 
 struct target_pos_vel_t {
 public:
@@ -140,7 +142,7 @@ public:
    }
    float target_pos;
    float target_vel;
-} ;
+};
 
 enum flight_mode_e {
    MODE_TAKEOFF,
@@ -172,82 +174,34 @@ enum {
 extern std::string DRONE[4];
 extern std::string mission_str[MISSION_AUX + 1];
 extern std::string mode_str[MODE_GROUND + 1];
-void reset_PID(pid_calc_t *, float);
-void reset_I(pid_calc_t *, float);
+void  reset_PID(pid_calc_t *, float);
+void  reset_I(pid_calc_t *, float);
+
 float calc_dist(float, float, float, float, float, float);
-void calc_velocity( pos_vel_t* pos_vel);
-void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
-void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
-void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
-int constrain(int amt, int low, int high);
+void  calc_velocity( pos_vel_t* pos_vel);
+void  calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
+void  calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current);
+void  calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
+
+void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
+void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
+void  calc_takeoff_altitude(pid_calc_t *);
+void  calc_takeoff_altitude_once(pid_calc_t *, int);
+
+int   constrain(int amt, int low, int high);
 float constrain(float amt, float low, float high);
-void pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
-void manual(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, float);
-void navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, int);
-void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
-void calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
-void calc_takeoff_altitude(pid_calc_t *);
-void calc_takeoff_altitude_once(pid_calc_t *, int);
+
+void  pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
+void  manual(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, float);
+void  navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, int);
 
 float get_lpf(lpf_t *, int);
 
 class PIDCONTROLLER
 {
 public:
-   PIDCONTROLLER(float x_off, float y_off) :
-      x_offset(x_off), y_offset(y_off), limited_target_vel(400), max_vel(200)
-   {
-      pid_output_msg.data.resize(5, 1000);
-
-      std::string drone;
-      drone_num = making_drone();
-      if (drone_num <= 4)
-         drone = DRONE[drone_num];
-      std::cout << "initializing.." << drone << std::endl;
-      std::string current_vel = drone + "/CURRENT_VEL";
-      std::string output_pid = drone +  "/OUTPUT_PID";
-      std::string output_inner_pid_x = drone + "/OUTPUT_INNER_PID/X";
-      std::string output_inner_pid_y = drone + "/OUTPUT_INNER_PID/Y";
-      std::string output_inner_pid_z = drone + "/OUTPUT_INNER_PID/Z";
-      std::string current_pos = drone + "/CURRENT_POS";
-      std::string target_pos = drone + "/TARGET_POS";
-
-      velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
-      // timer = nod.createTimer(ros::Duration(0.08), &PIDCONTROLLER::timerCallback, this);
-      pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
-      pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
-      pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
-      pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
-      position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
-      target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
-
-      current_mode = MODE_GROUND;
-      is_changed_manage_mode = 0;
-      is_changed_manage_target = 0;
-      is_changed_manage_current_pos = 0;
-
-      target_pos_x = 0;
-      target_pos_y = 0;
-      target_pos_z = 0;
-
-      current_target_x = 0;
-      current_target_y = 0;
-      current_target_z = 0;
-
-      current_position_x = 0;
-      current_position_y = 500;
-      current_position_z = -2000;
-
-      tim1_timer = 0; 
-      tim2_timer = 0;
-
-      flight_mode_position_callback = MODE_GROUND;
-
-      pid_rate_Z.integrator = -500;
-
-      node_cur_time = 0;
-      node_last_time = 0;
-   }
+   PIDCONTROLLER(std::string DRONE,float x_off, float y_off);
+   ~PIDCONTROLLER();
 private:
    ros::Timer timer;
    ros::Publisher velocity_pub;
@@ -258,48 +212,59 @@ private:
    ros::Subscriber position_sub;
    ros::Subscriber target_sub;
    ros::NodeHandle nod;
+
+   std::string drone;
+
+   int drone_num;
+
    float x_offset;
    float y_offset;
-   int drone_num;
-   float limited_target_vel;
+   
    float max_vel;
+   float limited_target_vel;
+   
    double node_cur_time;
+   double node_last_time;
+
    std_msgs::UInt16MultiArray pid_output_msg;
 
    unsigned int current_mode;
+   unsigned int flight_mode_position_callback;
+
+   int ground_altitude;
+
    int is_changed_manage_mode;
+   int is_changed_manage_target;
+   int is_changed_manage_current_pos;
 
    float current_target_x;
    float current_target_y;
    float current_target_z;
-   int is_changed_manage_target;
 
    float current_position_x;
    float current_position_y;
    float current_position_z;
-   int is_changed_manage_current_pos;
 
-   int tim1_timer, tim2_timer;
+   int tim1_timer;
+   int tim2_timer;
 
    pos_vel_t current_X;
    pos_vel_t current_Y;
    pos_vel_t current_Z;
-   unsigned int flight_mode_position_callback;
+
 
    pid_calc_t pid_pos_X;
-   pid_calc_t pid_rate_X;
-   target_pos_vel_t target_X;
-   //Y
    pid_calc_t pid_pos_Y;
-   pid_calc_t pid_rate_Y;
-   target_pos_vel_t target_Y;
-   //Z
    pid_calc_t pid_pos_Z;
+
+   pid_calc_t pid_rate_X;
+   pid_calc_t pid_rate_Y;
    pid_calc_t pid_rate_Z;
-   //pid_rate_Z.integrator;
+
+   target_pos_vel_t target_X;
+   target_pos_vel_t target_Y;
    target_pos_vel_t target_Z;
 
-   double node_last_time;
 
    float target_pos_x;
    float target_pos_y;
