@@ -30,6 +30,9 @@ static std::vector<std::string> argvector;
 
 static ros::Publisher param_pub;
 static ros::Publisher target_pub;
+static ros::Publisher target2_pub;
+static ros::Publisher target3_pub;
+static ros::Publisher target4_pub;
 
 static int is_received_float = 0;
 static float float_data = 0.0f;
@@ -340,6 +343,12 @@ int main(int argc, char **argv) {
 
 	param_pub = n.advertise<std_msgs::Int32>("/PARAM_CHANGE", 100);
 	target_pub = n.advertise<geometry_msgs::Quaternion>("/FIRST/TARGET_POS", 100);
+	target2_pub = n.advertise<geometry_msgs::Quaternion>("/SECOND/TARGET_POS", 100);
+	target3_pub = n.advertise<geometry_msgs::Quaternion>("/THIRD/TARGET_POS", 100);
+	target4_pub = n.advertise<geometry_msgs::Quaternion>("/FOURTH/TARGET_POS", 100);
+
+
+
 	ros::Rate loop_rate(1000);
 
 	signal(SIGINT, quit);
@@ -489,7 +498,7 @@ int main(int argc, char **argv) {
 					}
 					if ((mod_command == "G" )) {
 						target_msgs.w = MISSION_GROUND;
-					}					
+					}
 					if ((mod_command == "RESET" )) {
 						target_msgs.x = 500.0f;
 						target_msgs.w = MISSION_RESET;
@@ -497,6 +506,9 @@ int main(int argc, char **argv) {
 				}
 				// std::cout << target_msgs.x << "," << target_msgs.y << "," << target_msgs.z <<std::endl;
 				target_pub.publish(target_msgs);
+				target2_pub.publish(target_msgs);
+				target3_pub.publish(target_msgs);
+				target4_pub.publish(target_msgs);
 			}
 			else
 				std::cout << std::endl;

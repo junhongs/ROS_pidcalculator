@@ -66,14 +66,28 @@ extern char param_list[][50];
 extern pos_pid_parameter_t pid_param;
 extern pos_pid_parameter_t pid_default_param;
 
-extern pid_parameter_t pid_pos_param_X;
-extern pid_parameter_t pid_rate_param_X;
+extern pid_parameter_t pid_poshold_pos_param_X;
+extern pid_parameter_t pid_poshold_rate_param_X;
 
-extern pid_parameter_t pid_pos_param_Y;
-extern pid_parameter_t pid_rate_param_Y;
+extern pid_parameter_t pid_poshold_pos_param_Y;
+extern pid_parameter_t pid_poshold_rate_param_Y;
 
-extern pid_parameter_t pid_pos_param_Z;
-extern pid_parameter_t pid_rate_param_Z;
+extern pid_parameter_t pid_poshold_pos_param_Z;
+extern pid_parameter_t pid_poshold_rate_param_Z;
+
+
+
+
+extern pid_parameter_t pid_nav_pos_param_X;
+extern pid_parameter_t pid_nav_rate_param_X;
+
+extern pid_parameter_t pid_nav_pos_param_Y;
+extern pid_parameter_t pid_nav_rate_param_Y;
+
+extern pid_parameter_t pid_nav_pos_param_Z;
+extern pid_parameter_t pid_nav_rate_param_Z;
+
+
 
 extern pid_parameter_t default_param_pos_X;
 extern pid_parameter_t default_param_rate_X;

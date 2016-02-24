@@ -24,27 +24,11 @@ std::string mode_str[MODE_GROUND + 1] =
    "MODE_GROUND"
 };
 
-
-float get_lpf(lpf_t *lpf, int lpf_hz = 15) {
-   if (!lpf->last_time || !lpf_hz) {
-      lpf->last_time = lpf->cur_time;
-      return 0;
-   }
-   if (!lpf->lpf_filter || lpf_hz != lpf->lpf_hz) {
-      lpf->lpf_filter = (1.0f / (2.0f * M_PI * (float)lpf_hz));
-      lpf->lpf_hz = lpf_hz;
-   }
-   lpf->cycle_time = lpf->cur_time - lpf->last_time;
-   lpf->last_time = lpf->cur_time;
-   lpf->input = lpf->last_input + (lpf->cycle_time / (lpf->lpf_filter + lpf->cycle_time)) * (lpf->input - lpf->last_input);
-   lpf->last_input = lpf->input;
-   return lpf->input;
-}
-
 // pid_calc_t -> error
 static float get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;
 }
+
 // pid_calc_t -> error
 // pid_calc_t -> cycle_time
 static float get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
@@ -102,7 +86,6 @@ float calc_dist(float x, float y, float z, float xx, float yy, float zz) {
    return sqrt(sum);
 }
 
-
 int constrain(int amt, int low, int high) {
    if (amt < low)
       return low;
@@ -111,6 +94,7 @@ int constrain(int amt, int low, int high) {
    else
       return amt;
 }
+
 float constrain(float amt, float low, float high) {
    if (amt < low)
       return low;
@@ -122,19 +106,13 @@ float constrain(float amt, float low, float high) {
 
 void calc_pos_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
    pid->error = target->target_pos - current->cur_pos;
-   // if (current->cycle_time)
    pid->cycle_time = current->cycle_time;
 }
 
 void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *current) {
    pid->error = target->target_vel - current->cur_vel;
-//   pid->derivative = current->cur_vel_raw;
-   // if (current->cycle_time)
    pid->cycle_time = current->cycle_time;
 }
-// pid_calc_t -> error
-// pid_calc_t -> cycle_time
-// pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
 
 void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
@@ -144,7 +122,7 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
 }
 
 void calc_velocity(pos_vel_t* current) {
-   const int is_lpf = 1;
+   const int is_lpf = 0;
    if (current->last_time && current->cur_time) {
       current->cycle_time = current->cur_time - current->last_time;
    }
@@ -226,13 +204,12 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
    pid_inner_msg.ixz = pid_rate->inner_d;
    pid_inner_msg.izz =  pid_rate->output;
    pid_inner_pub->publish(pid_inner_msg);
-
 }
 
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_pos_param_X);
+   // pid_pos_p->output = get_P(pid_pos_p, &pid_poshold_pos_param_X);
    calc_pid(pid_pos, pos_param);
    target->target_vel = pid_pos->output;
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
@@ -253,14 +230,11 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    pid_inner_pub->publish(pid_inner_msg);
 }
 
-
-
 void calc_takeoff_altitude(pid_calc_t *pid) {
    if (pid->integrator < 100.0f ) {
       pid->integrator += 400.0f * pid->cycle_time;
    }
 }
-
 
 void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
    static int is_takeoff = 0;
@@ -275,3 +249,96 @@ void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff) {
       pid->integrator += 400.0f * pid->cycle_time;
    }
 }
+
+lpf_c::lpf_c() :
+   last_input (0.0l),
+   last_time (0.0l),
+   cycle_time (0.0l),
+   lpf_hz (15.0f),
+   cur_time(0.0l) {
+   //cur_time = ros::Time::now().toSec();
+   set_cutoff_freq(lpf_hz);
+}
+
+void lpf_c::set_cutoff_freq(float hz) {
+   if (lpf_hz == hz)
+      return;
+   lpf_hz = hz;
+   lpf_filter = (1.0f / (2.0f * M_PI * hz));
+}
+
+void lpf_c::set_cycletime() {
+   last_time = cur_time;
+   cur_time = ros::Time::now().toSec();
+   cycle_time = cur_time - last_time;
+}
+
+void lpf_c::set_cycletime(double cur) {
+   last_time = cur_time;
+   cur_time = cur;
+   cycle_time = cur_time - last_time;
+}
+
+float lpf_c::get_lpf(float input) {
+   set_cycletime();
+   if (last_time == 0.0l) {
+      last_input = input;
+      return input;
+   }
+   input = last_input + (cycle_time / (lpf_filter + cycle_time)) * (input - last_input);
+   last_input = input;
+   return input;
+}
+
+float lpf_c::get_lpf(float input, double cur) {
+   set_cycletime(cur);
+   if (last_time == 0.0l) {
+      last_input = input;
+      return input;
+   }
+   input = last_input + (cycle_time / (lpf_filter + cycle_time)) * (input - last_input);
+   last_input = input;
+   return input;
+}
+
+pid_calc_t::pid_calc_t(float integrator):
+   error(0.0f),
+   cycle_time(0.0l),
+   derivative(0.0f),
+   integrator(integrator),          // integrator value
+   last_error(0.0f),
+   last_derivative(0.0f),     // last derivative for low-pass filter
+   inner_p(0.0f),
+   inner_i(0.0f),
+   inner_d(0.0f),
+   output(0.0f)
+{}
+
+pid_calc_t::pid_calc_t():
+   error(0.0f),
+   cycle_time(0.0l),
+   derivative(0.0f),
+   integrator(0.0f),          // integrator value
+   last_error(0.0f),
+   last_derivative(0.0f),     // last derivative for low-pass filter
+   inner_p(0.0f),
+   inner_i(0.0f),
+   inner_d(0.0f),
+   output(0.0f)
+{}
+
+pos_vel_t::pos_vel_t():
+   cur_pos(0.0f),
+   cur_vel(0.0f),
+   last_pos(0.0f),
+   last_vel(0.0f),
+   cur_time(0.0l),
+   last_time(0.0l),
+   cycle_time(0.0l),
+   cur_vel_raw(0.0f)
+{}
+
+target_pos_vel_t::target_pos_vel_t() :
+   target_pos(0.0f),
+   target_vel(0.0f)
+{}

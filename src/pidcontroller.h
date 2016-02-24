@@ -26,7 +26,6 @@
 static const float TAKEOFF_SPEED = 200.0f;
 static const float LANDING_SPEED = -200.0f;
 
-
 class PIDCONTROLLER
 {
 public:
@@ -55,6 +54,7 @@ private:
    
    double node_cur_time;
    double node_last_time;
+   double reboot_time;
 
    std_msgs::UInt16MultiArray pid_output_msg;
 
@@ -77,6 +77,14 @@ private:
 
    int tim1_timer;
    int tim2_timer;
+
+   lpf_c lpf_vel_x;
+   lpf_c lpf_vel_y;
+   lpf_c lpf_vel_z;
+
+   lpf_c lpf_pos_x;
+   lpf_c lpf_pos_y;
+   lpf_c lpf_pos_z;
 
    pos_vel_t current_X;
    pos_vel_t current_Y;

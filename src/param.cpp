@@ -4,35 +4,35 @@
 // RATE = 24
 char param_list[][50] =
 {
-   "FIRST/POS/X/PID_P",    //0
-   "FIRST/POS/X/PID_I",    //1
-   "FIRST/POS/X/PID_D",    //2
-   "FIRST/POS/X/PID_IMAX",    //3
+   "FIRST/POSHOLD/POS/X/PID_P",    //0
+   "FIRST/POSHOLD/POS/X/PID_I",    //1
+   "FIRST/POSHOLD/POS/X/PID_D",    //2
+   "FIRST/POSHOLD/POS/X/PID_IMAX",    //3
 
-   "FIRST/RATE/X/PID_P",      //4
-   "FIRST/RATE/X/PID_I",      //5
-   "FIRST/RATE/X/PID_D",      //6
-   "FIRST/RATE/X/PID_IMAX",   //7
+   "FIRST/POSHOLD/RATE/X/PID_P",      //4
+   "FIRST/POSHOLD/RATE/X/PID_I",      //5
+   "FIRST/POSHOLD/RATE/X/PID_D",      //6
+   "FIRST/POSHOLD/RATE/X/PID_IMAX",   //7
 
-   "FIRST/POS/Y/PID_P",    //8
-   "FIRST/POS/Y/PID_I",    //9
-   "FIRST/POS/Y/PID_D",    //10
-   "FIRST/POS/Y/PID_IMAX",    //11
+   "FIRST/POSHOLD/POS/Y/PID_P",    //8
+   "FIRST/POSHOLD/POS/Y/PID_I",    //9
+   "FIRST/POSHOLD/POS/Y/PID_D",    //10
+   "FIRST/POSHOLD/POS/Y/PID_IMAX",    //11
 
-   "FIRST/RATE/Y/PID_P",      //12
-   "FIRST/RATE/Y/PID_I",      //13
-   "FIRST/RATE/Y/PID_D",      //14
-   "FIRST/RATE/Y/PID_IMAX",   //15
+   "FIRST/POSHOLD/RATE/Y/PID_P",      //12
+   "FIRST/POSHOLD/RATE/Y/PID_I",      //13
+   "FIRST/POSHOLD/RATE/Y/PID_D",      //14
+   "FIRST/POSHOLD/RATE/Y/PID_IMAX",   //15
 
-   "FIRST/POS/Z/PID_P",    //16
-   "FIRST/POS/Z/PID_I",    //17
-   "FIRST/POS/Z/PID_D",    //18
-   "FIRST/POS/Z/PID_IMAX",    //19
+   "FIRST/POSHOLD/POS/Z/PID_P",    //16
+   "FIRST/POSHOLD/POS/Z/PID_I",    //17
+   "FIRST/POSHOLD/POS/Z/PID_D",    //18
+   "FIRST/POSHOLD/POS/Z/PID_IMAX",    //19
 
-   "FIRST/RATE/Z/PID_P",      //20
-   "FIRST/RATE/Z/PID_I",      //21
-   "FIRST/RATE/Z/PID_D",      //22
-   "FIRST/RATE/Z/PID_IMAX",    //23
+   "FIRST/POSHOLD/RATE/Z/PID_P",      //20
+   "FIRST/POSHOLD/RATE/Z/PID_I",      //21
+   "FIRST/POSHOLD/RATE/Z/PID_D",      //22
+   "FIRST/POSHOLD/RATE/Z/PID_IMAX",    //23
 
 
    "FIRST/NAV/POS/X/PID_P",
@@ -66,22 +66,43 @@ char param_list[][50] =
    "FIRST/NAV/RATE/Z/PID_IMAX"
 };
 
+//POSHOLD PARAMETER
+pid_parameter_t pid_poshold_pos_param_X = {0, };
+pid_parameter_t pid_poshold_rate_param_X = {0, };
+
+pid_parameter_t pid_poshold_pos_param_Y = {0, };
+pid_parameter_t pid_poshold_rate_param_Y = {0, };
+
+pid_parameter_t pid_poshold_pos_param_Z = {0, };
+pid_parameter_t pid_poshold_rate_param_Z = {0, };
+
+
+
+//NAVIGATION PARAMETER
+pid_parameter_t pid_nav_pos_param_X = {0, };
+pid_parameter_t pid_nav_rate_param_X = {0, };
+
+pid_parameter_t pid_nav_pos_param_Y = {0, };
+pid_parameter_t pid_nav_rate_param_Y = {0, };
+
+pid_parameter_t pid_nav_pos_param_Z = {0, };
+pid_parameter_t pid_nav_rate_param_Z = {0, };
+
+
+
+// pid_nav_pos_param_X = pid_poshold_pos_param_X;
+// pid_nav_rate_param_X = pid_poshold_rate_param_X;
+
+// pid_nav_pos_param_Y = pid_poshold_pos_param_Y;
+// pid_nav_rate_param_Y = pid_poshold_rate_param_Y;
+
+// pid_nav_pos_param_Z = pid_poshold_pos_param_Z;
+// pid_nav_rate_param_Z = pid_poshold_rate_param_Z;
 
 
 
 
-
-pid_parameter_t pid_pos_param_X = {0, };
-pid_parameter_t pid_rate_param_X = {0, };
-
-pid_parameter_t pid_pos_param_Y = {0, };
-pid_parameter_t pid_rate_param_Y = {0, };
-
-pid_parameter_t pid_pos_param_Z = {0, };
-pid_parameter_t pid_rate_param_Z = {0, };
-
-
-
+//DEFAULD POSHOLD PARAMETER
 pid_parameter_t default_param_pos_X = {
    1.980l,
    0.005l,
@@ -122,6 +143,72 @@ pid_parameter_t default_param_rate_Z = {
 };
 
 
+
+
+
+
+
+
+//DEFAULD NAVIGATION PARAMETER
+pid_parameter_t default_param_nav_pos_X = {
+   1.980l,
+   0.0l,
+   0.0l,
+   200.0l
+};
+pid_parameter_t default_param_nav_pos_Y = {
+   2.465l,
+   0.0l,
+   0.0l,
+   200.0l
+};
+pid_parameter_t default_param_nav_pos_Z = {
+   1.902l,
+   0.0l,
+   0.0l,
+   200.0l
+};
+
+
+pid_parameter_t default_param_nav_rate_X = {
+   0.065l,
+   0.048l,
+   0.050l,
+   300.0l
+};
+pid_parameter_t default_param_nav_rate_Y = {
+   0.071l,
+   0.043l,
+   0.056l,
+   300.0l
+};
+pid_parameter_t default_param_nav_rate_Z = {
+   0.094l,
+   0.031l,
+   0.010l,
+   500.0l
+};
+
+
+
+
+
+
+// pid_nav_pos_param_X = pid_poshold_pos_param_X;
+// pid_nav_rate_param_X = pid_poshold_rate_param_X;
+
+// pid_nav_pos_param_Y = pid_poshold_pos_param_Y;
+// pid_nav_rate_param_Y = pid_poshold_rate_param_Y;
+
+// pid_nav_pos_param_Z = pid_poshold_pos_param_Z;
+// pid_nav_rate_param_Z = pid_poshold_rate_param_Z;
+
+
+
+
+
+
+
 pos_pid_parameter_t pid_default_param = {
    &default_param_pos_X,
    &default_param_rate_X,
@@ -130,36 +217,32 @@ pos_pid_parameter_t pid_default_param = {
    &default_param_pos_Z,
    &default_param_rate_Z,
 
-
-   &default_param_pos_X,
-   &default_param_rate_X,
-   &default_param_pos_Y,
-   &default_param_rate_Y,
-   &default_param_pos_Z,
-   &default_param_rate_Z
-
-
+   &default_param_nav_pos_X,
+   &default_param_nav_rate_X,
+   &default_param_nav_pos_Y,
+   &default_param_nav_rate_Y,
+   &default_param_nav_pos_Z,
+   &default_param_nav_rate_Z
 };
 
 
 pos_pid_parameter_t pid_param = {
-   &pid_pos_param_X,
-   &pid_rate_param_X,
-   &pid_pos_param_Y,
-   &pid_rate_param_Y,
-   &pid_pos_param_Z,
-   &pid_rate_param_Z,
+   //POSHOLD PARAM
+   &pid_poshold_pos_param_X,
+   &pid_poshold_rate_param_X,
+   &pid_poshold_pos_param_Y,
+   &pid_poshold_rate_param_Y,
+   &pid_poshold_pos_param_Z,
+   &pid_poshold_rate_param_Z,
 
-   &pid_pos_param_X,
-   &pid_rate_param_X,
-   &pid_pos_param_Y,
-   &pid_rate_param_Y,
-   &pid_pos_param_Z,
-   &pid_rate_param_Z
+   //NAV  PARAM
+   &pid_nav_pos_param_X,
+   &pid_nav_rate_param_X,
+   &pid_nav_pos_param_Y,
+   &pid_nav_rate_param_Y,
+   &pid_nav_pos_param_Z,
+   &pid_nav_rate_param_Z
 };
-
-
-
 
 
 
@@ -175,8 +258,6 @@ double *get_param_n(int nav, int pr, int xyz, int pidi) {
    int n = get_param_num(nav, pr, xyz, pidi);
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
-
-
 
 
 
