@@ -220,14 +220,13 @@ void set_param_n(int nav, int pr, int xyz, int pidi, double data) {
 
 
 void update_param(int n) {
-   *get_param_n(n) = ros::param::param( (param_list[n]), *get_param_n(n));
+   *get_param_n(n) = ros::param::param((param_list[n]), *get_param_n(n));
 }
 void update_param(){
    int i = 0;
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
       update_param(i++);
    }
-
 }
 
 void reset_param() {
@@ -235,10 +234,8 @@ void reset_param() {
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
       //init_param(param_list[i], get_param_n(i), get_default_param_n(i));
       ros::param::set(param_list[i], *get_default_param_n(i));
-
       i++;
    }
-
 }
 void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
    if (ros::param::has(param_name)) {
@@ -251,7 +248,6 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
       
       *param_ptr = *default_ptr;
    }
-
 }
 
 
@@ -274,7 +270,6 @@ void init_param() {
 // pos_rate_d = 45 / 1000;
 
 void delete_param() {
-
    int i = 0;
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
       //init_param(param_list[i], get_param_n(i), get_default_param_n(i));

@@ -32,6 +32,6 @@ add_executable(shell src/rosshell.cpp src/param.cpp)
 target_link_libraries(shell ${catkin_LIBRARIES})
 add_dependencies(shell pid_controller_cpp)
 
-add_executable(pid_controller src/listener.cpp src/param.cpp src/calculation.cpp)
+add_executable(pid_controller src/listener.cpp src/param.cpp src/calculation.cpp src/pidcontroller.cpp)
 target_link_libraries(pid_controller ${catkin_LIBRARIES})
 add_dependencies(pid_controller pid_controller_cpp)

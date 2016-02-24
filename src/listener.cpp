@@ -1,19 +1,9 @@
 #include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "geometry_msgs/Point.h"
-#include "geometry_msgs/Inertia.h"
-#include "geometry_msgs/PointStamped.h"
-#include "geometry_msgs/Quaternion.h"
-#include "std_msgs/Float32.h"
-#include "std_msgs/Int32.h"
-#include "pcl_msgs/Vertices.h"
-#include "pcl_msgs/ModelCoefficients.h"
-#include "std_msgs/Float32MultiArray.h"
-#include "std_msgs/UInt16MultiArray.h"
+
 #include <string>
 #include <iostream>
 #include "param.h"
-#include "calculation.h"
+#include "pidcontroller.h"
 
 
 // cfg.P8[PIDNAVR] = 14; // NAV_P * 10;
@@ -72,14 +62,14 @@ int main(int argc, char **argv) {
    // Creat Timer to update the parameter.
    // parameter server uses disk io, so it causes some delay.
    // ros::Timer timer = n.createTimer(ros::Duration(1), timerCallback);
-   float_pub = n.advertise<std_msgs::Float32>("calculated_distance", 100);
+   //float_pub = n.advertise<std_msgs::Float32>("calculated_distance", 100);
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
-   PIDCONTROLLER first("/FIRST",0, 0);
-   PIDCONTROLLER second("/SECOND",0, 0);
-   PIDCONTROLLER third("/THIRD",0, 0);
-   PIDCONTROLLER fourth("/FOURTH",0, 0);
+   PIDCONTROLLER first("/FIRST",0.0f, 0.0f);
+   PIDCONTROLLER second("/SECOND",0.0f, 0.0f);
+   PIDCONTROLLER third("/THIRD",0.0f, 0.0f);
+   PIDCONTROLLER fourth("/FOURTH",0.0f, 0.0f);
 
    ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    spinner.spin(); // spin() will not return until the node has been shutdown

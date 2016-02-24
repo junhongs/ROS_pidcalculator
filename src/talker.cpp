@@ -25,13 +25,13 @@ typedef struct pos_vel_t {
 	float cur_vel_raw;
 } pos_vel_t;
 
-void calc_velocity( pos_vel_t* pos_vel) {
+void calc_velocity(pos_vel_t* pos_vel) {
 	int is_lpf = 1;
 	if (pos_vel->last_time && pos_vel->cur_time) {
 		pos_vel->cycle_time = pos_vel->cur_time - pos_vel->last_time;
 
 		//if ros's cycle period is fast (in my case, about 1000hz), sometime the cycle period might have some noize over 30%. it must be corrected.
-		// if( pos_vel->cycle_time > 0.0013 || pos_vel->cycle_time < 0.0007){
+		// if(pos_vel->cycle_time > 0.0013 || pos_vel->cycle_time < 0.0007){
 		//         pos_vel->last_vel = pos_vel->cur_vel;
 		//         pos_vel->last_time = pos_vel->cur_time;
 		//         pos_vel->last_pos = pos_vel->cur_pos;
@@ -47,7 +47,7 @@ void calc_velocity( pos_vel_t* pos_vel) {
 	pos_vel->cur_vel_raw = pos_vel->cur_vel;
 
 	if (pos_vel->last_vel && is_lpf)
-		pos_vel->cur_vel = ( pos_vel->cur_vel + pos_vel->last_vel) / 2;
+		pos_vel->cur_vel = (pos_vel->cur_vel + pos_vel->last_vel) / 2;
 
 	pos_vel->last_vel = pos_vel->cur_vel;
 	pos_vel->last_time = pos_vel->cur_time;
@@ -64,15 +64,11 @@ int main(int argc, char **argv){
 	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
 	ros::Publisher float_pub = n.advertise<std_msgs::Float32>("calculated_pid_talker", 100);
 	ros::Publisher position_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_POS", 100);
-
-	//ros::Rate loop_rate(1000);
 	ros::Rate loop_rate(30);
-
-
 
 	int count = 0;
 	while (ros::ok()){
-		if ( argv[1] != NULL)
+		if (argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
 		//std::cout  <<argv[0]  << std::endl;
 		// static ros::Time ros_time_last;
@@ -94,7 +90,6 @@ int main(int argc, char **argv){
 		static float float_msg_tmp = 0;
 		float_msg_tmp += 0.01;
 		float_msg.data = sin((double)float_msg_tmp);
-
 
 #if 0
 		static pos_vel_t msg_pos_vel = {0,};

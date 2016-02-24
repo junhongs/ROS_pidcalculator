@@ -10,7 +10,6 @@
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
 
-///opt/ros/indigo/share/std_msgs/msg/UInt16MultiArray.msg
 #include <signal.h>
 #include <termios.h>
 #include <stdio.h>
@@ -22,8 +21,6 @@
 #include "param.h"
 #include "calculation.h"
 
-
-
 static int kfd = 0;
 static int is_loop = 1;
 static struct termios cooked, raw;
@@ -31,22 +28,17 @@ static std::string current_program;
 static std::stringstream ss;
 static std::vector<std::string> argvector;
 
-
 static ros::Publisher param_pub;
-
 static ros::Publisher target_pub;
 
-
-
 static int is_received_float = 0;
-static float float_data = 0;
+static float float_data = 0.0f;
 
 static int is_received_velocity = 0;
 static geometry_msgs::Point velocity_data;
 
 static int is_received_position = 0;
 static geometry_msgs::Point position_data;
-
 
 #define USELESS1 0x1B
 #define USELESS2 0x5B
@@ -61,10 +53,10 @@ static geometry_msgs::Point position_data;
 #define KEYCODE_ESC 0x1B
 #define KEYCODE_BSP 0x7F
 
-
 void print_cur() {
 	std::cout << current_program << "$ ";
 }
+
 void print_cur(std::string str) {
 	std::cout << current_program << "$ " << str;
 }
@@ -85,15 +77,14 @@ void key_debug(std::string str) {
 void key_debug(std::string str, int n) {
 	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
 }
+
 void key_debug(int n) {
 	std::cout << "DEBUG-" << current_program << ":" <<  n << std::endl;
 }
+
 void key_debug(std::string str, double n) {
 	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
 }
-
-
-
 
 void keyLoop() {
 	char c;
@@ -118,8 +109,7 @@ void keyLoop() {
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
 	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
-	double *db_pt = get_param_n( pr,  xyz, pidi);
-
+	double *db_pt = get_param_n(pr,  xyz, pidi);
 
 	while (is_loop) {
 		// get the next event from the keyboard
@@ -154,51 +144,42 @@ void keyLoop() {
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
-
 			break;
-
 		case 'y':
 			pr = 0;
 			pidi = 0;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt += scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
-
 		case 'h':
 			pr = 0;
 			pidi = 0;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt -= scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
 		case 'u':
-
 			pr = 1;
 			pidi = 0;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt += scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
-
 			break;
 		case 'j':
 			pr = 1;
 			pidi = 0;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt -= scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -207,9 +188,8 @@ void keyLoop() {
 		case 'i':
 			pr = 1;
 			pidi = 1;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt += scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -218,9 +198,8 @@ void keyLoop() {
 		case 'k':
 			pr = 1;
 			pidi = 1;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt -= scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -229,9 +208,8 @@ void keyLoop() {
 		case 'o':
 			pr = 1;
 			pidi = 2;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt += scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -240,21 +218,18 @@ void keyLoop() {
 		case 'l':
 			pr = 1;
 			pidi = 2;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt -= scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
 			break;
-
 		case 'r':
 			pr = 0;
 			pidi = 1;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt += scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -263,9 +238,8 @@ void keyLoop() {
 		case 'f':
 			pr = 0;
 			pidi = 1;
-			db_pt = get_param_n( pr,  xyz, pidi);
+			db_pt = get_param_n(pr,  xyz, pidi);
 			*db_pt -= scale;
-
 			set_param_n(pr, xyz, pidi, *db_pt);
 			param_msg.data = get_param_num(pr, xyz, pidi);
 			param_pub.publish(param_msg);
@@ -281,11 +255,6 @@ void keyLoop() {
 		// 	pr = 1;
 		// 	break;
 
-//rate or pos :: r p
-//
-
-
-
 		case 'w':
 			key_debug("::X is selected");
 			xyz = 0;
@@ -299,8 +268,6 @@ void keyLoop() {
 			xyz = 2;
 			break;
 //X or Y or Z :: z x c
-
-
 		// case 'a':
 		// 	key_debug("P");
 		// 	pidi = 0;
@@ -323,7 +290,6 @@ void keyLoop() {
 
 //scale :: left or right
 //0.001 0.01 0.1 1 10 100
-
 		case KEYCODE_Q:
 			key_debug("QUIT THE PROGRAM\n");
 			is_loop = 0;
@@ -335,8 +301,7 @@ void keyLoop() {
 			//printf("value: %c \t 0x%02X\n", c, c);
 			break;
 		}
-		db_pt = get_param_n( pr,  xyz, pidi);
-
+		db_pt = get_param_n(pr,  xyz, pidi);
 
 		printf("%d,%d,%d\n", pr,  xyz, pidi);
 		printf(":::  P   :   P   :   I   :   D\n");
@@ -361,103 +326,67 @@ void position_Callback(const geometry_msgs::Point& msg) {
 	is_received_position = 1;
 }
 
-
-
-
-
 void velocityCallback(const geometry_msgs::Point& msg) {
 	velocity_data = msg;
 	is_received_velocity = 1;
 }
 
-
-
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "shell");
 	ros::NodeHandle n;
 	ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
-
 	ros::Subscriber velocity_sub = n.subscribe("/FIRST/CURRENT_VEL", 100, velocityCallback);
-
 	ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
-
-
-// <geometry_msgs::Point>
-// std_msgs::Float32MultiArray
 	param_pub = n.advertise<std_msgs::Int32>("/PARAM_CHANGE", 100);
-
 	target_pub = n.advertise<geometry_msgs::Quaternion>("/FIRST/TARGET_POS", 100);
-
 	ros::Rate loop_rate(1000);
-	//ros::Rate loop_rate(30);
 
 	signal(SIGINT, quit);
-
 	tcgetattr(kfd, &cooked);
-
 	int count = 0;
-
 	init_param();
 	// init_param(&pid_param);
+
 	printf("\033[K"); // Erase to end of line
 	printf("\033[2J\n"); // Clear the screen, move to (0,0)
 
-
 	while (ros::ok()) {
-
-		if ( argv[1] != NULL)
+		if (argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
 		//std::cout  <<argv[0]  << std::endl;
-
 		// static ros::Time ros_time_last;
-
 		// ros::Time ros_time = ros::Time::now();
 		// std::cout  <<  ros_time - ros_time_last << std::endl;
-
 		// ros_time_last = ros_time;
 		std::string name, name2;
-
-
-
-
 		current_program = "DRONE_SHELL";
 		print_cur();
-
-
 		argvector.clear();
 		if (std::getline(std::cin, name, '\n')) {
 			int i = 0;
 			std::stringstream input_stream(name);
-			while ( std::getline(input_stream, name2, ' ') ) {
+			while (std::getline(input_stream, name2, ' ') ) {
 				argvector.push_back(name2);
-
 				std::string sstr;
 				ss.clear();
 				ss << i++ << ":" << name2 << std::endl;
 				ss >> sstr;
-
-
 			}
-			if ( !argvector.size() )
+			if (!argvector.size() )
 				continue;
-
-			// key_debug(sstr);
-			if ( argvector[0] == "pid") {
+			if (argvector[0] == "pid") {
 				current_program = "PID_CONTROLLER";
 				keyLoop();
 			}
-			else if ( argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
-
+			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
 				key_debug("SHUT DOWN THE DRONE_SHELL\n");
 				ros::shutdown();
 				exit(0);
 			}
-			else if ( argvector[0] == "dat" ) {
-
-
+			else if (argvector[0] == "dat" ) {
 				int is_recursive = 0;
-				if ( argvector.size() > 1 && argvector[1] == "-r" ) {
+				if (argvector.size() > 1 && argvector[1] == "-r" ) {
 					argvector.erase(argvector.begin() + 1);
 					is_recursive = 1;
 				}
@@ -465,16 +394,12 @@ int main(int argc, char **argv) {
 					argvector.erase(argvector.begin() + 2);
 					is_recursive = 1;
 				}
-
-
-				if ( argvector.size() > 1 && argvector[1] == "vel" ) {
+				if (argvector.size() > 1 && argvector[1] == "vel" ) {
 					is_loop = 1;
 					ros::Rate data_rate(30);
 					while (is_loop) {
-
 						is_received_float = 0;
 						is_received_velocity = 0;
-
 						ros::spinOnce(); // receive the topic. It will cause the callback function
 						// if (is_received_float)
 						// 	std::cout << float_data << std::endl;
@@ -484,25 +409,18 @@ int main(int argc, char **argv) {
 							break;
 						data_rate.sleep();
 					}
-
 					continue;
 				}
-
-
 				is_loop = 1;
 				ros::Rate data_rate(30);
 				while (is_loop) {
-
 					is_received_float = 0;
 					is_received_velocity = 0;
-
 					ros::spinOnce(); // receive the topic. It will cause the callback function
 					// if (is_received_float)
 					// 	std::cout << float_data << std::endl;
-
 					if (is_received_velocity)
 						std::cout << "VEL X:Y:Z=" << velocity_data.x << ":" << velocity_data.y << ":" << velocity_data.z << std::endl;
-
 					if (is_received_position)
 						std::cout << "POS X:Y:Z=" << position_data.x << ":" << position_data.y << ":" << position_data.z << std::endl;
 					if (!is_recursive)
@@ -510,83 +428,70 @@ int main(int argc, char **argv) {
 					data_rate.sleep();
 				}
 			}
-			else if ( argvector[0] == "mod" ) {
+			else if (argvector[0] == "mod" ) {
 				geometry_msgs::Quaternion target_msgs;
-				target_msgs.x = 0;
-				target_msgs.y = 0;
-				target_msgs.z = 0;
+				target_msgs.x = 0.0f;
+				target_msgs.y = 0.0f;
+				target_msgs.z = 0.0f;
 				target_msgs.w = MISSION_AUTO;
-				while ( argvector.size() > 1 ) {
+				while (argvector.size() > 1 ) {
 					std::string mod_command = argvector.back();
 					argvector.pop_back();
-					if (  (mod_command == "1" || mod_command == "T" ) ) {
-
-						target_msgs.x = 0;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
+					if ((mod_command == "1" || mod_command == "T" ) ) {
+						target_msgs.x = 0.0f;
+						target_msgs.y = 0.0f;
+						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_TAKEOFF;
 					}
-					if (  ( mod_command == "2" || mod_command == "M" ) ) {
-
-						target_msgs.x = 0;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
+					if ((mod_command == "2" || mod_command == "M" ) ) {
+						target_msgs.x = 0.0f;
+						target_msgs.y = 0.0f;
+						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_MANUAL;
 					}
-					if (  ( mod_command == "3" || mod_command == "A" ) ) {
-
-						target_msgs.x = 0;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
+					if ((mod_command == "3" || mod_command == "A" ) ) {
+						target_msgs.x = 0.0f;
+						target_msgs.y = 0.0f;
+						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_AUTO;
 					}
-					if (  ( mod_command == "4" || mod_command == "L" ) ) {
-
-						target_msgs.x = 0;
-						target_msgs.y = 0;
-						target_msgs.z = 0;
+					if ((mod_command == "4" || mod_command == "L" ) ) {
+						target_msgs.x = 0.0f;
+						target_msgs.y = 0.0f;
+						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_LANDING;
 					}
-
-					if (  ( mod_command == "W" )) {
-
-						target_msgs.x = 500;
+					if ((mod_command == "W" )) {
+						target_msgs.x = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if (  ( mod_command == "E" )) {
-
-						target_msgs.x = -500;
+					if ((mod_command == "E" )) {
+						target_msgs.x = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if (  ( mod_command == "N" )) {
-
-						target_msgs.y = -500;
+					if ((mod_command == "N" )) {
+						target_msgs.y = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
+					if ((mod_command == "S" )) {
 
-					if (  ( mod_command == "S" )) {
-
-						target_msgs.y = 500;
+						target_msgs.y = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if (  ( mod_command == "U" )) {
+					if ((mod_command == "U" )) {
 
-						target_msgs.z = 500;
+						target_msgs.z = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-
-					if (  ( mod_command == "D" )) {
-
-						target_msgs.z = -500;
+					if ((mod_command == "D" )) {
+						target_msgs.z = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if (  ( mod_command == "G" )) {
-
+					if ((mod_command == "G" )) {
 						target_msgs.w = MISSION_GROUND;
 					}					
-					if (  ( mod_command == "RESET" )) {
-
-						target_msgs.x = 500;
+					if ((mod_command == "RESET" )) {
+						target_msgs.x = 500.0f;
 						target_msgs.w = MISSION_RESET;
 					}
 				}
@@ -595,29 +500,18 @@ int main(int argc, char **argv) {
 			}
 			else
 				std::cout << std::endl;
-
-
-
-
 		}
-
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
-
 //std_msgs::Float32MultiArray
 		//std_msgs::Float32MultiArray param_msg;
 		//pcl_msgs::ModelCoefficients param_msg;
-
-		float_msg.data = 0;
-		static float float_msg_tmp = 0;
-		float_msg_tmp += 0.01;
+		float_msg.data = 0.0f;
+		static float float_msg_tmp = 0.0f;
+		float_msg_tmp += 0.01f;
 		float_msg.data = sin((double)float_msg_tmp);
-
-
 		loop_rate.sleep();
 		++count;
 	}
-
-
 	return 0;
 }
