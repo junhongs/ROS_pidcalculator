@@ -306,7 +306,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
 
       is_arm = 1950;
-      if (current_Z.cur_pos < ground_altitude + 60) {
+      if (current_Z.cur_pos < ground_altitude + 60.0f) {
          flight_mode_position_callback = MODE_GROUND;
          manage_mode(SET, &flight_mode_position_callback);
       }
@@ -318,9 +318,9 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       reset_PID(&pid_rate_Y, 0.0f);
       reset_PID(&pid_pos_Z, 0.0f);
       reset_PID(&pid_rate_Z, -500.0f);
-      pid_rate_X.output = 0.0f;
-      pid_rate_Y.output = 0.0f;
-      pid_rate_Z.output = -500.0f;
+      pid_rate_X.output = 0;
+      pid_rate_Y.output = 0;
+      pid_rate_Z.output = -500;
       is_arm = 1050;
    }
 

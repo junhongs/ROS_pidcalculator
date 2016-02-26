@@ -90,55 +90,45 @@ pid_parameter_t pid_nav_rate_param_Z = {0, };
 
 
 
-// pid_nav_pos_param_X = pid_poshold_pos_param_X;
-// pid_nav_rate_param_X = pid_poshold_rate_param_X;
-
-// pid_nav_pos_param_Y = pid_poshold_pos_param_Y;
-// pid_nav_rate_param_Y = pid_poshold_rate_param_Y;
-
-// pid_nav_pos_param_Z = pid_poshold_pos_param_Z;
-// pid_nav_rate_param_Z = pid_poshold_rate_param_Z;
 
 
-
-
-//DEFAULD POSHOLD PARAMETER
+//DEFAULT POSHOLD PARAMETER
 pid_parameter_t default_param_pos_X = {
-   1.980l,
-   0.005l,
+   1.080l,
+   0.255l,
    0.0l,
    200.0l
 };
 pid_parameter_t default_param_pos_Y = {
-   2.465l,
-   0.004l,
+   1.205l,
+   0.255l,
    0.0l,
    200.0l
 };
 pid_parameter_t default_param_pos_Z = {
-   1.902l,
-   0.001l,
+   1.210l,
+   0.255l,
    0.0l,
    200.0l
 };
 
 
 pid_parameter_t default_param_rate_X = {
-   0.065l,
-   0.048l,
-   0.050l,
+   0.125l,
+   0.020l,
+   0.019l,
    300.0l
 };
 pid_parameter_t default_param_rate_Y = {
-   0.071l,
-   0.043l,
-   0.056l,
+   0.122l,
+   0.020l,
+   0.017l,
    300.0l
 };
 pid_parameter_t default_param_rate_Z = {
-   0.094l,
-   0.031l,
-   0.010l,
+   0.135l,
+   0.015l,
+   0.019l,
    500.0l
 };
 
@@ -149,7 +139,7 @@ pid_parameter_t default_param_rate_Z = {
 
 
 
-//DEFAULD NAVIGATION PARAMETER
+//DEFAULT NAVIGATION PARAMETER
 pid_parameter_t default_param_nav_pos_X = {
    1.980l,
    0.0l,
@@ -188,23 +178,6 @@ pid_parameter_t default_param_nav_rate_Z = {
    0.010l,
    500.0l
 };
-
-
-
-
-
-
-// pid_nav_pos_param_X = pid_poshold_pos_param_X;
-// pid_nav_rate_param_X = pid_poshold_rate_param_X;
-
-// pid_nav_pos_param_Y = pid_poshold_pos_param_Y;
-// pid_nav_rate_param_Y = pid_poshold_rate_param_Y;
-
-// pid_nav_pos_param_Z = pid_poshold_pos_param_Z;
-// pid_nav_rate_param_Z = pid_poshold_rate_param_Z;
-
-
-
 
 
 
