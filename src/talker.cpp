@@ -11,6 +11,17 @@
 #include <string>
 
 
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <iostream>
+#include <fstream>
+
+
 #if 0
 typedef struct pos_vel_t {
 	float cur_pos;
@@ -56,7 +67,7 @@ void calc_velocity(pos_vel_t* pos_vel) {
 
 }
 #endif
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
 	ros::init(argc, argv, "talker");
 	ros::NodeHandle n;
 	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 100);
@@ -67,7 +78,39 @@ int main(int argc, char **argv){
 	ros::Rate loop_rate(30);
 
 	int count = 0;
-	while (ros::ok()){
+
+
+	// int fd = open("/tmp/save", O_RDWR | O_CREAT | O_TRUNC, 0777);
+
+
+	// char buf[100] = "hello";
+	double buff = 1.21234l;
+	// sprintf(buf,"%lf",buff);
+	// write(fd,buf,sizeof(buf));
+	// printf("%d\n",fd);
+
+
+	// std::ofstream myfile;
+	// myfile.open ("/tmp/example.txt");
+	// //myfile << "buff\n";
+	// myfile.close();
+
+#define MAX_SIZE 1000
+	char inputString[MAX_SIZE];
+
+
+	std::ofstream outFile("/tmp/output.txt");
+
+	for (int i = 0 ; i < 10 ; i++) {
+		outFile << i << std::endl;
+	}
+
+	outFile.close();
+
+
+
+
+	while (ros::ok()) {
 		if (argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
 		//std::cout  <<argv[0]  << std::endl;

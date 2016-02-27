@@ -1,4 +1,5 @@
 #include "ros/ros.h"
+#include "unistd.h"
 
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
@@ -16,6 +17,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include "math.h"
 #include "param.h"
@@ -115,12 +117,17 @@ void keyLoop() {
 	double *db_pt = get_param_n(pr,  xyz, pidi);
 
 
+		if (nav)
+			printf("NAV\n");
+		else
+			printf("POS\n");
 		printf(":::  P   :   I   :   P   :   I   :   D\n");
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0),*get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1),*get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1),*get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
 		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
-		printf("az:SCALE  |  12:NAV\n\n");
+		printf("az:SCALE  |  12:NAV\n 345:SAVE,LOAD,DELETE PARAM\n\n");
 
 
 	while (is_loop) {
@@ -289,7 +296,31 @@ void keyLoop() {
 		case '2':
 			key_debug("::NAV is selected");
 			nav = 1;
-			break;			
+			break;
+
+
+		case '3':
+			key_debug("::SAVE THE PARAMETER");
+			// std::ofstream outFile("/tmp/drone_pid_param");
+			save_param();
+			// int i = 0;
+			// //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+			// while (i < sizeof(param_list) / sizeof(param_list[0])) {
+			// 	outFile << get_param_n(i) << std::endl;
+			// 	i++;
+			// }
+			// outFile.close();
+			break;
+		case '4':
+			key_debug("::LOAD THE PARAMETER");
+			load_param();
+			break;
+		case '5':
+			key_debug("::DELETE THE PARAMETER");
+			delete_file_param();
+			load_param();
+			break;
+
 
 //X or Y or Z :: z x c
 		// case 'a':
@@ -328,12 +359,17 @@ void keyLoop() {
 		db_pt = get_param_n(pr,  xyz, pidi);
 
 		//printf("%d,%d,%d\n", pr,  xyz, pidi);
+		if (nav)
+			printf("NAV\n");
+		else
+			printf("POS\n");
 		printf(":::  P   :   I   :   P   :   I   :   D\n");
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0),*get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1),*get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1),*get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
 		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
-		printf("az:SCALE  |  12:NAV\n\n");
+		printf("az:SCALE  |  12:NAV\n 345:SAVE,LOAD,DELETE PARAM\n\n");
 //		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}

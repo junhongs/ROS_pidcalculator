@@ -62,6 +62,13 @@ void set_param_n(int , double);
 void set_param_n(int , int , int , double);
 void set_param_n(int, int, int, int, double);
 
+
+
+void save_param();
+void load_param();
+void delete_file_param();
+
+
 extern char param_list[][50];
 extern pos_pid_parameter_t pid_param;
 extern pos_pid_parameter_t pid_default_param;

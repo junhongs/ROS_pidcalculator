@@ -1,6 +1,10 @@
 #include "ros/ros.h"
 #include "param.h"
 
+#include <iostream>
+#include <fstream>
+
+
 // RATE = 24
 char param_list[][50] =
 {
@@ -40,9 +44,9 @@ char param_list[][50] =
    "FIRST/NAV/POS/X/PID_D",
    "FIRST/NAV/POS/X/PID_IMAX",
 
-   "FIRST/NAV/RATE/X/PID_P",  
-   "FIRST/NAV/RATE/X/PID_I",  
-   "FIRST/NAV/RATE/X/PID_D",  
+   "FIRST/NAV/RATE/X/PID_P",
+   "FIRST/NAV/RATE/X/PID_I",
+   "FIRST/NAV/RATE/X/PID_D",
    "FIRST/NAV/RATE/X/PID_IMAX",
 
    "FIRST/NAV/POS/Y/PID_P",
@@ -50,9 +54,9 @@ char param_list[][50] =
    "FIRST/NAV/POS/Y/PID_D",
    "FIRST/NAV/POS/Y/PID_IMAX",
 
-   "FIRST/NAV/RATE/Y/PID_P",  
-   "FIRST/NAV/RATE/Y/PID_I",  
-   "FIRST/NAV/RATE/Y/PID_D",  
+   "FIRST/NAV/RATE/Y/PID_P",
+   "FIRST/NAV/RATE/Y/PID_I",
+   "FIRST/NAV/RATE/Y/PID_D",
    "FIRST/NAV/RATE/Y/PID_IMAX",
 
    "FIRST/NAV/POS/Z/PID_P",
@@ -60,9 +64,9 @@ char param_list[][50] =
    "FIRST/NAV/POS/Z/PID_D",
    "FIRST/NAV/POS/Z/PID_IMAX",
 
-   "FIRST/NAV/RATE/Z/PID_P",  
-   "FIRST/NAV/RATE/Z/PID_I",  
-   "FIRST/NAV/RATE/Z/PID_D",  
+   "FIRST/NAV/RATE/Z/PID_P",
+   "FIRST/NAV/RATE/Z/PID_I",
+   "FIRST/NAV/RATE/Z/PID_D",
    "FIRST/NAV/RATE/Z/PID_IMAX"
 };
 
@@ -276,7 +280,7 @@ void set_param_n(int nav, int pr, int xyz, int pidi, double data) {
 void update_param(int n) {
    *get_param_n(n) = ros::param::param((param_list[n]), *get_param_n(n));
 }
-void update_param(){
+void update_param() {
    int i = 0;
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
       update_param(i++);
@@ -299,14 +303,65 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
    else {
       // std::cout << *default_ptr << std::endl;
       ros::param::set(param_name, *default_ptr);
-      
+
       *param_ptr = *default_ptr;
    }
 }
 
+void save_param() {
+   // std::ofstream outFile("/tmp/output.txt");
+
+   // for (int i = 0 ; i < 10 ; i++) {
+   //    outFile << i << std::endl;
+   // }
+
+   // outFile.close();
+
+   std::ofstream outFile("/tmp/pidparam");
+   int i = 0;
+   //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      outFile << *get_param_n(i) << std::endl;
+      i++;
+   }
+   outFile.close();
+
+}
+
+void load_param() {
+   std::ifstream inFile("/tmp/pidparam");
+
+   int i = 0;
+   char inputString[100] = {0,};
+   if (inFile.is_open() )
+      while (!inFile.eof() && i < sizeof(param_list) / sizeof(param_list[0]) ) {
+         inFile.getline(inputString, 100);
+
+         double temp = strtod(inputString,NULL);
+         // std::cout << i << ":" << temp << std::endl;
+         set_param_n(i,temp);
+         *get_param_n(i) = temp;
+         i++;
+      }
+   inFile.close();
+}
+
+void delete_file_param(){
+   std::ofstream outFile("/tmp/pidparam");
+   int i = 0;
+   //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      outFile << *get_default_param_n(i) << std::endl;
+      i++;
+   }
+   outFile.close();
+
+}
 
 
 void init_param() {
+   load_param();
+   return;
    int i = 0;
    //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
