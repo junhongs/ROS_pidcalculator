@@ -253,8 +253,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X, is_changed_target);
-      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y, is_changed_target);
+      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X, is_changed_target);
+      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y, is_changed_target);
       is_arm = 1950;
    }
 
@@ -363,10 +363,10 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    if (mission == MISSION_TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
 
-      if (current_z > GROUND_ALTITUDE + 100.0f ) {
-         std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
-         return;
-      }
+      // if (current_z > GROUND_ALTITUDE + 100.0f ) {
+      //    std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
+      //    return;
+      // }
       if( ros::Time::now().toSec() - reboot_time < 5.0l){
          std::cout << drone << ":" << "Wait for reboot" << std::endl;
          return;
@@ -388,11 +388,11 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
             //manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
    }
-   else if (mission == MISSION_MANUAL) {
-      tmp_mod = MODE_MANUAL;
-      if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
-         manage_target(SET_TARGET, &target_x, &target_y, &target_z);
-   }
+   // else if (mission == MISSION_MANUAL) {
+   //    tmp_mod = MODE_MANUAL;
+   //    if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
+   //       manage_target(SET_TARGET, &target_x, &target_y, &target_z);
+   // }
    else if (mission == MISSION_LANDING) {
       tmp_mod = MODE_LANDING;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {

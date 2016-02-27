@@ -131,9 +131,9 @@ void calc_velocity(pos_vel_t* current) {
       current->cur_vel /= current->cycle_time;
    }
    current->cur_vel_raw = current->cur_vel;
-   if( abs(current->last_vel - current->cur_vel) > 200 ){
-         current->cur_vel = current->last_vel;
-   }
+   // if( abs(current->last_vel - current->cur_vel) > 500 ){
+   //       current->cur_vel = current->last_vel;
+   // }
 
    if (is_lpf )
       current->cur_vel = (current->cur_vel + current->last_vel) / 2.0f;

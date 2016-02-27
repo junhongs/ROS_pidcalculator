@@ -94,7 +94,7 @@ void keyLoop() {
 	bool dirty = false;
 	print_cur();
 
-	static int pr = 0, xyz = 0, pidi = 0;
+	static int pr = 0, xyz = 0, pidi = 0, nav = 0;
 
 	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
@@ -114,6 +114,15 @@ void keyLoop() {
 	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
 	double *db_pt = get_param_n(pr,  xyz, pidi);
 
+
+		printf(":::  P   :   I   :   P   :   I   :   D\n");
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0),*get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1),*get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1),*get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+		printf("az:SCALE  |  12:NAV\n\n");
+
+
 	while (is_loop) {
 		// get the next event from the keyboard
 		if (read(kfd, &c, 1) < 0) {
@@ -127,126 +136,128 @@ void keyLoop() {
 
 		switch (c) {
 		case KEYCODE_L:
+		case 'a':
 			scale *= 10.0l;
 			key_debug("::SCALE:", scale);
 			break;
+		case 'z':
 		case KEYCODE_R:
 			scale /= 10.0l;
 			key_debug("::SCALE:", scale);
 			break;
 		case KEYCODE_U:
 			*db_pt += scale;
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			break;
 		case KEYCODE_D:
 			*db_pt -= scale;
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
 			break;
 		case 'y':
 			pr = 0;
 			pidi = 0;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'h':
 			pr = 0;
 			pidi = 0;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'u':
 			pr = 1;
 			pidi = 0;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'j':
 			pr = 1;
 			pidi = 0;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'i':
 			pr = 1;
 			pidi = 1;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'k':
 			pr = 1;
 			pidi = 1;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'o':
 			pr = 1;
 			pidi = 2;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'l':
 			pr = 1;
 			pidi = 2;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'r':
 			pr = 0;
 			pidi = 1;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 		case 'f':
 			pr = 0;
 			pidi = 1;
-			db_pt = get_param_n(pr,  xyz, pidi);
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
-			set_param_n(pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(pr, xyz, pidi);
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
 			param_pub.publish(param_msg);
-			key_debug(param_list[ get_param_num(pr, xyz, pidi)], *db_pt);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
 
 		// case 'p':
@@ -270,6 +281,16 @@ void keyLoop() {
 			key_debug("::Z is selected");
 			xyz = 2;
 			break;
+
+		case '1':
+			key_debug("::POS is selected");
+			nav = 0;
+			break;
+		case '2':
+			key_debug("::NAV is selected");
+			nav = 1;
+			break;			
+
 //X or Y or Z :: z x c
 		// case 'a':
 		// 	key_debug("P");
@@ -306,11 +327,13 @@ void keyLoop() {
 		}
 		db_pt = get_param_n(pr,  xyz, pidi);
 
-		printf("%d,%d,%d\n", pr,  xyz, pidi);
-		printf(":::  P   :   P   :   I   :   D\n");
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(0, 0, 0), *get_param_n(1, 0, 0), *get_param_n(1, 0, 1), *get_param_n(1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(0, 1, 0), *get_param_n(1, 1, 0), *get_param_n(1, 1, 1), *get_param_n(1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(0, 2, 0), *get_param_n(1, 2, 0), *get_param_n(1, 2, 1), *get_param_n(1, 2, 2));
+		//printf("%d,%d,%d\n", pr,  xyz, pidi);
+		printf(":::  P   :   I   :   P   :   I   :   D\n");
+		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0),*get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1),*get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1),*get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+		printf("az:SCALE  |  12:NAV\n\n");
 //		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}
@@ -359,7 +382,7 @@ int main(int argc, char **argv) {
 
 	printf("\033[K"); // Erase to end of line
 	printf("\033[2J\n"); // Clear the screen, move to (0,0)
-
+	std::cout << "COMMAND :: pid quit dat mod" << std::endl;
 	while (ros::ok()) {
 		if (argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
@@ -371,6 +394,7 @@ int main(int argc, char **argv) {
 		std::string name, name2;
 		current_program = "DRONE_SHELL";
 		print_cur();
+
 		argvector.clear();
 		if (std::getline(std::cin, name, '\n')) {
 			int i = 0;
@@ -446,7 +470,7 @@ int main(int argc, char **argv) {
 				while (argvector.size() > 1 ) {
 					std::string mod_command = argvector.back();
 					argvector.pop_back();
-					if ((mod_command == "1" || mod_command == "T" ) ) {
+					if ((mod_command == "1" || mod_command == "T" || mod_command == "t" ) ) {
 						target_msgs.x = 0.0f;
 						target_msgs.y = 0.0f;
 						target_msgs.z = 0.0f;
@@ -464,42 +488,42 @@ int main(int argc, char **argv) {
 						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_AUTO;
 					}
-					if ((mod_command == "4" || mod_command == "L" ) ) {
+					if ((mod_command == "4" || mod_command == "L" || mod_command == "l") ) {
 						target_msgs.x = 0.0f;
 						target_msgs.y = 0.0f;
 						target_msgs.z = 0.0f;
 						target_msgs.w = MISSION_LANDING;
 					}
-					if ((mod_command == "W" )) {
+					if ((mod_command == "W" || mod_command == "w")) {
 						target_msgs.x = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "E" )) {
+					if ((mod_command == "E" || mod_command == "e")) {
 						target_msgs.x = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "N" )) {
+					if ((mod_command == "N" || mod_command == "n")) {
 						target_msgs.y = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "S" )) {
+					if ((mod_command == "S" || mod_command == "s")) {
 
 						target_msgs.y = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "U" )) {
+					if ((mod_command == "U" || mod_command == "u")) {
 
 						target_msgs.z = 500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "D" )) {
+					if ((mod_command == "D" || mod_command == "d")) {
 						target_msgs.z = -500.0f;
 						target_msgs.w = MISSION_AUX;
 					}
-					if ((mod_command == "G" )) {
+					if ((mod_command == "G" || mod_command == "g")) {
 						target_msgs.w = MISSION_GROUND;
 					}
-					if ((mod_command == "RESET" )) {
+					if ((mod_command == "RESET" || mod_command == "reset" )) {
 						target_msgs.x = 500.0f;
 						target_msgs.w = MISSION_RESET;
 					}
