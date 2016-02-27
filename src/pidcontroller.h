@@ -19,7 +19,7 @@
 #include <string>
 #include "calculation.h"
 
-#define GROUND_ALTITUDE -2700.0f
+#define GROUND_ALTITUDE -2650.0f
 #define MANAGE_MODE_ERROR -1
 #define MANAGE_TARGET_ERROR -1
 

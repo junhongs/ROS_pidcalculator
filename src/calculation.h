@@ -17,7 +17,6 @@
 #include "std_msgs/UInt16MultiArray.h"
 #include <string>
 
-#define GROUND_ALTITUDE -2700.0f
 #define MANAGE_MODE_ERROR -1
 #define MANAGE_TARGET_ERROR -1
 

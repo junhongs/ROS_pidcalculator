@@ -28,7 +28,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
 
    current_position_x(0.0f),
    current_position_y(500.0f),
-   current_position_z(-2000.0f),
+   current_position_z(-3000.0f),
 
    tim1_timer(0.0f),
    tim2_timer(0.0f),
@@ -42,7 +42,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    reboot_time(0.0l),
    ground_altitude(GROUND_ALTITUDE),
 
-   pid_rate_Z(-500.0f)
+   pid_rate_Z(-450.0f)
 {
    pid_output_msg.data.resize(5, 1000);
    drone_num = making_drone();
@@ -87,18 +87,19 @@ int PIDCONTROLLER::manage_mode(unsigned int getset, unsigned int *state) {
       *state = current_mode;
    }
    else if (getset == SET || getset == SET_TIMER) {
-      std::cout << drone << ":" << "CURRENT MODE : " << mode_str[current_mode] << ":" << "   TO   " << mode_str[*state] << std::endl;;
+      std::cout << drone << ":" << mode_str[current_mode] << ":" << "   TO   " << mode_str[*state];
       if ((*state == MODE_TAKEOFF && current_mode != MODE_GROUND) ) {
-         std::cout << drone << ":" << "NO PERMISSION to TAKEOFF" << std::endl;
+         std::cout << "     NO PERMISSION to TAKEOFF" << std::endl;
          return MANAGE_MODE_ERROR;
       }
       if (current_mode == MODE_GROUND && *state != MODE_TAKEOFF ) {
-         std::cout << drone << ":" << "NO PERMISSION" << std::endl;
+         std::cout << "     NO PERMISSION" << std::endl;
          return MANAGE_MODE_ERROR;
       }
       if (current_mode != *state)
          is_changed_manage_mode = 1;
       current_mode = *state;
+      std::cout << std::endl;
    }
    return ret;
 }
@@ -344,7 +345,7 @@ void PIDCONTROLLER::reboot_drone() {
 }
 
 void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
-   std::cout << drone << ":" << "::TARGET MESSAGE::" << std::endl;;
+   // std::cout << drone << ":" << "::TARGET MESSAGE::" << std::endl;;
    float target_x = msg.x;
    float target_y = msg.y;
    float target_z = msg.z;
@@ -356,8 +357,8 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    manage_current_pos(GET, &current_x, &current_y, &current_z);
    unsigned int mission = (unsigned int)msg.w;
    unsigned int tmp_mod = MODE_GROUND;
-   if (mission <= MISSION_AUX )
-      std::cout << drone << ":" << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
+   // if (mission <= MISSION_AUX )
+   //    std::cout << drone << ":             " << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
 
    if (mission == MISSION_TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;

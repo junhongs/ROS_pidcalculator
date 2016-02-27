@@ -71,9 +71,9 @@ int main(int argc, char **argv) {
    PIDCONTROLLER third("/THIRD",0.0f, 0.0f);
    PIDCONTROLLER fourth("/FOURTH",0.0f, 0.0f);
 
-   ros::MultiThreadedSpinner spinner(4); // Use 4 threads
-   spinner.spin(); // spin() will not return until the node has been shutdown
+   // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
+   // spinner.spin(); // spin() will not return until the node has been shutdown
 
-   // ros::spin();
+    ros::spin();
    return 0;
 }
