@@ -56,6 +56,9 @@ private:
    double node_last_time;
    double reboot_time;
 
+   unsigned short is_arm;
+   unsigned int is_first_get_position;
+
    std_msgs::UInt16MultiArray pid_output_msg;
 
    unsigned int current_mode;

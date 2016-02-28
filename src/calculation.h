@@ -80,10 +80,12 @@ public:
 enum flight_mode_e {
    MODE_TAKEOFF,
    MODE_NAV,
+   MODE_NAV_N,
    MODE_MANUAL,
    MODE_LANDING,
    MODE_POSHOLD,
-   MODE_GROUND
+   MODE_GROUND,
+   MODE_NOT_DETECTED
 };
 
 enum flight_mission_e {
@@ -119,7 +121,7 @@ void  calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
 void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void  calc_takeoff_altitude(pid_calc_t *);
-void  calc_takeoff_altitude_once(pid_calc_t *, int);
+void  calc_takeoff_altitude_once(pid_calc_t *, int, int);
 
 int   constrain(int amt, int low, int high);
 float constrain(float amt, float low, float high);

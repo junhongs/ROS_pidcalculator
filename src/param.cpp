@@ -324,8 +324,6 @@ void save_param(const char* fname) {
 
 }
 
-// void load_param() {
-// void load_param(std::string fname) {
 void load_param(const char* fname) {
 
    std::ifstream inFile(fname);
@@ -383,9 +381,6 @@ void delete_param() {
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
       //init_param(param_list[i], get_param_n(i), get_default_param_n(i));
       ros::param::del(param_list[i]);
-
       i++;
    }
-
-
 }

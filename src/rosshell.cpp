@@ -327,15 +327,22 @@ void keyLoop() {
 		case '4':
 			key_debug("::LOAD THE PARAMETER");
 			load_param("/tmp/pidparam");
+			param_msg.data = LOAD_PARAMFILE;
+			param_pub.publish(param_msg);
+
 			break;
 		case '5':
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param();
 			load_param("/tmp/pidparam");
+			param_msg.data = LOAD_PARAMFILE;
+			param_pub.publish(param_msg);
 			break;
 		case '6':
 			key_debug("::LOAD THE STARTED PARAMETER");
 			load_param("/tmp/pidparam_start");
+			param_msg.data = LOAD_PARAMFILE;
+			param_pub.publish(param_msg);
 			break;
 
 
@@ -434,7 +441,6 @@ int main(int argc, char **argv) {
 	tcgetattr(kfd, &cooked);
 	int count = 0;
 	init_param();
-	// init_param(&pid_param);
 
 	printf("\033[K"); // Erase to end of line
 	printf("\033[2J\n"); // Clear the screen, move to (0,0)

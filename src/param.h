@@ -2,7 +2,7 @@
 #define _PARAM_H
 
 #include "ros/ros.h"
-
+#define LOAD_PARAMFILE 9999
 
 typedef struct pid_parameter_t {
 	double pid_P;

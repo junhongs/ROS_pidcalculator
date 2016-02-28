@@ -50,8 +50,14 @@ void positionCallback(const std_msgs::Float32& msg) {
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
-   update_param(msg.data);
-   std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
+   if ( msg.data == LOAD_PARAMFILE ) {
+      std::cout << "LOAD the Param file" << std::endl;
+      load_param("/tmp/pidparam");
+   }
+   else {
+      update_param(msg.data);
+      std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
+   }
 }
 
 int main(int argc, char **argv) {
@@ -66,14 +72,14 @@ int main(int argc, char **argv) {
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
-   PIDCONTROLLER first("/FIRST",0.0f, 0.0f);
-   PIDCONTROLLER second("/SECOND",0.0f, 0.0f);
-   PIDCONTROLLER third("/THIRD",0.0f, 0.0f);
-   PIDCONTROLLER fourth("/FOURTH",0.0f, 0.0f);
+   PIDCONTROLLER first("/FIRST", 0.0f, 0.0f);
+   PIDCONTROLLER second("/SECOND", 0.0f, 0.0f);
+   PIDCONTROLLER third("/THIRD", 0.0f, 0.0f);
+   PIDCONTROLLER fourth("/FOURTH", 0.0f, 0.0f);
 
    // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    // spinner.spin(); // spin() will not return until the node has been shutdown
 
-    ros::spin();
+   ros::spin();
    return 0;
 }
