@@ -3,7 +3,7 @@
 #include "math.h"
 #include <iostream>
 using namespace std;
-std::string mission_str[MISSION_AUX + 1] =
+std::string mission_str[SIZEOFMISSION] =
 {
    "MISSION_TAKEOFF",
    "MISSION_AUTO",
@@ -14,14 +14,16 @@ std::string mission_str[MISSION_AUX + 1] =
    "MISSION_RESET",
    "MISSION_AUX"
 };
-std::string mode_str[MODE_GROUND + 1] =
+std::string mode_str[SIZEOFMODE] =
 {
    "MODE_TAKEOFF",
    "MODE_NAV",
+   "MODE_NAV_N",
    "MODE_MANUAL",
    "MODE_LANDING",
    "MODE_POSHOLD",
-   "MODE_GROUND"
+   "MODE_GROUND",
+   "MODE_NOT_DETECTED"
 };
 
 // pid_calc_t -> error
@@ -158,7 +160,7 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    float vector_z = target_z->target_pos - cur_z->cur_pos;
    float norm_xyz = sqrt(vector_x * vector_x + vector_y * vector_y + vector_z * vector_z);
 
-   if (norm_xyz) {
+   if (norm_xyz > 0) {
       target_x->target_vel = vector_x / norm_xyz * nav_target_vel;
       target_y->target_vel = vector_y / norm_xyz * nav_target_vel;
       target_z->target_vel = vector_z / norm_xyz * nav_target_vel;
@@ -195,6 +197,23 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    }
 }
 
+//if the mode is not changed, the changed poshold is not return to the navi_rate
+void navi_rate_next(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
+
+      // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+      calc_rate_error(pid_rate, target, current);
+      calc_pid(pid_rate, rate_param);
+
+      geometry_msgs::Inertia pid_inner_msg;
+      pid_inner_msg.m = target->target_vel;
+      pid_inner_msg.ixx = pid_rate->inner_p;
+      pid_inner_msg.ixy = pid_rate->inner_i;
+      pid_inner_msg.ixz = pid_rate->inner_d;
+      pid_inner_msg.izz =  pid_rate->output;
+      pid_inner_pub->publish(pid_inner_msg);
+}
+
+
 void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, float max_vel) {
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
    target->target_vel = target->target_pos * max_vel;
@@ -213,7 +232,6 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
-   // pid_pos_p->output = get_P(pid_pos_p, &pid_poshold_pos_param_X);
    calc_pid(pid_pos, pos_param);
    target->target_vel = pid_pos->output;
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);

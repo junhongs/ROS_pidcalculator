@@ -29,7 +29,7 @@ static const float LANDING_SPEED = -200.0f;
 class PIDCONTROLLER
 {
 public:
-   PIDCONTROLLER(std::string DRONE,float x_off, float y_off);
+   PIDCONTROLLER(std::string DRONE, float x_off, float y_off);
    ~PIDCONTROLLER();
 private:
    ros::Timer timer;
@@ -48,10 +48,10 @@ private:
 
    float x_offset;
    float y_offset;
-   
+
    float max_vel;
    float limited_target_vel;
-   
+
    double node_cur_time;
    double node_last_time;
    double reboot_time;
@@ -108,6 +108,28 @@ private:
    float target_pos_x;
    float target_pos_y;
    float target_pos_z;
+
+//POSHOLD PARAMETER
+   pid_parameter_t pid_poshold_pos_param_X;
+   pid_parameter_t pid_poshold_rate_param_X;
+
+   pid_parameter_t pid_poshold_pos_param_Y;
+   pid_parameter_t pid_poshold_rate_param_Y;
+
+   pid_parameter_t pid_poshold_pos_param_Z;
+   pid_parameter_t pid_poshold_rate_param_Z;
+
+//NAVIGATION PARAMETER
+   pid_parameter_t pid_nav_pos_param_X;
+   pid_parameter_t pid_nav_rate_param_X;
+
+   pid_parameter_t pid_nav_pos_param_Y;
+   pid_parameter_t pid_nav_rate_param_Y;
+
+   pid_parameter_t pid_nav_pos_param_Z;
+   pid_parameter_t pid_nav_rate_param_Z;
+
+
 
    static int making_drone();
 

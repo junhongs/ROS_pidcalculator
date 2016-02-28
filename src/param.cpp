@@ -71,70 +71,70 @@ char param_list[][50] =
 };
 
 //POSHOLD PARAMETER
-pid_parameter_t pid_poshold_pos_param_X = {0, };
-pid_parameter_t pid_poshold_rate_param_X = {0, };
+pid_parameter_t __pid_poshold_pos_param_X(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_rate_param_X(0.0l,0.0l,0.0l,0.0l);
 
-pid_parameter_t pid_poshold_pos_param_Y = {0, };
-pid_parameter_t pid_poshold_rate_param_Y = {0, };
+pid_parameter_t __pid_poshold_pos_param_Y(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_rate_param_Y(0.0l,0.0l,0.0l,0.0l);
 
-pid_parameter_t pid_poshold_pos_param_Z = {0, };
-pid_parameter_t pid_poshold_rate_param_Z = {0, };
+pid_parameter_t __pid_poshold_pos_param_Z(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_rate_param_Z(0.0l,0.0l,0.0l,0.0l);
 
 
 
 //NAVIGATION PARAMETER
-pid_parameter_t pid_nav_pos_param_X = {0, };
-pid_parameter_t pid_nav_rate_param_X = {0, };
+pid_parameter_t __pid_nav_pos_param_X(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_rate_param_X(0.0l,0.0l,0.0l,0.0l);
 
-pid_parameter_t pid_nav_pos_param_Y = {0, };
-pid_parameter_t pid_nav_rate_param_Y = {0, };
+pid_parameter_t __pid_nav_pos_param_Y(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_rate_param_Y(0.0l,0.0l,0.0l,0.0l);
 
-pid_parameter_t pid_nav_pos_param_Z = {0, };
-pid_parameter_t pid_nav_rate_param_Z = {0, };
+pid_parameter_t __pid_nav_pos_param_Z(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_rate_param_Z(0.0l,0.0l,0.0l,0.0l);
 
 
 
 
 
 //DEFAULT POSHOLD PARAMETER
-pid_parameter_t default_param_pos_X = {
+pid_parameter_t default_param_pos_X (
    1.080l,
    0.255l,
    0.0l,
    200.0l
-};
-pid_parameter_t default_param_pos_Y = {
+);
+pid_parameter_t default_param_pos_Y (
    1.205l,
    0.255l,
    0.0l,
    200.0l
-};
-pid_parameter_t default_param_pos_Z = {
+);
+pid_parameter_t default_param_pos_Z (
    1.210l,
    0.255l,
    0.0l,
    200.0l
-};
+);
 
 
-pid_parameter_t default_param_rate_X = {
+pid_parameter_t default_param_rate_X (
    0.125l,
    0.020l,
    0.019l,
    300.0l
-};
-pid_parameter_t default_param_rate_Y = {
+);
+pid_parameter_t default_param_rate_Y (
    0.122l,
    0.020l,
    0.017l,
    300.0l
-};
-pid_parameter_t default_param_rate_Z = {
+);
+pid_parameter_t default_param_rate_Z (
    0.135l,
    0.015l,
    0.019l,
    500.0l
-};
+);
 
 
 
@@ -144,44 +144,44 @@ pid_parameter_t default_param_rate_Z = {
 
 
 //DEFAULT NAVIGATION PARAMETER
-pid_parameter_t default_param_nav_pos_X = {
+pid_parameter_t default_param_nav_pos_X (
    1.980l,
    0.0l,
    0.0l,
    200.0l
-};
-pid_parameter_t default_param_nav_pos_Y = {
+);
+pid_parameter_t default_param_nav_pos_Y (
    2.465l,
    0.0l,
    0.0l,
    200.0l
-};
-pid_parameter_t default_param_nav_pos_Z = {
+);
+pid_parameter_t default_param_nav_pos_Z (
    1.902l,
    0.0l,
    0.0l,
    200.0l
-};
+);
 
 
-pid_parameter_t default_param_nav_rate_X = {
+pid_parameter_t default_param_nav_rate_X (
    0.065l,
    0.048l,
    0.050l,
    300.0l
-};
-pid_parameter_t default_param_nav_rate_Y = {
+);
+pid_parameter_t default_param_nav_rate_Y (
    0.071l,
    0.043l,
    0.056l,
    300.0l
-};
-pid_parameter_t default_param_nav_rate_Z = {
+);
+pid_parameter_t default_param_nav_rate_Z (
    0.094l,
    0.031l,
    0.010l,
    500.0l
-};
+);
 
 
 
@@ -205,20 +205,20 @@ pos_pid_parameter_t pid_default_param = {
 
 pos_pid_parameter_t pid_param = {
    //POSHOLD PARAM
-   &pid_poshold_pos_param_X,
-   &pid_poshold_rate_param_X,
-   &pid_poshold_pos_param_Y,
-   &pid_poshold_rate_param_Y,
-   &pid_poshold_pos_param_Z,
-   &pid_poshold_rate_param_Z,
+   &__pid_poshold_pos_param_X,
+   &__pid_poshold_rate_param_X,
+   &__pid_poshold_pos_param_Y,
+   &__pid_poshold_rate_param_Y,
+   &__pid_poshold_pos_param_Z,
+   &__pid_poshold_rate_param_Z,
 
    //NAV  PARAM
-   &pid_nav_pos_param_X,
-   &pid_nav_rate_param_X,
-   &pid_nav_pos_param_Y,
-   &pid_nav_rate_param_Y,
-   &pid_nav_pos_param_Z,
-   &pid_nav_rate_param_Z
+   &__pid_nav_pos_param_X,
+   &__pid_nav_rate_param_X,
+   &__pid_nav_pos_param_Y,
+   &__pid_nav_rate_param_Y,
+   &__pid_nav_pos_param_Z,
+   &__pid_nav_rate_param_Z
 };
 
 
@@ -324,23 +324,24 @@ void save_param(const char* fname) {
 
 }
 
-void load_param(const char* fname) {
+int load_param(const char* fname) {
 
    std::ifstream inFile(fname);
    // std::ifstream inFile("/tmp/pidparam");
    int i = 0;
+   int ret = 0;
    char inputString[100] = {0,};
-   if (inFile.is_open() )
+   if (ret = inFile.is_open() )
       while (!inFile.eof() && i < sizeof(param_list) / sizeof(param_list[0]) ) {
          inFile.getline(inputString, 100);
-
          double temp = strtod(inputString, NULL);
-         // std::cout << i << ":" << temp << std::endl;
          set_param_n(i, temp);
          *get_param_n(i) = temp;
          i++;
       }
    inFile.close();
+
+   return ret;
 }
 
 void delete_file_param() {

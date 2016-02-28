@@ -77,6 +77,7 @@ public:
    float target_vel;
 };
 
+/*have to change mode_str also!*/
 enum flight_mode_e {
    MODE_TAKEOFF,
    MODE_NAV,
@@ -85,9 +86,10 @@ enum flight_mode_e {
    MODE_LANDING,
    MODE_POSHOLD,
    MODE_GROUND,
-   MODE_NOT_DETECTED
+   MODE_NOT_DETECTED,
+   SIZEOFMODE
 };
-
+/*have to change mission_str also!*/
 enum flight_mission_e {
    MISSION_TAKEOFF,
    MISSION_AUTO,
@@ -96,7 +98,8 @@ enum flight_mission_e {
    MISSION_AUTO_N,
    MISSION_GROUND,
    MISSION_RESET,
-   MISSION_AUX
+   MISSION_AUX,
+   SIZEOFMISSION
 };
 
 enum {
@@ -107,8 +110,8 @@ enum {
 };
 
 extern std::string DRONE[4];
-extern std::string mission_str[MISSION_AUX + 1];
-extern std::string mode_str[MODE_GROUND + 1];
+extern std::string mission_str[SIZEOFMODE];
+extern std::string mode_str[SIZEOFMISSION];
 void  reset_PID(pid_calc_t *, float);
 void  reset_I(pid_calc_t *, float);
 
@@ -129,5 +132,7 @@ float constrain(float amt, float low, float high);
 void  pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
 void  manual(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, float);
 void  navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, int);
+void navi_rate_next(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
+
 
 #endif

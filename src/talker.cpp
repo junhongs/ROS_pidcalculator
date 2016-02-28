@@ -24,6 +24,8 @@
 
 #include <Eigen/Dense>
 
+#include "calculation.h"
+
 
 #if 0
 typedef struct pos_vel_t {
@@ -119,19 +121,23 @@ int main(int argc, char **argv) {
 
 
 
-	Matrix2f mat, mat2, mat3;
-	Matrix<float, 2, 2> mat4;
-	mat << 1, 2, 3, 4;
-	mat2 = Matrix2f::Identity(2, 2);
-	Vector2f vec;
-	vec = mat.diagonal();
-	cout << "diagonal" << endl << vec << endl << endl << endl;
-	cout << "transpose" << endl << mat.transpose() << endl << endl;
-	cout << "inverse" << endl << mat.inverse() << endl << endl;
-	cout << "*" << endl << mat * mat2 << endl << endl;
-	cout << "/" << endl << mat * mat2.inverse() << endl << endl;
+	// Matrix2f mat, mat2, mat3;
+	// Matrix<float, 2, 2> mat4;
+	// mat << 1, 2, 3, 4;
+	// mat2 = Matrix2f::Identity(2, 2);
+	// Vector2f vec;
+	// vec = mat.diagonal();
+	// cout << "diagonal" << endl << vec << endl << endl << endl;
+	// cout << "transpose" << endl << mat.transpose() << endl << endl;
+	// cout << "inverse" << endl << mat.inverse() << endl << endl;
+	// cout << "*" << endl << mat * mat2 << endl << endl;
+	// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
 
-	// cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
+
+	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
+	std::ifstream inFile("/tmp/pidparam1");
+	cout <<"FILE TEST"<<inFile.is_open() << endl;
+
 	while (ros::ok()) {
 
 
