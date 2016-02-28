@@ -22,6 +22,9 @@
 #include <fstream>
 
 
+#include <Eigen/Dense>
+
+
 #if 0
 typedef struct pos_vel_t {
 	float cur_pos;
@@ -67,6 +70,12 @@ void calc_velocity(pos_vel_t* pos_vel) {
 
 }
 #endif
+
+
+using namespace std;
+using namespace Eigen;
+
+
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "talker");
 	ros::NodeHandle n;
@@ -95,22 +104,39 @@ int main(int argc, char **argv) {
 	// //myfile << "buff\n";
 	// myfile.close();
 
-#define MAX_SIZE 1000
-	char inputString[MAX_SIZE];
+// #define MAX_SIZE 1000
+// 	char inputString[MAX_SIZE];
 
 
-	std::ofstream outFile("/tmp/output.txt");
+	// std::ofstream outFile("/tmp/output.txt");
 
-	for (int i = 0 ; i < 10 ; i++) {
-		outFile << i << std::endl;
-	}
+	// for (int i = 0 ; i < 10 ; i++) {
+	// 	outFile << i << std::endl;
+	// }
 
-	outFile.close();
-
-
+	// outFile.close();
 
 
+
+
+	Matrix2f mat, mat2, mat3;
+	Matrix<float, 2, 2> mat4;
+	mat << 1, 2, 3, 4;
+	mat2 = Matrix2f::Identity(2, 2);
+	Vector2f vec;
+	vec = mat.diagonal();
+	cout << "diagonal" << endl << vec << endl << endl << endl;
+	cout << "transpose" << endl << mat.transpose() << endl << endl;
+	cout << "inverse" << endl << mat.inverse() << endl << endl;
+	cout << "*" << endl << mat * mat2 << endl << endl;
+	cout << "/" << endl << mat * mat2.inverse() << endl << endl;
+
+	// cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
 	while (ros::ok()) {
+
+
+
+
 		if (argv[1] != NULL)
 			std::cout  <<  argv[1]  << std::endl;
 		//std::cout  <<argv[0]  << std::endl;

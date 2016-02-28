@@ -64,8 +64,12 @@ void set_param_n(int, int, int, int, double);
 
 
 
-void save_param();
-void load_param();
+// void save_param(std::string);
+void save_param(const char*);
+// void load_param(std::string);
+void load_param(const char*);
+// void save_param();
+// void load_param();
 void delete_file_param();
 
 

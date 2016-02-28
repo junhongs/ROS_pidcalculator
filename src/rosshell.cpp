@@ -91,6 +91,21 @@ void key_debug(std::string str, double n) {
 	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
 }
 
+void print_param(int nav) {
+	printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+	printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
+	if (nav)
+		printf("--------NAV-------\n");
+	else
+		printf("--------POS-------\n");
+	printf(":::  P   :   I   :   P   :   I   :   D\n");
+
+	printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+	printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+	printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+}
+
+
 void keyLoop() {
 	char c;
 	bool dirty = false;
@@ -100,6 +115,9 @@ void keyLoop() {
 
 	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
+	const std::string tmp_st("/tmp/pidparam");
+
+
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -117,17 +135,20 @@ void keyLoop() {
 	double *db_pt = get_param_n(pr,  xyz, pidi);
 
 
-		if (nav)
-			printf("NAV\n");
-		else
-			printf("POS\n");
-		printf(":::  P   :   I   :   P   :   I   :   D\n");
 
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
-		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
-		printf("az:SCALE  |  12:NAV\n 345:SAVE,LOAD,DELETE PARAM\n\n");
+	print_param(nav);
+	// printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+	// printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n\n");
+	// if (nav)
+	// 	printf("--------NAV-------\n");
+	// else
+	// 	printf("--------POS-------\n");
+	// printf(":::  P   :   I   :   P   :   I   :   D\n");
+
+	// printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+	// printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+	// printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+
 
 
 	while (is_loop) {
@@ -301,24 +322,20 @@ void keyLoop() {
 
 		case '3':
 			key_debug("::SAVE THE PARAMETER");
-			// std::ofstream outFile("/tmp/drone_pid_param");
-			save_param();
-			// int i = 0;
-			// //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
-			// while (i < sizeof(param_list) / sizeof(param_list[0])) {
-			// 	outFile << get_param_n(i) << std::endl;
-			// 	i++;
-			// }
-			// outFile.close();
+			save_param("/tmp/pidparam");
 			break;
 		case '4':
 			key_debug("::LOAD THE PARAMETER");
-			load_param();
+			load_param("/tmp/pidparam");
 			break;
 		case '5':
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param();
-			load_param();
+			load_param("/tmp/pidparam");
+			break;
+		case '6':
+			key_debug("::LOAD THE STARTED PARAMETER");
+			load_param("/tmp/pidparam_start");
 			break;
 
 
@@ -358,18 +375,19 @@ void keyLoop() {
 		}
 		db_pt = get_param_n(pr,  xyz, pidi);
 
-		//printf("%d,%d,%d\n", pr,  xyz, pidi);
-		if (nav)
-			printf("NAV\n");
-		else
-			printf("POS\n");
-		printf(":::  P   :   I   :   P   :   I   :   D\n");
+		print_param(nav);
+		// //printf("%d,%d,%d\n", pr,  xyz, pidi);
+		// printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+		// printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
+		// if (nav)
+		// 	printf("--------NAV-------\n");
+		// else
+		// 	printf("--------POS-------\n");
+		// printf(":::  P   :   I   :   P   :   I   :   D\n");
 
-		printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-		printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-		printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
-		printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
-		printf("az:SCALE  |  12:NAV\n 345:SAVE,LOAD,DELETE PARAM\n\n");
+		// printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+		// printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+		// printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
 //		std::cout << param_list[get_param_num(pr, xyz, pidi)] << ":" << *db_pt << std::endl;
 
 	}
@@ -377,6 +395,8 @@ void keyLoop() {
 	key_debug("\nQUIT THE PROGRAM\n");
 	return;
 }
+
+
 
 void positionCallback(const std_msgs::Float32& msg) {
 	float_data = msg.data;

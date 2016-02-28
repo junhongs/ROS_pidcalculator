@@ -308,16 +308,12 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
    }
 }
 
-void save_param() {
-   // std::ofstream outFile("/tmp/output.txt");
+// void save_param() {
+// void save_param(std::string fname) {
+void save_param(const char* fname) {
 
-   // for (int i = 0 ; i < 10 ; i++) {
-   //    outFile << i << std::endl;
-   // }
-
-   // outFile.close();
-
-   std::ofstream outFile("/tmp/pidparam");
+   std::ofstream outFile(fname);
+   // std::ofstream outFile("/tmp/pidparam");
    int i = 0;
    //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
    while (i < sizeof(param_list) / sizeof(param_list[0])) {
@@ -328,25 +324,28 @@ void save_param() {
 
 }
 
-void load_param() {
-   std::ifstream inFile("/tmp/pidparam");
+// void load_param() {
+// void load_param(std::string fname) {
+void load_param(const char* fname) {
 
+   std::ifstream inFile(fname);
+   // std::ifstream inFile("/tmp/pidparam");
    int i = 0;
    char inputString[100] = {0,};
    if (inFile.is_open() )
       while (!inFile.eof() && i < sizeof(param_list) / sizeof(param_list[0]) ) {
          inFile.getline(inputString, 100);
 
-         double temp = strtod(inputString,NULL);
+         double temp = strtod(inputString, NULL);
          // std::cout << i << ":" << temp << std::endl;
-         set_param_n(i,temp);
+         set_param_n(i, temp);
          *get_param_n(i) = temp;
          i++;
       }
    inFile.close();
 }
 
-void delete_file_param(){
+void delete_file_param() {
    std::ofstream outFile("/tmp/pidparam");
    int i = 0;
    //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
@@ -360,7 +359,8 @@ void delete_file_param(){
 
 
 void init_param() {
-   load_param();
+   load_param("/tmp/pidparam");
+   save_param("/tmp/pidparam_start");
    return;
    int i = 0;
    //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
