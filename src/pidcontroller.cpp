@@ -58,6 +58,20 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    pid_nav_pos_param_Z(__pid_nav_pos_param_Z),
    pid_nav_rate_param_Z(__pid_nav_rate_param_Z),
 
+   pid_param_c(
+      &pid_poshold_pos_param_X,
+      &pid_poshold_rate_param_X,
+      &pid_poshold_pos_param_Y,
+      &pid_poshold_rate_param_Y,
+      &pid_poshold_pos_param_Z,
+      &pid_poshold_rate_param_Z,
+      &pid_nav_pos_param_X,
+      &pid_nav_rate_param_X,
+      &pid_nav_pos_param_Y,
+      &pid_nav_rate_param_Y,
+      &pid_nav_pos_param_Z,
+      &pid_nav_rate_param_Z
+   ),
 
    pid_rate_Z(-450.0f)
 {
@@ -65,7 +79,32 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    drone_num = making_drone();
    drone = DRONE;
 
-   std::cout << "initializing.." << drone << std::endl;
+
+   std::string tmp_dir("/tmp/");
+   std::string tmp_st("pidparam");
+   std::string tmp_st_start;
+
+   char dnum[2];
+   dnum[0] = '1' + drone_num;
+   dnum[1] = 0;
+   tmp_st += dnum;
+   tmp_st_start = "tmp_" + tmp_st;
+
+   tmp_st = tmp_dir + tmp_st;
+   tmp_st_start = tmp_dir + tmp_st_start;
+
+   std::cout << "initializing.." << drone;
+   if ( load_param(tmp_st.c_str(), &pid_param_c) ) {
+      std::cout << "::" << "Saved Parameter loaded!"  << std::endl;
+      save_param(tmp_st_start.c_str(), &pid_param_c);
+   }
+
+   else
+      std::cout << std::endl;
+
+
+
+
    std::string current_vel = drone + "/CURRENT_VEL";
    std::string output_pid = drone +  "/OUTPUT_PID";
    std::string output_inner_pid_x = drone + "/OUTPUT_INNER_PID/X";

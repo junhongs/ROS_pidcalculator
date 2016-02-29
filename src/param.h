@@ -34,7 +34,38 @@ public:
 
 
 
-typedef struct pos_pid_parameter_t {
+struct pos_pid_parameter_t {
+public:
+	pos_pid_parameter_t(pid_parameter_t *a, pid_parameter_t *b, pid_parameter_t *c, pid_parameter_t *d, pid_parameter_t *e, pid_parameter_t *f,
+	                    pid_parameter_t *g, pid_parameter_t *h, pid_parameter_t *i, pid_parameter_t *j, pid_parameter_t *k, pid_parameter_t *l
+	                   ):
+		pos_pid_X(a),
+		rate_pid_X(b),
+		pos_pid_Y(c),
+		rate_pid_Y(d),
+		pos_pid_Z(e),
+		rate_pid_Z(f),
+		pos_nav_pid_X(g),
+		rate_nav_pid_X(h),
+		pos_nav_pid_Y(i),
+		rate_nav_pid_Y(j),
+		pos_nav_pid_Z(k),
+		rate_nav_pid_Z(l)
+	{}
+	pos_pid_parameter_t():
+		pos_pid_X(NULL),
+		rate_pid_X(NULL),
+		pos_pid_Y(NULL),
+		rate_pid_Y(NULL),
+		pos_pid_Z(NULL),
+		rate_pid_Z(NULL),
+		pos_nav_pid_X(NULL),
+		rate_nav_pid_X(NULL),
+		pos_nav_pid_Y(NULL),
+		rate_nav_pid_Y(NULL),
+		pos_nav_pid_Z(NULL),
+		rate_nav_pid_Z(NULL)
+	{}
 	pid_parameter_t *pos_pid_X;
 	pid_parameter_t *rate_pid_X;
 
@@ -53,7 +84,7 @@ typedef struct pos_pid_parameter_t {
 
 	pid_parameter_t *pos_nav_pid_Z;
 	pid_parameter_t *rate_nav_pid_Z;
-} pos_pid_parameter_t;
+};
 
 
 void set_param(pos_pid_parameter_t *pid_param);
@@ -75,6 +106,7 @@ int get_param_num(int , int, int, int);
 double *get_param_n(int );
 double *get_param_n(int , int , int);
 double *get_param_n(int, int, int, int);
+double *get_param_n(int, pos_pid_parameter_t *);
 
 double *get_default_param_n(int );
 double *get_default_param_n(int , int, int);
@@ -88,7 +120,9 @@ void set_param_n(int, int, int, int, double);
 
 
 void save_param(const char*);
+void save_param(const char*, pos_pid_parameter_t *);
 int load_param(const char*);
+int load_param(const char*, pos_pid_parameter_t *);
 void delete_file_param();
 
 

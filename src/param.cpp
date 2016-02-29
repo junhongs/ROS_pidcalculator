@@ -71,26 +71,26 @@ char param_list[][50] =
 };
 
 //POSHOLD PARAMETER
-pid_parameter_t __pid_poshold_pos_param_X(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_poshold_rate_param_X(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_pos_param_X;
+pid_parameter_t __pid_poshold_rate_param_X;
 
-pid_parameter_t __pid_poshold_pos_param_Y(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_poshold_rate_param_Y(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_pos_param_Y;
+pid_parameter_t __pid_poshold_rate_param_Y;
 
-pid_parameter_t __pid_poshold_pos_param_Z(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_poshold_rate_param_Z(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_poshold_pos_param_Z;
+pid_parameter_t __pid_poshold_rate_param_Z;
 
 
 
 //NAVIGATION PARAMETER
-pid_parameter_t __pid_nav_pos_param_X(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_nav_rate_param_X(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_pos_param_X;
+pid_parameter_t __pid_nav_rate_param_X;
 
-pid_parameter_t __pid_nav_pos_param_Y(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_nav_rate_param_Y(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_pos_param_Y;
+pid_parameter_t __pid_nav_rate_param_Y;
 
-pid_parameter_t __pid_nav_pos_param_Z(0.0l,0.0l,0.0l,0.0l);
-pid_parameter_t __pid_nav_rate_param_Z(0.0l,0.0l,0.0l,0.0l);
+pid_parameter_t __pid_nav_pos_param_Z;
+pid_parameter_t __pid_nav_rate_param_Z;
 
 
 
@@ -186,7 +186,7 @@ pid_parameter_t default_param_nav_rate_Z (
 
 
 
-pos_pid_parameter_t pid_default_param = {
+pos_pid_parameter_t pid_default_param(
    &default_param_pos_X,
    &default_param_rate_X,
    &default_param_pos_Y,
@@ -200,10 +200,10 @@ pos_pid_parameter_t pid_default_param = {
    &default_param_nav_rate_Y,
    &default_param_nav_pos_Z,
    &default_param_nav_rate_Z
-};
+);
 
 
-pos_pid_parameter_t pid_param = {
+pos_pid_parameter_t pid_param(
    //POSHOLD PARAM
    &__pid_poshold_pos_param_X,
    &__pid_poshold_rate_param_X,
@@ -219,13 +219,22 @@ pos_pid_parameter_t pid_param = {
    &__pid_nav_rate_param_Y,
    &__pid_nav_pos_param_Z,
    &__pid_nav_rate_param_Z
-};
+);
 
 
 
-double *get_param_n(int n) {
+double *get_param_n(int n, pos_pid_parameter_t *tmp_pos_pid_param) {
+   return &((&(((&(tmp_pos_pid_param->pos_pid_X))[n / 4])->pid_P))[n % 4]);
+}
+
+
+
+double *get_param_n(int n ) {
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
 }
+
+
+
 double *get_param_n(int pr, int xyz, int pidi) {
    int n = get_param_num(pr, xyz, pidi);
    return &((&(((&(pid_param.pos_pid_X))[n / 4])->pid_P))[n % 4]);
@@ -295,23 +304,11 @@ void reset_param() {
       i++;
    }
 }
-void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
-   if (ros::param::has(param_name)) {
-      ros::param::get(param_name, *param_ptr);
-      *default_ptr = *param_ptr;
-   }
-   else {
-      // std::cout << *default_ptr << std::endl;
-      ros::param::set(param_name, *default_ptr);
 
-      *param_ptr = *default_ptr;
-   }
-}
 
 // void save_param() {
 // void save_param(std::string fname) {
 void save_param(const char* fname) {
-
    std::ofstream outFile(fname);
    // std::ofstream outFile("/tmp/pidparam");
    int i = 0;
@@ -321,7 +318,18 @@ void save_param(const char* fname) {
       i++;
    }
    outFile.close();
+}
 
+void save_param(const char* fname, pos_pid_parameter_t *tmp_param) {
+   std::ofstream outFile(fname);
+   // std::ofstream outFile("/tmp/pidparam");
+   int i = 0;
+   //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+   while (i < sizeof(param_list) / sizeof(param_list[0])) {
+      outFile << *get_param_n(i, tmp_param) << std::endl;
+      i++;
+   }
+   outFile.close();
 }
 
 int load_param(const char* fname) {
@@ -344,6 +352,25 @@ int load_param(const char* fname) {
    return ret;
 }
 
+int load_param(const char* fname, pos_pid_parameter_t *tmp_param) {
+
+   std::ifstream inFile(fname);
+   int i = 0;
+   int ret = 0;
+   char inputString[100] = {0,};
+   if (ret = inFile.is_open() )
+      while (!inFile.eof() && i < sizeof(param_list) / sizeof(param_list[0]) ) {
+         inFile.getline(inputString, 100);
+         double temp = strtod(inputString, NULL);
+         *get_param_n(i, tmp_param) = temp;
+         i++;
+      }
+   inFile.close();
+
+   return ret;
+}
+
+
 void delete_file_param() {
    std::ofstream outFile("/tmp/pidparam");
    int i = 0;
@@ -356,17 +383,32 @@ void delete_file_param() {
 
 }
 
+void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {
+   if (ros::param::has(param_name)) {
+      ros::param::get(param_name, *param_ptr);
+      *default_ptr = *param_ptr;
+   }
+   else {
+      // std::cout << *default_ptr << std::endl;
+      ros::param::set(param_name, *default_ptr);
+
+      *param_ptr = *default_ptr;
+   }
+}
 
 void init_param() {
-   load_param("/tmp/pidparam");
-   save_param("/tmp/pidparam_start");
-   return;
-   int i = 0;
-   //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
-   while (i < sizeof(param_list) / sizeof(param_list[0])) {
-      init_param(param_list[i], get_param_n(i), get_default_param_n(i));
-      // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << *get_default_param_n(i) << std::endl;
-      i++;
+   if (load_param("/tmp/pidparam"))
+      save_param("/tmp/tmp_pidparam");
+   else {
+      int i = 0;
+      //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+      while (i < sizeof(param_list) / sizeof(param_list[0])) {
+         init_param(param_list[i], get_param_n(i), get_default_param_n(i));
+         // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << *get_default_param_n(i) << std::endl;
+         i++;
+      }
+      save_param("/tmp/pidparam");
+      save_param("/tmp/tmp_pidparam");
    }
 }
 

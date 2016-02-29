@@ -136,8 +136,10 @@ int main(int argc, char **argv) {
 
 	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
 	std::ifstream inFile("/tmp/pidparam1");
-	cout <<"FILE TEST"<<inFile.is_open() << endl;
-
+	cout << "FILE TEST" << inFile.is_open() << endl;
+	std::string tmp_st("/tmp/pidparam");
+	tmp_st += "1";
+	cout << tmp_st << endl;
 	while (ros::ok()) {
 
 

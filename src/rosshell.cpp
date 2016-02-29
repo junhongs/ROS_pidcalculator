@@ -106,7 +106,7 @@ void print_param(int nav) {
 }
 
 
-void keyLoop() {
+void keyLoop(std::string param_file_name) {
 	char c;
 	bool dirty = false;
 	print_cur();
@@ -115,8 +115,11 @@ void keyLoop() {
 
 	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
-	const std::string tmp_st("/tmp/pidparam");
 
+	std::cout << std::endl << param_file_name.c_str() << std::endl;
+
+	std::string param_start_str("tmp_");
+	param_start_str += param_file_name;
 
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -125,7 +128,7 @@ void keyLoop() {
 	raw.c_cc[VEOL] = 1;
 	raw.c_cc[VEOF] = 2;
 	tcsetattr(kfd, TCSANOW, &raw);
-	puts("Reading from keyboard");
+	// puts("Reading from keyboard");
 	//printf("\033[K"); // Erase to end of line
 	//print_cur();
 	//printf("\033[2J"); // Clear the screen, move to (0,0)
@@ -319,14 +322,14 @@ void keyLoop() {
 			nav = 1;
 			break;
 
-
+// "/tmp/pidparam"
 		case '3':
 			key_debug("::SAVE THE PARAMETER");
-			save_param("/tmp/pidparam");
+			save_param(param_file_name.c_str());
 			break;
 		case '4':
 			key_debug("::LOAD THE PARAMETER");
-			load_param("/tmp/pidparam");
+			load_param(param_file_name.c_str());
 			param_msg.data = LOAD_PARAMFILE;
 			param_pub.publish(param_msg);
 
@@ -334,13 +337,13 @@ void keyLoop() {
 		case '5':
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param();
-			load_param("/tmp/pidparam");
+			load_param(param_file_name.c_str());
 			param_msg.data = LOAD_PARAMFILE;
 			param_pub.publish(param_msg);
 			break;
 		case '6':
 			key_debug("::LOAD THE STARTED PARAMETER");
-			load_param("/tmp/pidparam_start");
+			load_param(param_start_str.c_str());
 			param_msg.data = LOAD_PARAMFILE;
 			param_pub.publish(param_msg);
 			break;
@@ -472,7 +475,7 @@ int main(int argc, char **argv) {
 				continue;
 			if (argvector[0] == "pid") {
 				current_program = "PID_CONTROLLER";
-				keyLoop();
+				keyLoop("/tmp/pidparam");
 			}
 			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
 				key_debug("SHUT DOWN THE DRONE_SHELL\n");
