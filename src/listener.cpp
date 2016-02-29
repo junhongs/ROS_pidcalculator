@@ -64,7 +64,7 @@ void paramCallback(const std_msgs::Int32& msg) {
 
       char num[2] = "0";
       num[0] += msg.data - LOAD_PARAMFILE;
-      if (num[0])
+      if (num[0] != '0')
          param_name += num;
       std::cout << "LOAD the Param file:::::  " << param_name  << std::endl;
       if(!load_param(param_name.c_str(), &(drone1->pid_param_c) ) ){
