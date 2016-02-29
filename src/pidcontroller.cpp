@@ -99,8 +99,23 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
       save_param(tmp_st_start.c_str(), &pid_param_c);
    }
 
-   else
+   else {
+      pid_param_c.set_param(
+         &__pid_poshold_pos_param_X,
+         &__pid_poshold_rate_param_X,
+         &__pid_poshold_pos_param_Y,
+         &__pid_poshold_rate_param_Y,
+         &__pid_poshold_pos_param_Z,
+         &__pid_poshold_rate_param_Z,
+         &__pid_nav_pos_param_X,
+         &__pid_nav_rate_param_X,
+         &__pid_nav_pos_param_Y,
+         &__pid_nav_rate_param_Y,
+         &__pid_nav_pos_param_Z,
+         &__pid_nav_rate_param_Z
+      );
       std::cout << std::endl;
+   }
 
 
 
@@ -324,7 +339,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X, is_changed_target, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
       sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y, is_changed_target, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
 
-      if(sum_nav == 3){
+      if (sum_nav == 3) {
          unsigned int tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
       }

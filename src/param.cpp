@@ -287,6 +287,14 @@ void set_param_n(int nav, int pr, int xyz, int pidi, double data) {
 }
 
 
+// double *get_param_n(int n, pos_pid_parameter_t *tmp_pos_pid_param) {
+//    return &((&(((&(tmp_pos_pid_param->pos_pid_X))[n / 4])->pid_P))[n % 4]);
+// }
+
+void update_param(int n, pos_pid_parameter_t *tmp_pos_pid_param) {
+   *get_param_n(n, tmp_pos_pid_param) = ros::param::param((param_list[n]), *get_param_n(n, tmp_pos_pid_param));
+}
+
 
 void update_param(int n) {
    *get_param_n(n) = ros::param::param((param_list[n]), *get_param_n(n));

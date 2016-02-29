@@ -74,6 +74,25 @@ public:
 		pos_nav_pid_Z(NULL),
 		rate_nav_pid_Z(NULL)
 	{}
+
+	void set_param(
+	    pid_parameter_t *a, pid_parameter_t *b, pid_parameter_t *c, pid_parameter_t *d, pid_parameter_t *e, pid_parameter_t *f,
+	    pid_parameter_t *g, pid_parameter_t *h, pid_parameter_t *i, pid_parameter_t *j, pid_parameter_t *k, pid_parameter_t *l
+	){
+		pos_pid_X = a;
+		rate_pid_X = b;
+		pos_pid_Y = c;
+		rate_pid_Y = d;
+		pos_pid_Z = e;
+		rate_pid_Z = f;
+		pos_nav_pid_X = g;
+		rate_nav_pid_X = h;
+		pos_nav_pid_Y = i;
+		rate_nav_pid_Y = j;
+		pos_nav_pid_Z = k;
+		rate_nav_pid_Z = l;
+
+	}
 	pid_parameter_t *pos_pid_X;
 	pid_parameter_t *rate_pid_X;
 
@@ -104,6 +123,7 @@ void delete_param(void);
 
 
 void update_param(int);
+void update_param(int, pos_pid_parameter_t *);
 void update_param();
 
 void init_param(std::string&, double *, double *);
