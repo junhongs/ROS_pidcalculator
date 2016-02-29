@@ -325,7 +325,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       if ( calc_dist(target_X.target_pos, target_Y.target_pos, target_Z.target_pos, current_X.cur_pos, current_Y.cur_pos, current_Z.cur_pos) <= 100) {
          unsigned int tmp_mod = MODE_POSHOLD;
-         manage_mode(SET, &tmp_mod);
+         // manage_mode(SET, &tmp_mod);
+         std::cout <<  "in the target"<<std::endl;
       }
 
 
@@ -387,10 +388,11 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       is_arm = 1950;
 
-
-      if ( calc_dist(target_X.target_pos, target_Y.target_pos, target_Z.target_pos, current_X.cur_pos, current_Y.cur_pos, current_Z.cur_pos) <= 50) {
-         unsigned int tmp_mod = MODE_POSHOLD;
-         manage_mode(SET, &tmp_mod);
+      float dist = calc_dist(target_X.target_pos, target_Y.target_pos, target_Z.target_pos, current_X.cur_pos, current_Y.cur_pos, current_Z.cur_pos);
+      if ( dist <= 50) {
+         // unsigned int tmp_mod = MODE_POSHOLD;
+         // manage_mode(SET, &tmp_mod);
+         std::cout <<  "in the target" << dist<<std::endl;
       }
 
 
@@ -518,10 +520,13 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    else if (mission == MISSION_AUX ) {
       tmp_mod = MODE_NAV;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
+         // std::cout<< "HELL"<< std::endl;
+         // std::cout << current_x << "," << current_y << ","  << current_z << std::endl;
          current_x += target_x;
          current_y += target_y;
          current_z += target_z;
          manage_target(SET_TARGET, &current_x, &current_y, &current_z);
+         // std::cout << current_x << "," << current_y << ","  << current_z << std::endl;
       }
    }
    else if (mission == MISSION_GROUND) {
