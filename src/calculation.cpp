@@ -168,7 +168,7 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
 }
 
 //if the mode is not changed, the changed poshold is not return to the navi_rate
-void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param) {
+int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param) {
 
    float err_pos = target->target_pos - current->cur_pos;
 
@@ -181,6 +181,7 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
    if ((err_pos < 50.0f && err_pos > -50.0f) || changed_to_poshold ) {
       changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param);
+      return 1;
    }
    else {
       // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
@@ -194,6 +195,7 @@ void navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targ
       pid_inner_msg.ixz = pid_rate->inner_d;
       pid_inner_msg.izz =  pid_rate->output;
       pid_inner_pub->publish(pid_inner_msg);
+      return 0;
    }
 }
 
@@ -232,7 +234,7 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
-   // calc_pid(pid_pos, pos_param);
+   calc_pid(pid_pos, pos_param);
    // get_P(pid_pos, pid_param);
    target->target_vel = pid_pos->output;
    // target->target_vel = get_P(pid_pos, pid_param);

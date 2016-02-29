@@ -313,23 +313,22 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    target_Z.target_pos = target_pos_z;
 
    if (flight_mode_position_callback == MODE_NAV) {
+
+      int sum_nav = 0;
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &pid_nav_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
+      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &pid_nav_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X, is_changed_target, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
-      navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y, is_changed_target, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
-      is_arm = 1950;
+      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X, is_changed_target, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
+      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y, is_changed_target, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
 
-      if ( calc_dist(target_X.target_pos, target_Y.target_pos, target_Z.target_pos, current_X.cur_pos, current_Y.cur_pos, current_Z.cur_pos) <= 100) {
+      if(sum_nav == 3){
          unsigned int tmp_mod = MODE_POSHOLD;
-         // manage_mode(SET, &tmp_mod);
-         std::cout <<  "in the target"<<std::endl;
+         manage_mode(SET, &tmp_mod);
       }
-
-
+      is_arm = 1950;
    }
    if (flight_mode_position_callback == MODE_NAV_N) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
@@ -376,7 +375,11 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       tmp_pid_poshold_rate_param_Z.pid_I *= 3;
 
 
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
+      if (navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z)) {
+         unsigned int tmp_mod = MODE_POSHOLD;
+         manage_mode(SET, &tmp_mod);
+      }
+
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
@@ -388,12 +391,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       is_arm = 1950;
 
-      float dist = calc_dist(target_X.target_pos, target_Y.target_pos, target_Z.target_pos, current_X.cur_pos, current_Y.cur_pos, current_Z.cur_pos);
-      if ( dist <= 50) {
-         // unsigned int tmp_mod = MODE_POSHOLD;
-         // manage_mode(SET, &tmp_mod);
-         std::cout <<  "in the target" << dist<<std::endl;
-      }
 
 
       //       target_X.target_pos = target_pos_x;
