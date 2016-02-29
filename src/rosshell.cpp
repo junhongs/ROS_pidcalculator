@@ -91,13 +91,13 @@ void key_debug(std::string str, double n) {
 	std::cout << current_program << ":" << str <<  n << std::endl;
 }
 
-void print_param(int nav) {
+void print_param(int nav, int drone_num) {
 	printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
 	printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
 	if (nav)
-		printf("--------NAV-------\n");
+		printf("--------NAV-------%d\n",drone_num);
 	else
-		printf("--------POS-------\n");
+		printf("--------POS-------%d\n",drone_num);
 	printf(":::  P   :   I   :   D   :   P   :   I   :   D\n");
 
 	printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n",   *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 0, 0, 2), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
@@ -126,6 +126,21 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	param_start_str = tmp_dir + param_start_str + param_file_name;
 	std::string param_str = tmp_dir + param_file_name;
 
+
+	// if (drone_num > 0)
+	{
+		if ( !load_param(param_str.c_str()) ) {
+			save_param(param_str.c_str());
+		}
+		param_msg.data = LOAD_PARAMFILE + drone_num;
+		param_pub.publish(param_msg);
+		//if exist loadparam
+		// if not exist save the current param
+		//
+		// set the param
+		// *getparam() = content
+	}
+
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -139,12 +154,12 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	//printf("\033[2J"); // Clear the screen, move to (0,0)
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
-	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
+	// std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
 	double *db_pt = get_param_n(pr,  xyz, pidi);
 	save_param(param_start_str.c_str());
 
 
-	print_param(nav);
+	print_param(nav,drone_num);
 	// printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
 	// printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n\n");
 	// if (nav)
@@ -358,7 +373,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			param_pub.publish(param_msg);
 			break;
 		case '4':
-			std::cout << param_str<< ":::";
+			std::cout << param_str << ":::";
 			key_debug("::LOAD THE PARAMETER");
 			load_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -366,7 +381,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 
 			break;
 		case '5':
-			std::cout << param_str<< ":::";
+			std::cout << param_str << ":::";
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param(param_str.c_str());
 			if (!drone_num) {
@@ -377,7 +392,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			param_pub.publish(param_msg);
 			break;
 		case '6':
-			std::cout << param_str<< ":::";	
+			std::cout << param_str << ":::";
 			key_debug("::LOAD THE STARTED PARAMETER");
 			load_param(param_start_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -409,6 +424,9 @@ void keyLoop(std::string param_file_name, int drone_num) {
 //scale :: left or right
 //0.001 0.01 0.1 1 10 100
 		case KEYCODE_Q:
+			save_param(param_str.c_str());
+			param_msg.data = LOAD_PARAMFILE + drone_num;
+			param_pub.publish(param_msg);
 			key_debug("QUIT THE PROGRAM\n");
 			is_loop = 0;
 			break;
@@ -421,7 +439,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 		}
 		db_pt = get_param_n(pr,  xyz, pidi);
 
-		print_param(nav);
+		print_param(nav,drone_num);
 		// //printf("%d,%d,%d\n", pr,  xyz, pidi);
 		// printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
 		// printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
@@ -517,22 +535,21 @@ int main(int argc, char **argv) {
 
 				if (argvector.size() > 1 && argvector[1] == "1" ) {
 					param_file += "1";
-					keyLoop(param_file,1);
+					keyLoop(param_file, 1);
 				}
-				if (argvector.size() > 1 && argvector[1] == "2" ) {
+				else if (argvector.size() > 1 && argvector[1] == "2" ) {
 					param_file += "2";
 					keyLoop(param_file, 2);
 				}
-				if (argvector.size() > 1 && argvector[1] == "3" ) {
+				else if (argvector.size() > 1 && argvector[1] == "3" ) {
 					param_file += "3";
 					keyLoop(param_file, 3);
 				}
-				if (argvector.size() > 1 && argvector[1] == "4" ) {
+				else if (argvector.size() > 1 && argvector[1] == "4" ) {
 					param_file += "4";
 					keyLoop(param_file, 4);
 				}
-
-				keyLoop(param_file, 0);
+				else keyLoop(param_file, 0);
 			}
 			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
 				key_debug("SHUT DOWN THE DRONE_SHELL\n");
