@@ -45,10 +45,7 @@ SERVICE{
 }
 */
 static ros::Publisher float_pub;
-PIDCONTROLLER *drone1;
-PIDCONTROLLER *drone2;
-PIDCONTROLLER *drone3;
-PIDCONTROLLER *drone4;
+PIDCONTROLLER *drone_controller[4];
 
 
 
@@ -58,23 +55,40 @@ void positionCallback(const std_msgs::Float32& msg) {
 void paramCallback(const std_msgs::Int32& msg) {
 
    std::string param_name("pidparam");
+
+   std::cout << msg.data <<std::endl;
    if ( msg.data >= LOAD_PARAMFILE && msg.data <= LOAD_PARAMFILE4) {
 
       param_name = tmp_dir + param_name;
-
+      int drone_tmp_number = msg.data - LOAD_PARAMFILE;
       char num[2] = "0";
-      num[0] += msg.data - LOAD_PARAMFILE;
-      if (num[0] != '0')
+      num[0] += drone_tmp_number;
+      if (num[0] != '0') {
+         drone_controller[drone_tmp_number]->set_self_param();
          param_name += num;
+      }
       std::cout << "LOAD the Param file:::" << param_name  << std::endl;
-      if(!load_param(param_name.c_str(), &(drone1->pid_param_c) ) ){
+
+
+
+      if (!load_param(param_name.c_str(), &(drone_controller[drone_tmp_number]->pid_param_c) ) ) {
          std::cout << "FAIL to load:::" << param_name << std::endl;
 
       }
    }
    else {
-      update_param(msg.data);
-      std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
+
+      int param_data = msg.data;
+      int drone_number = param_data / 100;
+      if (!drone_number) {
+         update_param(param_data);
+         std::cout << param_list[param_data] << " :: " << *get_param_n(param_data) << std::endl;
+      }
+      else {
+         update_param(param_data, &(drone_controller[drone_number-1]->pid_param_c) );
+         std::cout << drone_controller[drone_number-1]->drone << " :: " << param_list[param_data] << " :: " << *get_param_n(param_data, &(drone_controller[drone_number-1]->pid_param_c) ) << std::endl;
+
+      }
    }
 
 
@@ -93,13 +107,13 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
    PIDCONTROLLER first("/FIRST", 0.0f, 0.0f);
-   drone1 = &first;
+   drone_controller[0] = &first;
    PIDCONTROLLER second("/SECOND", 0.0f, 0.0f);
-   drone2 = &second;
+   drone_controller[1] = &second;
    PIDCONTROLLER third("/THIRD", 0.0f, 0.0f);
-   drone3 = &third;
+   drone_controller[2] = &third;
    PIDCONTROLLER fourth("/FOURTH", 0.0f, 0.0f);
-   drone4 = &fourth;
+   drone_controller[3] = &fourth;
 
    // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    // spinner.spin(); // spin() will not return until the node has been shutdown

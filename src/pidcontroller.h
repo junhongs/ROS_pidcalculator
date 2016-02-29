@@ -32,6 +32,10 @@ public:
    PIDCONTROLLER(std::string DRONE, float x_off, float y_off);
    ~PIDCONTROLLER();
    pos_pid_parameter_t pid_param_c;
+   std::string drone;
+
+   void set_self_param();
+   void set_common_param();
 private:
    ros::Timer timer;
    ros::Publisher velocity_pub;
@@ -43,7 +47,7 @@ private:
    ros::Subscriber target_sub;
    ros::NodeHandle nod;
 
-   std::string drone;
+   
 
    int drone_num;
 
@@ -144,6 +148,8 @@ private:
    void timerCallback(const ros::TimerEvent&);
    void position_Callback(const geometry_msgs::Point&);
    void targetCallback(const geometry_msgs::Quaternion&);
+
+
 };
 
 

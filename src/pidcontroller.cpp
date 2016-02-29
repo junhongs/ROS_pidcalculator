@@ -9,6 +9,7 @@ PIDCONTROLLER::~PIDCONTROLLER() {
 
 }
 PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
+   drone(DRONE),
    x_offset(x_off),
    y_offset(y_off),
    limited_target_vel(300.0f),
@@ -58,26 +59,26 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    pid_nav_pos_param_Z(__pid_nav_pos_param_Z),
    pid_nav_rate_param_Z(__pid_nav_rate_param_Z),
 
-   pid_param_c(
-      &pid_poshold_pos_param_X,
-      &pid_poshold_rate_param_X,
-      &pid_poshold_pos_param_Y,
-      &pid_poshold_rate_param_Y,
-      &pid_poshold_pos_param_Z,
-      &pid_poshold_rate_param_Z,
-      &pid_nav_pos_param_X,
-      &pid_nav_rate_param_X,
-      &pid_nav_pos_param_Y,
-      &pid_nav_rate_param_Y,
-      &pid_nav_pos_param_Z,
-      &pid_nav_rate_param_Z
-   ),
+   // pid_param_c(
+   //    &pid_poshold_pos_param_X,
+   //    &pid_poshold_rate_param_X,
+   //    &pid_poshold_pos_param_Y,
+   //    &pid_poshold_rate_param_Y,
+   //    &pid_poshold_pos_param_Z,
+   //    &pid_poshold_rate_param_Z,
+   //    &pid_nav_pos_param_X,
+   //    &pid_nav_rate_param_X,
+   //    &pid_nav_pos_param_Y,
+   //    &pid_nav_rate_param_Y,
+   //    &pid_nav_pos_param_Z,
+   //    &pid_nav_rate_param_Z
+   // ),
 
    pid_rate_Z(-450.0f)
 {
    pid_output_msg.data.resize(5, 1000);
    drone_num = making_drone();
-   drone = DRONE;
+   ;
 
 
    // std::string tmp_dir("/tmp/");
@@ -94,31 +95,16 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    tmp_st_start = tmp_dir + tmp_st_start;
 
    std::cout << "initializing.." << drone;
+   set_self_param();
    if ( load_param(tmp_st.c_str(), &pid_param_c) ) {
       std::cout << "::" << "Saved Parameter loaded!" << tmp_st  << std::endl;
       save_param(tmp_st_start.c_str(), &pid_param_c);
    }
 
    else {
-      pid_param_c.set_param(
-         &__pid_poshold_pos_param_X,
-         &__pid_poshold_rate_param_X,
-         &__pid_poshold_pos_param_Y,
-         &__pid_poshold_rate_param_Y,
-         &__pid_poshold_pos_param_Z,
-         &__pid_poshold_rate_param_Z,
-         &__pid_nav_pos_param_X,
-         &__pid_nav_rate_param_X,
-         &__pid_nav_pos_param_Y,
-         &__pid_nav_rate_param_Y,
-         &__pid_nav_pos_param_Z,
-         &__pid_nav_rate_param_Z
-      );
+      set_common_param();
       std::cout << std::endl;
    }
-
-
-
 
    std::string current_vel = drone + "/CURRENT_VEL";
    std::string output_pid = drone +  "/OUTPUT_PID";
@@ -405,16 +391,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          pid_rate_Z.output = -500;
 
       is_arm = 1950;
-
-
-
-      //       target_X.target_pos = target_pos_x;
-      // target_Y.target_pos = target_pos_y;
-      // target_Z.target_pos = target_pos_z;
-
-
-
-
    }
    else if (flight_mode_position_callback == MODE_LANDING) {
       target_Z.target_vel = LANDING_SPEED;
@@ -551,3 +527,43 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
       reboot_time = ros::Time::now().toSec();
    }
 }
+
+
+
+
+
+void PIDCONTROLLER::set_self_param() {
+   pid_param_c.set_param(
+      &pid_poshold_pos_param_X,
+      &pid_poshold_rate_param_X,
+      &pid_poshold_pos_param_Y,
+      &pid_poshold_rate_param_Y,
+      &pid_poshold_pos_param_Z,
+      &pid_poshold_rate_param_Z,
+      &pid_nav_pos_param_X,
+      &pid_nav_rate_param_X,
+      &pid_nav_pos_param_Y,
+      &pid_nav_rate_param_Y,
+      &pid_nav_pos_param_Z,
+      &pid_nav_rate_param_Z
+   );
+}
+void PIDCONTROLLER::set_common_param() {
+   pid_param_c.set_param(
+      &__pid_poshold_pos_param_X,
+      &__pid_poshold_rate_param_X,
+      &__pid_poshold_pos_param_Y,
+      &__pid_poshold_rate_param_Y,
+      &__pid_poshold_pos_param_Z,
+      &__pid_poshold_rate_param_Z,
+      &__pid_nav_pos_param_X,
+      &__pid_nav_rate_param_X,
+      &__pid_nav_pos_param_Y,
+      &__pid_nav_rate_param_Y,
+      &__pid_nav_pos_param_Z,
+      &__pid_nav_rate_param_Z
+   );
+
+}
+
+

@@ -185,14 +185,14 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			*db_pt += scale;
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			break;
 		case KEYCODE_D:
 			*db_pt -= scale;
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			break;
 		case 'y':
@@ -201,7 +201,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -211,7 +211,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -221,7 +221,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -231,7 +231,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -241,7 +241,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -251,7 +251,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -261,7 +261,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -271,7 +271,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -281,7 +281,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -291,7 +291,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -302,7 +302,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt += scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
@@ -312,7 +312,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			db_pt = get_param_n(nav, pr,  xyz, pidi);
 			*db_pt -= scale;
 			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
