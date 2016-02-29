@@ -3,7 +3,11 @@
 
 #include "ros/ros.h"
 #include <string>
-#define LOAD_PARAMFILE 9999
+#define LOAD_PARAMFILE 9990
+#define LOAD_PARAMFILE1 9991
+#define LOAD_PARAMFILE2 9992
+#define LOAD_PARAMFILE3 9993
+#define LOAD_PARAMFILE4 9994
 
 
 const std::string tmp_dir("/tmp/drone/");
@@ -128,6 +132,7 @@ void save_param(const char*, pos_pid_parameter_t *);
 int load_param(const char*);
 int load_param(const char*, pos_pid_parameter_t *);
 void delete_file_param();
+void delete_file_param(const char* );
 
 
 extern char param_list[][50];

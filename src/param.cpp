@@ -335,9 +335,8 @@ void save_param(const char* fname, pos_pid_parameter_t *tmp_param) {
 }
 
 int load_param(const char* fname) {
-
    std::ifstream inFile(fname);
-   // std::ifstream inFile("/tmp/pidparam");
+
    int i = 0;
    int ret = 0;
    char inputString[100] = {0,};
@@ -350,7 +349,6 @@ int load_param(const char* fname) {
          i++;
       }
    inFile.close();
-
    return ret;
 }
 
@@ -372,6 +370,12 @@ int load_param(const char* fname, pos_pid_parameter_t *tmp_param) {
    return ret;
 }
 
+void delete_file_param(const char* fname) {
+   // unlink(fname);
+   if (!unlink(fname))
+      std::cout << "delete success ::" << fname << std::endl;
+
+}
 
 void delete_file_param() {
    std::ofstream outFile("/tmp/pidparam");
@@ -382,7 +386,6 @@ void delete_file_param() {
       i++;
    }
    outFile.close();
-
 }
 
 void init_param(const std::string& param_name, double *param_ptr, double *default_ptr) {

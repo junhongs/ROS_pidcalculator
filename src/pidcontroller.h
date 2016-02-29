@@ -31,6 +31,7 @@ class PIDCONTROLLER
 public:
    PIDCONTROLLER(std::string DRONE, float x_off, float y_off);
    ~PIDCONTROLLER();
+   pos_pid_parameter_t pid_param_c;
 private:
    ros::Timer timer;
    ros::Publisher velocity_pub;
@@ -129,7 +130,7 @@ private:
    pid_parameter_t pid_nav_pos_param_Z;
    pid_parameter_t pid_nav_rate_param_Z;
 
-   pos_pid_parameter_t pid_param_c;
+
 
 
    static int making_drone();

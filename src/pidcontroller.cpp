@@ -95,7 +95,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
 
    std::cout << "initializing.." << drone;
    if ( load_param(tmp_st.c_str(), &pid_param_c) ) {
-      std::cout << "::" << "Saved Parameter loaded!"  << std::endl;
+      std::cout << "::" << "Saved Parameter loaded!" << tmp_st  << std::endl;
       save_param(tmp_st_start.c_str(), &pid_param_c);
    }
 

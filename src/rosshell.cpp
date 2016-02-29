@@ -76,19 +76,19 @@ void quit(int sig) {
 }
 
 void key_debug(std::string str) {
-	std::cout << "DEBUG-" << current_program << ":" <<  str << std::endl;
+	std::cout << current_program << ":" <<  str << std::endl;
 }
 
 void key_debug(std::string str, int n) {
-	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
+	std::cout << current_program << ":" << str <<  n << std::endl;
 }
 
 void key_debug(int n) {
-	std::cout << "DEBUG-" << current_program << ":" <<  n << std::endl;
+	std::cout << current_program << ":" <<  n << std::endl;
 }
 
 void key_debug(std::string str, double n) {
-	std::cout << "DEBUG-" << current_program << ":" << str <<  n << std::endl;
+	std::cout << current_program << ":" << str <<  n << std::endl;
 }
 
 void print_param(int nav) {
@@ -106,7 +106,7 @@ void print_param(int nav) {
 }
 
 
-void keyLoop(std::string param_file_name) {
+void keyLoop(std::string param_file_name, int drone_num) {
 	char c;
 	bool dirty = false;
 	print_cur();
@@ -117,7 +117,10 @@ void keyLoop(std::string param_file_name) {
 	static std_msgs::Int32 param_msg;
 
 	std::cout << std::endl << param_file_name.c_str() << std::endl;
-
+	int is_original = 1;
+	if ( param_file_name == "pidparam" ) {
+		is_original = 0;
+	}
 	// std::string tmp_dir("/tmp/");
 	std::string param_start_str("tmp_");
 	param_start_str = tmp_dir + param_start_str + param_file_name;
@@ -326,27 +329,36 @@ void keyLoop(std::string param_file_name) {
 
 // "/tmp/pidparam"
 		case '3':
+			std::cout << param_str << ":::";
 			key_debug("::SAVE THE PARAMETER");
 			save_param(param_str.c_str());
+			param_msg.data = LOAD_PARAMFILE + drone_num;
+			param_pub.publish(param_msg);
 			break;
 		case '4':
+			std::cout << param_str<< ":::";
 			key_debug("::LOAD THE PARAMETER");
 			load_param(param_str.c_str());
-			param_msg.data = LOAD_PARAMFILE;
+			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
 
 			break;
 		case '5':
+			std::cout << param_str<< ":::";
 			key_debug("::DELETE THE PARAMETER");
-			delete_file_param();
-			load_param(param_str.c_str());
-			param_msg.data = LOAD_PARAMFILE;
+			delete_file_param(param_str.c_str());
+			if (!drone_num) {
+				load_param(param_start_str.c_str());
+				save_param(param_str.c_str());
+			}
+			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
 			break;
 		case '6':
+			std::cout << param_str<< ":::";	
 			key_debug("::LOAD THE STARTED PARAMETER");
 			load_param(param_start_str.c_str());
-			param_msg.data = LOAD_PARAMFILE;
+			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
 			break;
 
@@ -483,22 +495,22 @@ int main(int argc, char **argv) {
 
 				if (argvector.size() > 1 && argvector[1] == "1" ) {
 					param_file += "1";
-					keyLoop(param_file);
+					keyLoop(param_file,1);
 				}
 				if (argvector.size() > 1 && argvector[1] == "2" ) {
 					param_file += "2";
-					keyLoop(param_file);
+					keyLoop(param_file, 2);
 				}
 				if (argvector.size() > 1 && argvector[1] == "3" ) {
 					param_file += "3";
-					keyLoop(param_file);
+					keyLoop(param_file, 3);
 				}
 				if (argvector.size() > 1 && argvector[1] == "4" ) {
 					param_file += "4";
-					keyLoop(param_file);
+					keyLoop(param_file, 4);
 				}
 
-				keyLoop(param_file);
+				keyLoop(param_file, 0);
 			}
 			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
 				key_debug("SHUT DOWN THE DRONE_SHELL\n");

@@ -45,19 +45,39 @@ SERVICE{
 }
 */
 static ros::Publisher float_pub;
+PIDCONTROLLER *drone1;
+PIDCONTROLLER *drone2;
+PIDCONTROLLER *drone3;
+PIDCONTROLLER *drone4;
+
+
 
 void positionCallback(const std_msgs::Float32& msg) {
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
-   if ( msg.data == LOAD_PARAMFILE ) {
-      std::cout << "LOAD the Param file" << std::endl;
-      load_param("/tmp/pidparam");
+
+   std::string param_name("pidparam");
+   if ( msg.data >= LOAD_PARAMFILE && msg.data <= LOAD_PARAMFILE4) {
+
+      param_name = tmp_dir + param_name;
+
+      char num[2] = "0";
+      num[0] += msg.data - LOAD_PARAMFILE;
+      if (num[0])
+         param_name += num;
+      std::cout << "LOAD the Param file:::::  " << param_name  << std::endl;
+      if(!load_param(param_name.c_str(), &(drone1->pid_param_c) ) ){
+         std::cout << "FAIL to load" << param_name << std::endl;
+
+      }
    }
    else {
       update_param(msg.data);
       std::cout << param_list[msg.data] << " :: " << *get_param_n(msg.data) << std::endl;
    }
+
+
 }
 
 int main(int argc, char **argv) {
@@ -73,9 +93,13 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
    PIDCONTROLLER first("/FIRST", 0.0f, 0.0f);
+   drone1 = &first;
    PIDCONTROLLER second("/SECOND", 0.0f, 0.0f);
+   drone2 = &second;
    PIDCONTROLLER third("/THIRD", 0.0f, 0.0f);
+   drone3 = &third;
    PIDCONTROLLER fourth("/FOURTH", 0.0f, 0.0f);
+   drone4 = &fourth;
 
    // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    // spinner.spin(); // spin() will not return until the node has been shutdown
