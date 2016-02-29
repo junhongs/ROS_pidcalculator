@@ -2,7 +2,11 @@
 #define _PARAM_H
 
 #include "ros/ros.h"
+#include <string>
 #define LOAD_PARAMFILE 9999
+
+
+const std::string tmp_dir("/tmp/drone/");
 
 struct pid_parameter_t {
 public:

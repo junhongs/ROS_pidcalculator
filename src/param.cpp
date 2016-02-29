@@ -1,8 +1,10 @@
 #include "ros/ros.h"
 #include "param.h"
-
+#include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 
 // RATE = 24
@@ -397,8 +399,20 @@ void init_param(const std::string& param_name, double *param_ptr, double *defaul
 }
 
 void init_param() {
-   if (load_param("/tmp/pidparam"))
-      save_param("/tmp/tmp_pidparam");
+   if (mkdir(tmp_dir.c_str(), 0777)) {
+      if (errno != EEXIST) {
+         std::cout << "ERROR MAKING PARAMETER DIRECTORY" << std::endl;
+         std::cout << "ERROR MAKING PARAMETER DIRECTORY" << std::endl;
+      }
+   }
+   std::string param_file("pidparam");
+   std::string param_tmp_file("tmp_pidparam");
+   std::string filen_param, filen_tmpparam;
+   filen_param = tmp_dir + param_file;
+   filen_tmpparam = tmp_dir + param_tmp_file;
+   // if (load_param("/tmp/pidparam"))
+   if (load_param(filen_param.c_str()))
+      save_param(filen_tmpparam.c_str());
    else {
       int i = 0;
       //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
@@ -407,8 +421,8 @@ void init_param() {
          // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << *get_default_param_n(i) << std::endl;
          i++;
       }
-      save_param("/tmp/pidparam");
-      save_param("/tmp/tmp_pidparam");
+      save_param(filen_param.c_str());
+      save_param(filen_tmpparam.c_str());
    }
 }
 

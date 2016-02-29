@@ -80,7 +80,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    drone = DRONE;
 
 
-   std::string tmp_dir("/tmp/");
+   // std::string tmp_dir("/tmp/");
    std::string tmp_st("pidparam");
    std::string tmp_st_start;
 

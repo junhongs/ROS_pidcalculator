@@ -118,8 +118,10 @@ void keyLoop(std::string param_file_name) {
 
 	std::cout << std::endl << param_file_name.c_str() << std::endl;
 
+	// std::string tmp_dir("/tmp/");
 	std::string param_start_str("tmp_");
-	param_start_str += param_file_name;
+	param_start_str = tmp_dir + param_start_str + param_file_name;
+	std::string param_str = tmp_dir + param_file_name;
 
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -136,7 +138,7 @@ void keyLoop(std::string param_file_name) {
 	is_loop = 1;
 	std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
 	double *db_pt = get_param_n(pr,  xyz, pidi);
-
+	save_param(param_start_str.c_str());
 
 
 	print_param(nav);
@@ -325,11 +327,11 @@ void keyLoop(std::string param_file_name) {
 // "/tmp/pidparam"
 		case '3':
 			key_debug("::SAVE THE PARAMETER");
-			save_param(param_file_name.c_str());
+			save_param(param_str.c_str());
 			break;
 		case '4':
 			key_debug("::LOAD THE PARAMETER");
-			load_param(param_file_name.c_str());
+			load_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE;
 			param_pub.publish(param_msg);
 
@@ -337,7 +339,7 @@ void keyLoop(std::string param_file_name) {
 		case '5':
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param();
-			load_param(param_file_name.c_str());
+			load_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE;
 			param_pub.publish(param_msg);
 			break;
@@ -440,6 +442,8 @@ int main(int argc, char **argv) {
 
 	ros::Rate loop_rate(1000);
 
+
+
 	signal(SIGINT, quit);
 	tcgetattr(kfd, &cooked);
 	int count = 0;
@@ -457,6 +461,7 @@ int main(int argc, char **argv) {
 		// std::cout  <<  ros_time - ros_time_last << std::endl;
 		// ros_time_last = ros_time;
 		std::string name, name2;
+		std::string param_file("pidparam");
 		current_program = "DRONE_SHELL";
 		print_cur();
 
@@ -475,7 +480,25 @@ int main(int argc, char **argv) {
 				continue;
 			if (argvector[0] == "pid") {
 				current_program = "PID_CONTROLLER";
-				keyLoop("/tmp/pidparam");
+
+				if (argvector.size() > 1 && argvector[1] == "1" ) {
+					param_file += "1";
+					keyLoop(param_file);
+				}
+				if (argvector.size() > 1 && argvector[1] == "2" ) {
+					param_file += "2";
+					keyLoop(param_file);
+				}
+				if (argvector.size() > 1 && argvector[1] == "3" ) {
+					param_file += "3";
+					keyLoop(param_file);
+				}
+				if (argvector.size() > 1 && argvector[1] == "4" ) {
+					param_file += "4";
+					keyLoop(param_file);
+				}
+
+				keyLoop(param_file);
 			}
 			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
 				key_debug("SHUT DOWN THE DRONE_SHELL\n");
