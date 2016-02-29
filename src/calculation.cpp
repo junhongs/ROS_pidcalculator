@@ -234,12 +234,15 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
-   calc_pid(pid_pos, pos_param);
-   // get_P(pid_pos, pid_param);
-   target->target_vel = pid_pos->output;
-   // target->target_vel = get_P(pid_pos, pid_param);
+   // calc_pid(pid_pos, pos_param);
+   // target->target_vel = pid_pos->output;
+
+   target->target_vel = get_P(pid_pos, pos_param);
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+
+   pid_rate->output += get_I(pid_pos, pos_param);
+   pid_rate->output += get_D(pid_pos, pos_param);
 
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);

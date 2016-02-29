@@ -98,11 +98,11 @@ void print_param(int nav) {
 		printf("--------NAV-------\n");
 	else
 		printf("--------POS-------\n");
-	printf(":::  P   :   I   :   P   :   I   :   D\n");
+	printf(":::  P   :   I   :   D   :   P   :   I   :   D\n");
 
-	printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-	printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-	printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+	printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n",   *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 0, 0, 2), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+	printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", 	 *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 0, 1, 2), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+	printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 0, 2, 2), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
 }
 
 
@@ -295,6 +295,28 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			param_pub.publish(param_msg);
 			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
 			break;
+
+		case 't':
+			pr = 0;
+			pidi = 2;
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
+			*db_pt += scale;
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+			break;
+		case 'g':
+			pr = 0;
+			pidi = 2;
+			db_pt = get_param_n(nav, pr,  xyz, pidi);
+			*db_pt -= scale;
+			set_param_n(nav, pr, xyz, pidi, *db_pt);
+			param_msg.data = get_param_num(nav, pr, xyz, pidi);
+			param_pub.publish(param_msg);
+			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+			break;
+
 
 		// case 'p':
 		// 	key_debug("::POSE is selected");
