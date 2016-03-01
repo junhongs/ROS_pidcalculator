@@ -172,8 +172,6 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
    float err_pos = target->target_pos - current->cur_pos;
 
-   // static int changed_to_poshold = 0;
-
    if (changed_target)
       *changed_to_poshold = 0;
 
@@ -264,16 +262,15 @@ void calc_takeoff_altitude(pid_calc_t *pid) {
    }
 }
 
-void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff, int takeoff_throttle) {
-   static int is_takeoff = 0;
+void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff, int takeoff_throttle, int *is_takeoff) {
 
    //static int takeoff_throttle = 170;
    if (is_changed_to_takeoff)
-      is_takeoff = 1;
+      *is_takeoff = 1;
    if (pid->integrator >= takeoff_throttle ) {
-      is_takeoff = 0;
+      *is_takeoff = 0;
    }
-   if (pid->integrator < takeoff_throttle && is_takeoff ) {
+   if (pid->integrator < takeoff_throttle && *is_takeoff ) {
       pid->integrator += 400.0f * pid->cycle_time;
    }
 }

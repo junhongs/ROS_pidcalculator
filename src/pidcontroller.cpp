@@ -375,7 +375,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
       // calc_takeoff_altitude(&pid_rate_Z);
-      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 140);
+      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 140, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_pid_Z;
