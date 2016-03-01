@@ -41,6 +41,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    node_cur_time(0.0l),
    node_last_time(0.0l),
    reboot_time(0.0l),
+   manual_time(0.0l),
    ground_altitude(GROUND_ALTITUDE),
 
    is_arm(1000),
@@ -301,6 +302,10 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
+
+
+
+
    if (flight_mode_position_callback == MODE_NAV) {
 
       int sum_nav = 0;
@@ -331,6 +336,9 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       is_arm = 1950;
    }
    else if (flight_mode_position_callback == MODE_MANUAL) {
+
+      manual_time = ros::Time::now().toSec();
+
       calc_takeoff_altitude(&pid_rate_Z);
       manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, max_vel);
       if (pid_rate_Z.output < 0.0f) {
@@ -339,8 +347,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, max_vel);
       manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, max_vel);
-      // pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
-      // pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
 
       manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
       is_arm = 1950;
@@ -478,6 +484,19 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
             manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
    }
+
+
+   else if (mission == MISSION_MANUAL) {
+      tmp_mod = MODE_MANUAL;
+      manual_time = ros::Time::now().toSec();
+
+      if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
+         if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
+            tmp_mod = MODE_POSHOLD;
+            manage_mode(SET, &tmp_mod);
+         }
+   }
+
    else if (mission == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )

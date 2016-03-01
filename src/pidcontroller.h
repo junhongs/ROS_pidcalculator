@@ -65,6 +65,7 @@ private:
    double node_cur_time;
    double node_last_time;
    double reboot_time;
+   double manual_time;
 
    unsigned short is_arm;
    unsigned int is_first_get_position;

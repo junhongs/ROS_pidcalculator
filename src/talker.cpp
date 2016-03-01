@@ -97,23 +97,17 @@ public:
 	float measure;
 
 	float last_position;
+	float current_position;
 
 	position_PV_kalman(
-	    Matrix<float, 2, 2> _A,
-	    Matrix<float, 2, 2> _Q,
-	    Matrix<float, 1, 2> _H,
-
 	    Matrix<float, 2, 1> _X,
-	    Matrix<float, 2, 1> _X_estimated,
 	    Matrix<float, 2, 2> _P,
-
-
 	    float _R
-	) :
-		A(_A), Q(_Q), H(_H), R(_R),	X(_X), X_estimated(_X_estimated), P(_P), dt(0)
+	) : X(_X), P(_P), dt(0), R(_R)
 	{
 		H << 1, 0;
 		R = 2;
+		current_position = 0;
 		last_position = 0;
 		// X << 0,0;
 		// P << 10,0,0,10;
@@ -127,6 +121,7 @@ public:
 		Kalman_gain = P_estimated * H.transpose() / ( ( H * P_estimated * H.transpose() + R ) );
 
 		X = X_estimated + Kalman_gain * (measure - H * X_estimated);
+		current_position = X(0);
 
 		P = P_estimated - (Kalman_gain * H) * P_estimated;
 	}
@@ -141,9 +136,10 @@ public:
 		R = 2;
 	}
 
-	void calc_vel(float _position, double _dt){
-		// float vel = (_position - last_position) / _dt;
-		// last_position = _position;
+	void calc_vel(float _position, double _dt) {
+
+		float vel = (current_position - last_position) / _dt;
+		last_position = current_position;
 		// X << _position, vel;
 	}
 
