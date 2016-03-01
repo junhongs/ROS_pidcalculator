@@ -12,6 +12,7 @@ std::string mission_str[SIZEOFMISSION] =
    "MISSION_AUTO_N",
    "MISSION_GROUND",
    "MISSION_RESET",
+   "MISSION_MAGHOLD",
    "MISSION_AUX"
 };
 std::string mode_str[SIZEOFMODE] =

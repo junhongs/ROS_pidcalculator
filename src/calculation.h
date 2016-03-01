@@ -99,6 +99,7 @@ enum flight_mission_e {
    MISSION_GROUND,
    MISSION_RESET,
    MISSION_AUX,
+   MISSION_MAGHOLD,
    SIZEOFMISSION
 };
 
@@ -110,8 +111,8 @@ enum {
 };
 
 extern std::string DRONE[4];
-extern std::string mission_str[SIZEOFMODE];
-extern std::string mode_str[SIZEOFMISSION];
+extern std::string mission_str[SIZEOFMISSION];
+extern std::string mode_str[SIZEOFMODE];
 void  reset_PID(pid_calc_t *, float);
 void  reset_I(pid_calc_t *, float);
 

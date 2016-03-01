@@ -153,7 +153,7 @@ private:
    int manage_current_pos(unsigned int, float *, float *, float * );
 
    void reboot_drone();
-
+   void maghold_drone(unsigned short);
    void timerCallback(const ros::TimerEvent&);
    void position_Callback(const geometry_msgs::Point&);
    void targetCallback(const geometry_msgs::Quaternion&);

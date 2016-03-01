@@ -34,11 +34,6 @@ static std::stringstream ss;
 static std::vector<std::string> argvector;
 
 static ros::Publisher param_pub;
-// static ros::Publisher target_pub;
-// static ros::Publisher target2_pub;
-// static ros::Publisher target3_pub;
-// static ros::Publisher target4_pub;
-
 static ros::Publisher target_pub_arr[4];
 
 static int is_received_float = 0;
@@ -62,8 +57,6 @@ static geometry_msgs::Point position_data;
 #define KEYCODE_TAB 0x09
 #define KEYCODE_ESC 0x1B
 #define KEYCODE_BSP 0x7F
-
-
 
 
 void print_cur() {
@@ -117,8 +110,6 @@ void print_param(int nav, int drone_num) {
 void keyLoop(std::string param_file_name, int drone_num) {
 	char c;
 	bool dirty = false;
-	// print_cur();
-
 	static int pr = 0, xyz = 0, pidi = 0, nav = 0;
 
 	static double scale = 0.001l;
@@ -134,19 +125,17 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	std::string param_str = tmp_dir + param_file_name;
 
 
-	// if (drone_num > 0)
-	{
-		if ( !load_param(param_str.c_str()) ) {
-			save_param(param_str.c_str());
-		}
-		param_msg.data = LOAD_PARAMFILE + drone_num;
-		param_pub.publish(param_msg);
-		//if exist loadparam
-		// if not exist save the current param
-		//
-		// set the param
-		// *getparam() = content
+	if ( !load_param(param_str.c_str()) ) {
+		save_param(param_str.c_str());
 	}
+	param_msg.data = LOAD_PARAMFILE + drone_num;
+	param_pub.publish(param_msg);
+	//if exist loadparam
+	// if not exist save the current param
+	//
+	// set the param
+	// *getparam() = content
+
 
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
@@ -406,29 +395,15 @@ void keyLoop(std::string param_file_name, int drone_num) {
 }
 
 
-
-
-
-
 void keyLoop_nav(std::string str = "null") {
 	char c;
 	bool dirty = false;
 	// print_cur();
 	geometry_msgs::Quaternion target_msgs;
 
+	std::cout << "::::NAIGATION::::" << std::endl;
 
-
-	// target_pub.publish(target_msgs);
-	// target2_pub.publish(target_msgs);
-	// target3_pub.publish(target_msgs);
-	// target4_pub.publish(target_msgs);
-
-
-
-
-	std::cout << "::::NAIGATION::::" <<std::endl;
-
-	std::cout << "WASD:direction   RF:up&down  12:takeoff&landing" << std::endl;;
+	std::cout << "WASD:direction   RF:up&down  12:takeoff&landing OP:magnetic" << std::endl;;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -442,6 +417,8 @@ void keyLoop_nav(std::string str = "null") {
 	//printf("\033[2J"); // Clear the screen, move to (0,0)
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
+
+	short maghold = -160 + 600;
 
 	while (is_loop) {
 		if (!is_loop)
@@ -457,7 +434,7 @@ void keyLoop_nav(std::string str = "null") {
 		target_msgs.z = 0.0f;
 		target_msgs.w = MISSION_AUTO;
 		switch (c) {
-		case 'w':case 'W':
+		case 'w': case 'W':
 			target_msgs.y = -50.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "Y- DIRECTION ";
@@ -493,6 +470,19 @@ void keyLoop_nav(std::string str = "null") {
 			cout << "Z- DIRECTION ";
 			break;
 
+
+		case 'o': case 'O':
+			target_msgs.y = maghold -= 1;
+			target_msgs.w = MISSION_MAGHOLD;
+			cout << "MAG DIRECTION " << (maghold-600) << "   ";
+			break;
+		case 'p': case 'P':
+			target_msgs.y = maghold += 1;
+			target_msgs.w = MISSION_MAGHOLD;
+			cout << "MAG DIRECTION " << (maghold-600) << "   ";
+			break;
+
+
 		case '1':
 		case 't':
 			target_msgs.w = MISSION_TAKEOFF;
@@ -514,30 +504,28 @@ void keyLoop_nav(std::string str = "null") {
 			//printf("value: %c \t 0x%02X\n", c, c);
 			break;
 		}
-
-		if (str == "null") {
-			std::cout << "MESSAGE TO ALL DRONE" << std::endl;
-			for (int i = 0; i < 4; i++) {
-				target_pub_arr[i].publish(target_msgs);
-			}
-		}
-		else {
-			std::cout << "MESSAGE TO DRONE : ";
-
-			std::string tmp_str(str);
-			std::sort(tmp_str.begin(), tmp_str.end());
-
-			for (int i = 0; i < tmp_str.length(); i++) {
-				int n = tmp_str[i] - '0';
-				if (n > 0 && n <= 4) {
-					std::cout << n;
-					target_pub_arr[n - 1].publish(target_msgs);
+		if (is_loop)
+			if (str == "null") {
+				std::cout << "MESSAGE TO ALL DRONE" << std::endl;
+				for (int i = 0; i < 4; i++) {
+					target_pub_arr[i].publish(target_msgs);
 				}
 			}
-			std::cout << std::endl;
-		}
+			else {
+				std::cout << "MESSAGE TO DRONE : ";
 
+				std::string tmp_str(str);
+				std::sort(tmp_str.begin(), tmp_str.end());
 
+				for (int i = 0; i < tmp_str.length(); i++) {
+					int n = tmp_str[i] - '0';
+					if (n > 0 && n <= 4) {
+						std::cout << n;
+						target_pub_arr[n - 1].publish(target_msgs);
+					}
+				}
+				std::cout << std::endl;
+			}
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
 	key_debug("\nQUIT THE PROGRAM\n");
@@ -568,20 +556,13 @@ int main(int argc, char **argv) {
 	ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS", 100, position_Callback);
 
 	param_pub = n.advertise<std_msgs::Int32>("/PARAM_CHANGE", 100);
-	// target_pub = n.advertise<geometry_msgs::Quaternion>("/FIRST/TARGET_POS", 100);
-	// target2_pub = n.advertise<geometry_msgs::Quaternion>("/SECOND/TARGET_POS", 100);
-	// target3_pub = n.advertise<geometry_msgs::Quaternion>("/THIRD/TARGET_POS", 100);
-	// target4_pub = n.advertise<geometry_msgs::Quaternion>("/FOURTH/TARGET_POS", 100);
+
 	target_pub_arr[0] = n.advertise<geometry_msgs::Quaternion>("/FIRST/TARGET_POS", 100);
 	target_pub_arr[1] = n.advertise<geometry_msgs::Quaternion>("/SECOND/TARGET_POS", 100);
 	target_pub_arr[2] = n.advertise<geometry_msgs::Quaternion>("/THIRD/TARGET_POS", 100);
 	target_pub_arr[3] = n.advertise<geometry_msgs::Quaternion>("/FOURTH/TARGET_POS", 100);
 
-
-
 	ros::Rate loop_rate(1000);
-
-
 
 	signal(SIGINT, quit);
 	tcgetattr(kfd, &cooked);

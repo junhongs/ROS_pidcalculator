@@ -363,8 +363,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 160, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
-      pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_pid_Z;
-      tmp_pid_poshold_rate_param_Z.pid_I *= 7;
+      pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
+      tmp_pid_poshold_rate_param_Z.pid_I *= 5;
 
       if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {
          unsigned int tmp_mod = MODE_POSHOLD;
@@ -434,8 +434,17 @@ void PIDCONTROLLER::reboot_drone() {
    pid_out_pub.publish(pid_output_msg);
 }
 
+void PIDCONTROLLER::maghold_drone(unsigned short maghold) {
+   std::cout << drone << ":" << "SEND MAGHOLD" << (maghold-600) << std::endl;
+   pid_output_msg.data[0] = (unsigned short)1500; // ROLL
+   pid_output_msg.data[1] = (unsigned short)1500; // PITCH
+   pid_output_msg.data[3] = (unsigned short)1000; // THROTTLE
+   pid_output_msg.data[2] = (unsigned short)maghold;   // YAW
+   pid_output_msg.data[4] = (unsigned short)600;
+   pid_out_pub.publish(pid_output_msg);
+}
+
 void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
-   // std::cout << drone << ":" << "::TARGET MESSAGE::" << std::endl;;
    float target_x = msg.x;
    float target_y = msg.y;
    float target_z = msg.z;
@@ -519,6 +528,10 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    else if (mission == MISSION_RESET) {
       reboot_drone();
       reboot_time = ros::Time::now().toSec();
+   }
+   else if (mission == MISSION_MAGHOLD) {
+      maghold_drone((unsigned short)msg.y);
+      // reboot_time = ros::Time::now().toSec();
    }
 }
 
