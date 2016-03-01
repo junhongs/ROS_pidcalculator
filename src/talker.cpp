@@ -142,9 +142,9 @@ public:
 	}
 
 	void calc_vel(float _position, double _dt){
-		float vel = (_position - last_position) / _dt;
-		last_position = _position;
-		X << _position, vel;
+		// float vel = (_position - last_position) / _dt;
+		// last_position = _position;
+		// X << _position, vel;
 	}
 
 

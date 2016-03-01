@@ -360,11 +360,11 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
       // calc_takeoff_altitude(&pid_rate_Z);
-      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 140, &is_takeoff);
+      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 160, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_pid_Z;
-      tmp_pid_poshold_rate_param_Z.pid_I *= 3;
+      tmp_pid_poshold_rate_param_Z.pid_I *= 7;
 
       if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {
          unsigned int tmp_mod = MODE_POSHOLD;
