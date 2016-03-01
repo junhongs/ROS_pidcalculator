@@ -78,6 +78,81 @@ using namespace std;
 using namespace Eigen;
 
 
+
+class position_PV_kalman {
+public:
+	double dt;
+	Matrix<float, 2, 2> A;
+	Matrix<float, 2, 2> Q;
+	Matrix<float, 1, 2> H;
+	float R;
+
+	Matrix<float, 2, 1> X;
+	Matrix<float, 2, 1> X_estimated;
+	Matrix<float, 2, 2> P;
+	Matrix<float, 2, 2> P_estimated;
+
+	Matrix<float, 2, 1> Kalman_gain;
+
+	float measure;
+
+	float last_position;
+
+	position_PV_kalman(
+	    Matrix<float, 2, 2> _A,
+	    Matrix<float, 2, 2> _Q,
+	    Matrix<float, 1, 2> _H,
+
+	    Matrix<float, 2, 1> _X,
+	    Matrix<float, 2, 1> _X_estimated,
+	    Matrix<float, 2, 2> _P,
+
+
+	    float _R
+	) :
+		A(_A), Q(_Q), H(_H), R(_R),	X(_X), X_estimated(_X_estimated), P(_P), dt(0)
+	{
+		H << 1, 0;
+		R = 2;
+		last_position = 0;
+		// X << 0,0;
+		// P << 10,0,0,10;
+	}
+
+	void Predict() {
+		X_estimated = A * X;
+		P_estimated = A * P * A.transpose() + Q;
+	}
+	void Correct(float _position, double dt) {
+		Kalman_gain = P_estimated * H.transpose() / ( ( H * P_estimated * H.transpose() + R ) );
+
+		X = X_estimated + Kalman_gain * (measure - H * X_estimated);
+
+		P = P_estimated - (Kalman_gain * H) * P_estimated;
+	}
+
+	void update(float _position, double _dt) {
+		dt = _dt;
+		measure = _position;
+		A << 1, dt, 0, 1;
+
+		Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
+		Q *= 2;
+		R = 2;
+	}
+
+	void calc_vel(float _position, double _dt){
+		float vel = (_position - last_position) / _dt;
+		last_position = _position;
+		X << _position, vel;
+	}
+
+
+private:
+
+
+};
+
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "talker");
 	ros::NodeHandle n;
@@ -134,16 +209,35 @@ int main(int argc, char **argv) {
 	// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
 
 	double dt = 0.1;
-	Matrix<float, 2, 2> A,Q;
+	Matrix<float, 2, 2> A, Q;
 	Matrix<float, 1, 2> H;
+
+	Matrix<float, 2, 1> X;
+	Matrix<float, 2, 1> Kalman_gain;
+
+	Matrix<float, 2, 1> X_estimated;
+
+
+	Matrix<float, 2, 2> P;
+
+
 	float R;
-	float position_k,velocity_k;
+	float position_k, velocity_k;
+
+
+	X << 1, 0;
 
 	A << 1, dt, 0, 1;
 	H << 1, 0;
-	Q << pow(dt,4) / 4, pow(dt,3) / 2 , pow(dt,3) / 2 ,pow(dt,2);
-	// R << 2;
-	cout << H * A<< endl;
+	Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
+	R = 2;
+
+
+	X_estimated = A * X;
+
+
+	// cout << Kalman_gain << endl;
+	cout << H * A << endl;
 
 
 	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;

@@ -45,6 +45,9 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
 
    is_arm(1000),
    is_first_get_position(0),
+   changed_to_poshold_x(0),
+   changed_to_poshold_y(0),
+   changed_to_poshold_z(0),
 
    pid_poshold_pos_param_X(__pid_poshold_pos_param_X),
    pid_poshold_rate_param_X(__pid_poshold_rate_param_X),
@@ -317,13 +320,13 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       int sum_nav = 0;
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
-      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
+      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
-      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
+      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &changed_to_poshold_x);
+      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &changed_to_poshold_y);
 
       if (sum_nav == 3) {
          unsigned int tmp_mod = MODE_POSHOLD;
@@ -331,7 +334,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       is_arm = 1950;
    }
-   if (flight_mode_position_callback == MODE_NAV_N) {
+   else if (flight_mode_position_callback == MODE_NAV_N) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
       navi_rate_next(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z);
       if (pid_rate_Z.output < 0.0f) {
@@ -378,7 +381,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_pid_Z;
       tmp_pid_poshold_rate_param_Z.pid_I *= 3;
 
-      if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z)) {
+      if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {
          unsigned int tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
       }
@@ -396,7 +399,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_LANDING) {
       target_Z.target_vel = LANDING_SPEED;
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);

@@ -63,7 +63,9 @@ private:
 
    unsigned short is_arm;
    unsigned int is_first_get_position;
-
+   int changed_to_poshold_x;
+   int changed_to_poshold_y;
+   int changed_to_poshold_z;
    std_msgs::UInt16MultiArray pid_output_msg;
 
    unsigned int current_mode;
