@@ -62,6 +62,12 @@ void paramCallback(const std_msgs::Int32& msg) {
       if (num[0] != '0') {
          drone_controller[drone_tmp_number - 1]->set_self_param();
          param_name += num;
+      } else {
+         std::cout << "USING THE COMMON PARAMETER" << endl;
+         drone_controller[0]->set_common_param();
+         drone_controller[1]->set_common_param();
+         drone_controller[2]->set_common_param();
+         drone_controller[3]->set_common_param();
       }
       std::cout << "LOAD the Param file:::" << param_name  << std::endl;
       if (!drone_tmp_number) {
@@ -77,6 +83,10 @@ void paramCallback(const std_msgs::Int32& msg) {
       int param_data = msg.data % 100;
       int drone_number = msg.data / 100;
       if (!drone_number) {
+         drone_controller[0]->set_common_param();
+         drone_controller[1]->set_common_param();
+         drone_controller[2]->set_common_param();
+         drone_controller[3]->set_common_param();
          update_param(param_data);
          std::cout << "COMMON :: " << param_list[param_data] << " :: " << *get_param_n(param_data) << std::endl;
       }

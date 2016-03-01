@@ -62,21 +62,6 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    pid_nav_pos_param_Z(__pid_nav_pos_param_Z),
    pid_nav_rate_param_Z(__pid_nav_rate_param_Z),
 
-   // pid_param_c(
-   //    &pid_poshold_pos_param_X,
-   //    &pid_poshold_rate_param_X,
-   //    &pid_poshold_pos_param_Y,
-   //    &pid_poshold_rate_param_Y,
-   //    &pid_poshold_pos_param_Z,
-   //    &pid_poshold_rate_param_Z,
-   //    &pid_nav_pos_param_X,
-   //    &pid_nav_rate_param_X,
-   //    &pid_nav_pos_param_Y,
-   //    &pid_nav_rate_param_Y,
-   //    &pid_nav_pos_param_Z,
-   //    &pid_nav_rate_param_Z
-   // ),
-
    pid_rate_Z(-450.0f)
 {
    pid_output_msg.data.resize(5, 1000);
@@ -424,8 +409,12 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       pid_rate_Y.output = 0;
       pid_rate_Z.output = -500;
       is_arm = 1050;
-   }
 
+      is_takeoff = 0;
+      changed_to_poshold_x = 0;
+      changed_to_poshold_y = 0;
+      changed_to_poshold_z = 0;
+   }
    //Write the pid_output
    pid_output_msg.data[0] = (unsigned short)(1500.0f - x_offset - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0)); // ROLL
    pid_output_msg.data[1] = (unsigned short)(1500.0f - y_offset - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0)); // PITCH
@@ -552,6 +541,9 @@ void PIDCONTROLLER::set_self_param() {
       &pid_nav_pos_param_Z,
       &pid_nav_rate_param_Z
    );
+
+   param_location = PARAM_INNER;
+
 }
 void PIDCONTROLLER::set_common_param() {
    pid_param_c.set_param(
@@ -568,7 +560,7 @@ void PIDCONTROLLER::set_common_param() {
       &__pid_nav_pos_param_Z,
       &__pid_nav_rate_param_Z
    );
-
+   param_location = PARAM_OUTER;
 }
 
 

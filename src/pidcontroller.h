@@ -26,12 +26,17 @@
 static const float TAKEOFF_SPEED = 200.0f;
 static const float LANDING_SPEED = -200.0f;
 
+#define PARAM_OUTER 1
+#define PARAM_INNER 2
+
 class PIDCONTROLLER
 {
 public:
    PIDCONTROLLER(std::string DRONE, float x_off, float y_off);
    ~PIDCONTROLLER();
    pos_pid_parameter_t pid_param_c;
+   int param_location;
+
    std::string drone;
 
    void set_self_param();
@@ -67,7 +72,7 @@ private:
    int changed_to_poshold_x;
    int changed_to_poshold_y;
    int changed_to_poshold_z;
-   
+
    std_msgs::UInt16MultiArray pid_output_msg;
 
    unsigned int current_mode;
