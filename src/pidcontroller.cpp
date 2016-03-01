@@ -317,13 +317,13 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       int sum_nav = 0;
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
-      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &pid_nav_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
+      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X, is_changed_target, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
-      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y, is_changed_target, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
+      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
+      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
 
       if (sum_nav == 3) {
          unsigned int tmp_mod = MODE_POSHOLD;
@@ -333,24 +333,27 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    if (flight_mode_position_callback == MODE_NAV_N) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , limited_target_vel);
-      navi_rate_next(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &pid_nav_rate_param_Z);
+      navi_rate_next(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      navi_rate_next(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_nav_pos_param_X, &pid_nav_rate_param_X);
-      navi_rate_next(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_nav_pos_param_Y, &pid_nav_rate_param_Y);
+      navi_rate_next(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X);
+      navi_rate_next(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y);
       is_arm = 1950;
    }
    else if (flight_mode_position_callback == MODE_MANUAL) {
       calc_takeoff_altitude(&pid_rate_Z);
-      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z, max_vel);
+      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, max_vel);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X, max_vel);
-      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y, max_vel);
+      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, max_vel);
+      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, max_vel);
+      // pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
+      // pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
+
       manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
       is_arm = 1950;
    }
@@ -358,13 +361,13 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    else if (flight_mode_position_callback == MODE_POSHOLD) {
       //Calculate the pos_hold mod
       calc_takeoff_altitude(&pid_rate_Z);
-      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
+      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
       is_arm = 1950;
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
@@ -372,11 +375,10 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 140);
       target_Z.target_vel = TAKEOFF_SPEED;
 
-      pid_parameter_t tmp_pid_poshold_rate_param_Z = pid_poshold_rate_param_Z;
+      pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_pid_Z;
       tmp_pid_poshold_rate_param_Z.pid_I *= 3;
 
-
-      if (navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z)) {
+      if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z)) {
          unsigned int tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
       }
@@ -385,8 +387,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
       if ( is_arm == 1050 )
          pid_rate_Z.output = -500;
 
@@ -394,13 +396,13 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_LANDING) {
       target_Z.target_vel = LANDING_SPEED;
-      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, &pid_nav_pos_param_Z, &pid_nav_rate_param_Z, is_changed_target,  &pid_poshold_pos_param_Z, &pid_poshold_rate_param_Z);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, &pid_poshold_pos_param_X, &pid_poshold_rate_param_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, &pid_poshold_pos_param_Y, &pid_poshold_rate_param_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
 
       is_arm = 1950;
       if (current_Z.cur_pos < ground_altitude + 50.0f) {

@@ -133,6 +133,18 @@ int main(int argc, char **argv) {
 	// cout << "*" << endl << mat * mat2 << endl << endl;
 	// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
 
+	double dt = 0.1;
+	Matrix<float, 2, 2> A,Q;
+	Matrix<float, 1, 2> H;
+	float R;
+	float position_k,velocity_k;
+
+	A << 1, dt, 0, 1;
+	H << 1, 0;
+	Q << pow(dt,4) / 4, pow(dt,3) / 2 , pow(dt,3) / 2 ,pow(dt,2);
+	// R << 2;
+	cout << H * A<< endl;
+
 
 	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
 	std::ifstream inFile("/tmp/pidparam1");

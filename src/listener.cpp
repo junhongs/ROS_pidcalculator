@@ -53,15 +53,10 @@ void positionCallback(const std_msgs::Float32& msg) {
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
-
    std::string param_name("pidparam");
-
-   // std::cout << msg.data << std::endl;
    if ( msg.data >= LOAD_PARAMFILE && msg.data <= LOAD_PARAMFILE4) {
-
       param_name = tmp_dir + param_name;
       int drone_tmp_number = msg.data - LOAD_PARAMFILE;
-      // std::cout << "drone_num:" << drone_tmp_number << std::endl;
       char num[2] = "0";
       num[0] += drone_tmp_number;
       if (num[0] != '0') {
@@ -69,18 +64,14 @@ void paramCallback(const std_msgs::Int32& msg) {
          param_name += num;
       }
       std::cout << "LOAD the Param file:::" << param_name  << std::endl;
-
       if (!drone_tmp_number) {
          if (!load_param(param_name.c_str() ) ) {
             std::cout << "FAIL to load:::" << param_name << std::endl;
          }
-
       }
       else if (!load_param(param_name.c_str(), &(drone_controller[drone_tmp_number - 1]->pid_param_c) ) ) {
          std::cout << "FAIL to load:::" << param_name << std::endl;
       }
-
-      // std::cout << *get_param_n(0, &(drone_controller[drone_tmp_number-1]->pid_param_c)) << std::endl;
    }
    else {
       int param_data = msg.data % 100;
