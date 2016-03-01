@@ -63,7 +63,7 @@ void paramCallback(const std_msgs::Int32& msg) {
          drone_controller[drone_tmp_number - 1]->set_self_param();
          param_name += num;
       } else {
-         std::cout << "USING THE COMMON PARAMETER" << endl;
+         std::cout << "USING THE COMMON PARAMETER" << std::endl;
          drone_controller[0]->set_common_param();
          drone_controller[1]->set_common_param();
          drone_controller[2]->set_common_param();
