@@ -4,6 +4,7 @@
 #include <iostream>
 #include "param.h"
 #include "pidcontroller.h"
+#include "std_msgs/Float64.h"
 
 
 // cfg.P8[PIDNAVR] = 14; // NAV_P * 10;
@@ -49,7 +50,18 @@ PIDCONTROLLER *drone_controller[4];
 
 
 
-void positionCallback(const std_msgs::Float32& msg) {
+void positionCallback(const std_msgs::Float64& msg) {
+
+   // std::cout << msg.data << std::endl;
+   // std::cout << (ros::Time::now().toSec() - msg.data) << std::endl;
+
+}
+
+void pos_stamped_tested_verCallback(const geometry_msgs::PointStamped& msg){
+
+   // std::cout << msg.header.stamp << std::endl;
+   // std::cout << msg.header.stamp << std::endl;
+   // ros::Time::now().toSec() 
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
@@ -108,6 +120,9 @@ int main(int argc, char **argv) {
    //float_pub = n.advertise<std_msgs::Float32>("calculated_distance", 100);
    ros::Subscriber sub = n.subscribe("generate_sin_pulse", 100, positionCallback);
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
+
+
+   ros::Subscriber pos_stamp_sub = n.subscribe("potition1", 100, pos_stamped_tested_verCallback);
 
    PIDCONTROLLER first("/FIRST", 0.0f, 0.0f);
    drone_controller[0] = &first;

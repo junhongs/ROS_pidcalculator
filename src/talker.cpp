@@ -2,8 +2,11 @@
 #include "std_msgs/String.h"
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
+#include "std_msgs/Float64.h"
 #include "geometry_msgs/Point32.h"
 #include "geometry_msgs/Point.h"
+
+#include "geometry_msgs/PointStamped.h"
 #include "pcl_msgs/Vertices.h"
 #include "iostream"
 #include <sstream>
@@ -121,7 +124,7 @@ public:
 		Kalman_gain = P_estimated * H.transpose() / ( ( H * P_estimated * H.transpose() + R ) );
 
 		X = X_estimated + Kalman_gain * (measure - H * X_estimated);
-		current_position = X(0);
+		current_position = X(0, 0);
 
 		P = P_estimated - (Kalman_gain * H) * P_estimated;
 	}
@@ -149,12 +152,27 @@ private:
 
 };
 
+
+
+// depth =  2.97 * 450 / ((left_x - right_x) * 0.00375);
+
+// a1 = depth * ( 0.00375) * ( (left_x + right_x) / 2 - 1280 / 2) / 2.97;
+// b1 = depth * (-0.00375) * ( (left_y + right_y) / 2 - 960 / 2)  /2.97);
+
+
+// depth =  ( 2.97 * 450 / 0.00375 ) / (left_x - right_x);
+// b1 = depth * (-0.00375) / 2.97 / 2 * ( (left_y + right_y) - 960);
+// a1 = depth * ( 0.00375) / 2.97 / 2 * ( (left_x + right_x) - 1280);
+
+
+
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "talker");
 	ros::NodeHandle n;
 	ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 100);
-	ros::Publisher chat_float_pub = n.advertise<std_msgs::Float32>("generate_sin_pulse", 100);
-	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
+	ros::Publisher chat_float_pub = n.advertise<std_msgs::Float64>("generate_sin_pulse", 100);
+	// ros::Publisher chat_point_pub = n.advertise<geometry_msgs::Point32>("potition1", 100);
+	ros::Publisher chat_point_pub = n.advertise<geometry_msgs::PointStamped>("potition1", 100);
 	ros::Publisher float_pub = n.advertise<std_msgs::Float32>("calculated_pid_talker", 100);
 	ros::Publisher position_pub = n.advertise<geometry_msgs::Point>("/FIRST/CURRENT_POS", 100);
 	ros::Rate loop_rate(30);
@@ -262,14 +280,20 @@ int main(int argc, char **argv) {
 		position_pub.publish(pt_msg);
 
 		std_msgs::String msg;
-		std_msgs::Float32 float_msg;
+		// std_msgs::Float32 float_msg;
+
+		std_msgs::Float64 float_msg;
+
 		pcl_msgs::Vertices param_msg;
 
 		float_msg.data = 0;
 		static float float_msg_tmp = 0;
 		float_msg_tmp += 0.01;
-		float_msg.data = sin((double)float_msg_tmp);
-
+		//float_msg.data = sin((double)float_msg_tmp);
+		static double curt = ros::Time::now().toSec();
+		float_msg.data = ros::Time::now().toSec();
+		// std::cout << float_msg.data - curt << std::endl;
+		ros::Duration one_hour = ros::Duration(0.5);
 #if 0
 		static pos_vel_t msg_pos_vel = {0,};
 		msg_pos_vel.cur_time = ros::Time::now().toSec();
@@ -284,13 +308,21 @@ int main(int argc, char **argv) {
 #endif
 
 		geometry_msgs::Point32 position1;
+		geometry_msgs::PointStamped position_stamp;
+
+
 		position1.x = 0;
 		position1.y = 0;
 		position1.z = -3000;
 
+
+		position_stamp.point.x = 0;
+		position_stamp.point.y = 0;
+		position_stamp.point.z = 0;
+
 		chatter_pub.publish(msg);
 		chat_float_pub.publish(float_msg);
-
+		chat_point_pub.publish(position_stamp);
 		ros::spinOnce();
 
 		loop_rate.sleep();

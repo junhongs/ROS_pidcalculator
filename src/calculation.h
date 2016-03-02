@@ -108,6 +108,7 @@ enum {
    SET,
    SET_TARGET,
    SET_TIMER,
+   SET_MANUAL
 };
 
 extern std::string DRONE[4];

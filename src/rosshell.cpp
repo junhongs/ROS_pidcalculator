@@ -77,33 +77,33 @@ void quit(int sig) {
 }
 
 void key_debug(std::string str) {
-	std::cout << current_program << ":" <<  str << std::endl;
+	std::cout << "   "<< current_program << ":" <<  str << std::endl;
 }
 
 void key_debug(std::string str, int n) {
-	std::cout << current_program << ":" << str <<  n << std::endl;
+	std::cout << "   "<< current_program << ":" << str <<  n << std::endl;
 }
 
 void key_debug(int n) {
-	std::cout << current_program << ":" <<  n << std::endl;
+	std::cout << "   "<< current_program << ":" <<  n << std::endl;
 }
 
 void key_debug(std::string str, double n) {
-	std::cout << current_program << ":" << str <<  n << std::endl;
+	std::cout << "   "<< current_program << ":" << str <<  n << std::endl;
 }
 
 void print_param(int nav, int drone_num) {
-	printf("wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
-	printf("az:SCALE  |  12:NAV\nPARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
+	printf("   wsx:XYZ  |  yuio hjkl:PPID UP,DN  |  rf:I  |  ");
+	printf("   az:SCALE  |  12:NAV\n   PARAM: 3:SAVE,4:LOAD,5:DELETE,6:LOAD STARTED\n");
 	if (nav)
-		printf("--------NAV-------%d\n", drone_num);
+		printf("   --------NAV-------%d\n", drone_num);
 	else
-		printf("--------POS-------%d\n", drone_num);
-	printf(":::  P   :   I   :   D   :   P   :   I   :   D\n");
+		printf("   --------POS-------%d\n", drone_num);
+	printf("   :::  P   :   I   :   D   :   P   :   I   :   D\n");
 
-	printf("X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n",   *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 0, 0, 2), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
-	printf("Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", 	 *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 0, 1, 2), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-	printf("Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 0, 2, 2), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+	printf("   X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n",   *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 0, 0, 2), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
+	printf("   Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", 	 *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 0, 1, 2), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
+	printf("   Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 0, 2, 2), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
 }
 
 
@@ -115,7 +115,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
 
-	std::cout << std::endl << param_file_name.c_str() << std::endl;
+	std::cout<< "   " << std::endl << "   "<< param_file_name.c_str() << std::endl;
 	int is_original = 1;
 	if ( param_file_name == "pidparam" ) {
 		is_original = 0;
@@ -150,7 +150,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	//printf("\033[2J"); // Clear the screen, move to (0,0)
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
-	// std::cout << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
+	// std::cout<< "   " << param_list[get_param_num(pr, xyz, pidi)] << std::endl;
 	double *db_pt = get_param_n(pr,  xyz, pidi);
 	save_param(param_start_str.c_str());
 
@@ -338,14 +338,14 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			break;
 
 		case '3':
-			std::cout << param_str << ":::";
+			std::cout<< "   " << param_str << ":::";
 			key_debug("::SAVE THE PARAMETER");
 			save_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
 			break;
 		case '4':
-			std::cout << param_str << ":::";
+			std::cout<< "   " << param_str << ":::";
 			key_debug("::LOAD THE PARAMETER");
 			load_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -353,7 +353,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 
 			break;
 		case '5':
-			std::cout << param_str << ":::";
+			std::cout<< "   " << param_str << ":::";
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param(param_str.c_str());
 			if (!drone_num) {
@@ -364,7 +364,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			param_pub.publish(param_msg);
 			break;
 		case '6':
-			std::cout << param_str << ":::";
+			std::cout<< "   " << param_str << ":::";
 			key_debug("::LOAD THE STARTED PARAMETER");
 			load_param(param_start_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -374,7 +374,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			save_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
-			key_debug("QUIT THE PROGRAM\n");
+			// key_debug("QUIT THE PROGRAM\n");
 			is_loop = 0;
 			break;
 		case USELESS2: case USELESS1:
@@ -385,12 +385,12 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			break;
 		}
 		db_pt = get_param_n(pr,  xyz, pidi);
-
-		print_param(nav, drone_num);
+		if (is_loop)
+			print_param(nav, drone_num);
 
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
-	key_debug("\nQUIT THE PROGRAM\n");
+	// key_debug("\nQUIT THE PROGRAM\n");
 	return;
 }
 
@@ -401,9 +401,9 @@ void keyLoop_nav(std::string str = "null") {
 	// print_cur();
 	geometry_msgs::Quaternion target_msgs;
 
-	std::cout << "::::NAIGATION::::" << std::endl;
+	std::cout<<std::endl<< "   " << "::::NAIGATION::::" << std::endl;
 
-	std::cout << "WASD:direction   RF:up&down  12:takeoff&landing OP:magnetic" << std::endl;;
+	std::cout<< "   " << "WASD:direction   RF:up&down  12:takeoff&landing OP:magnetic" << std::endl;;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -418,7 +418,7 @@ void keyLoop_nav(std::string str = "null") {
 	//printf("\033[1B"); //  Move the cursor down N lines
 	is_loop = 1;
 
-	short maghold = -160 + 600;
+	short maghold = 5 + 600;
 
 	while (is_loop) {
 		if (!is_loop)
@@ -437,66 +437,66 @@ void keyLoop_nav(std::string str = "null") {
 		case 'w': case 'W':
 			target_msgs.y = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "Y- DIRECTION ";
+			cout<< "   " << "Y- DIRECTION ";
 			break;
 
 		case 'a': case 'A':
 			target_msgs.x = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "X+ DIRECTION ";
+			cout<< "   " << "X+ DIRECTION ";
 			break;
 
 		case 's': case 'S':
 			target_msgs.y = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "Y+ DIRECTION ";
+			cout<< "   " << "Y+ DIRECTION ";
 			break;
 
 		case 'd': case 'D':
 			target_msgs.x = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "Y- DIRECTION ";
+			cout<< "   " << "Y- DIRECTION ";
 			break;
 
 		case 'r': case 'R':
 			target_msgs.z = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "Z+ DIRECTION ";
+			cout<< "   " << "Z+ DIRECTION ";
 			break;
 
 		case 'f': case 'F':
 			target_msgs.z = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout << "Z- DIRECTION ";
+			cout<< "   " << "Z- DIRECTION ";
 			break;
 
 
 		case 'o': case 'O':
 			target_msgs.y = maghold -= 1;
 			target_msgs.w = MISSION_MAGHOLD;
-			cout << "MAG DIRECTION " << (maghold-600) << "   ";
+			cout<< "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
 			break;
 		case 'p': case 'P':
 			target_msgs.y = maghold += 1;
 			target_msgs.w = MISSION_MAGHOLD;
-			cout << "MAG DIRECTION " << (maghold-600) << "   ";
+			cout<< "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
 			break;
 
 
 		case '1':
 		case 't':
 			target_msgs.w = MISSION_TAKEOFF;
-			cout << "TAKEOFF ";
+			cout<< "   " << "TAKEOFF ";
 			break;
 		case '2':
 		case 'l':
 			target_msgs.w = MISSION_LANDING;
-			cout << "LANDING ";
+			cout<< "   " << "LANDING ";
 			break;
 
 
 		case KEYCODE_Q:
-			key_debug("QUIT THE PROGRAM\n");
+			// key_debug("QUIT THE PROGRAM\n");
 			is_loop = 0;
 			break;
 		default:
@@ -506,13 +506,13 @@ void keyLoop_nav(std::string str = "null") {
 		}
 		if (is_loop)
 			if (str == "null") {
-				std::cout << "MESSAGE TO ALL DRONE" << std::endl;
+				std::cout<< "   " << "MESSAGE TO ALL DRONE" << std::endl;
 				for (int i = 0; i < 4; i++) {
 					target_pub_arr[i].publish(target_msgs);
 				}
 			}
 			else {
-				std::cout << "MESSAGE TO DRONE : ";
+				std::cout<< "   " << "MESSAGE TO DRONE : ";
 
 				std::string tmp_str(str);
 				std::sort(tmp_str.begin(), tmp_str.end());
@@ -524,11 +524,10 @@ void keyLoop_nav(std::string str = "null") {
 						target_pub_arr[n - 1].publish(target_msgs);
 					}
 				}
-				std::cout << std::endl;
+				std::cout<< "   " << std::endl;
 			}
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
-	key_debug("\nQUIT THE PROGRAM\n");
 	return;
 }
 
@@ -631,7 +630,7 @@ int main(int argc, char **argv) {
 					keyLoop_nav();
 			}
 			else if (argvector[0] == "quit" || argvector[0] == "q" || argvector[0] == "exit") {
-				key_debug("SHUT DOWN THE DRONE_SHELL\n");
+				// key_debug("SHUT DOWN THE DRONE_SHELL\n");
 				ros::shutdown();
 				exit(0);
 			}
@@ -757,7 +756,7 @@ int main(int argc, char **argv) {
 		}
 		std_msgs::String msg;
 		std_msgs::Float32 float_msg;
-//std_msgs::Float32MultiArray
+		//std_msgs::Float32MultiArray
 		//std_msgs::Float32MultiArray param_msg;
 		//pcl_msgs::ModelCoefficients param_msg;
 		float_msg.data = 0.0f;

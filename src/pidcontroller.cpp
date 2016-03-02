@@ -168,6 +168,12 @@ int PIDCONTROLLER::manage_target(unsigned int getset, float *x, float *y, float 
       *z = current_target_z;
       is_changed_manage_target = 0;
    }
+   else if (getset == SET_MANUAL) {
+      current_target_x = *x;
+      current_target_y = *y;
+      current_target_z = *z;
+      std::cout << drone << ":" << "MANUAL TARGET VELOCITY: " << current_target_x << "," << current_target_y << "," << current_target_z << std::endl;
+   }
    else if (getset == SET || getset == SET_TARGET ) {
       if (*y == 0.0f || *z == 0.0f) {
          current_target_x = current_x;
@@ -337,18 +343,19 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_MANUAL) {
 
-      manual_time = ros::Time::now().toSec();
-
       calc_takeoff_altitude(&pid_rate_Z);
-      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, max_vel);
+      manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, max_vel);
       if (pid_rate_Z.output < 0.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
       }
-      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, max_vel);
-      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, max_vel);
-
-      manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
+      manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, max_vel);
+      manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, max_vel);
+      if ( ros::Time::now().toSec() - manual_time > 0.5l ) {
+         manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
+         unsigned int flight_mode_tmp = MODE_POSHOLD;
+         manage_mode(SET, &flight_mode_tmp);
+      }
       is_arm = 1950;
    }
 
@@ -441,7 +448,7 @@ void PIDCONTROLLER::reboot_drone() {
 }
 
 void PIDCONTROLLER::maghold_drone(unsigned short maghold) {
-   std::cout << drone << ":" << "SEND MAGHOLD" << (maghold-600) << std::endl;
+   std::cout << drone << ":" << "SEND MAGHOLD" << (maghold - 600) << std::endl;
    pid_output_msg.data[0] = (unsigned short)1500; // ROLL
    pid_output_msg.data[1] = (unsigned short)1500; // PITCH
    pid_output_msg.data[3] = (unsigned short)1000; // THROTTLE
@@ -467,7 +474,6 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
 
    if (mission == MISSION_TAKEOFF) {
       tmp_mod = MODE_TAKEOFF;
-
       if (current_z > GROUND_ALTITUDE + 100.0f ) {
          std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
          return;
@@ -484,19 +490,16 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
             manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
    }
-
-
    else if (mission == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manual_time = ros::Time::now().toSec();
 
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
-         if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
+         if (manage_target(SET_MANUAL, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
             tmp_mod = MODE_POSHOLD;
             manage_mode(SET, &tmp_mod);
          }
    }
-
    else if (mission == MISSION_AUTO) {
       tmp_mod = MODE_NAV;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
