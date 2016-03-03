@@ -60,7 +60,7 @@ static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
 static float get_D_L(pid_calc_t *pid, pid_parameter_t *pid_param) {
    if (pid->cycle_time)
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
-#define PID_FILTER_L       (1.0f / (2.0f * M_PI * (float)0.5f))
+#define PID_FILTER_L       (1.0f / (2.0f * M_PI * (float)0.7f))
    pid->derivative = pid->last_derivative + (pid->cycle_time / (PID_FILTER_L + pid->cycle_time)) * (pid->derivative - pid->last_derivative);
    pid->last_error = pid->error;
    pid->last_derivative = pid->derivative;
@@ -120,7 +120,7 @@ void calc_rate_error(pid_calc_t *pid, target_pos_vel_t *target, pos_vel_t *curre
 void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->output = pid->inner_p  = get_P(pid, pid_param);
    pid->output += pid->inner_i = get_I(pid, pid_param);
-   pid->output += pid->inner_d = constrain(get_D(pid, pid_param), -200.0f , 200.0f);
+   pid->output += pid->inner_d = constrain(get_D(pid, pid_param), -100.0f , 100.0f);
    pid->output += pid->inner_d = constrain(get_D_L(pid, pid_param), -200.0f , 200.0f);
 }
 
@@ -239,12 +239,13 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    target->target_vel = get_P(pid_pos, pos_param) + get_D(pid_pos, pos_param);
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-   float tmp_I, tmp_D;
-
+   float tmp_I = 0, tmp_D = 0;
+   
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);
 
    pid_rate->output += tmp_I = get_I(pid_pos, pos_param);
+   // pid_rate->output += tmp_D = get_D(pid_pos, pos_param);
 
    geometry_msgs::Inertia pid_inner_msg;
    pid_inner_msg.m = target->target_vel;
@@ -252,6 +253,7 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    pid_inner_msg.ixy = pid_rate->inner_i;
    pid_inner_msg.ixz = pid_rate->inner_d;
    pid_inner_msg.iyy = tmp_I;
+   pid_inner_msg.iyz = tmp_D;
    pid_inner_msg.izz = pid_rate->output;
    pid_inner_pub->publish(pid_inner_msg);
 }
