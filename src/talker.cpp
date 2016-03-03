@@ -87,29 +87,32 @@ public:
 	double dt;
 	Matrix<float, 2, 2> A;
 	Matrix<float, 2, 2> Q;
-	Matrix<float, 1, 2> H;
-	float R;
+	Matrix<float, 2, 2> R;
+	float H;
 
 	Matrix<float, 2, 1> X;
+	Matrix<float, 2, 1> X_measured;
 	Matrix<float, 2, 1> X_estimated;
 	Matrix<float, 2, 2> P;
 	Matrix<float, 2, 2> P_estimated;
 
-	Matrix<float, 2, 1> Kalman_gain;
+	Matrix<float, 2, 2> Kalman_gain;
 
 	float measure;
 
 	float last_position;
 	float current_position;
 
+	double last_time;
+
 	position_PV_kalman(
 	    Matrix<float, 2, 1> _X,
 	    Matrix<float, 2, 2> _P,
-	    float _R
+	    Matrix<float, 2, 2> _R
 	) : X(_X), P(_P), dt(0), R(_R)
 	{
-		H << 1, 0;
-		R = 2;
+		// H << 1, 0;
+		R << 1, 0, 0, 2;
 		current_position = 0;
 		last_position = 0;
 		// X << 0,0;
@@ -120,47 +123,118 @@ public:
 		X_estimated = A * X;
 		P_estimated = A * P * A.transpose() + Q;
 	}
-	void Correct(float _position, double dt) {
-		Kalman_gain = P_estimated * H.transpose() / ( ( H * P_estimated * H.transpose() + R ) );
 
-		X = X_estimated + Kalman_gain * (measure - H * X_estimated);
+	void Correct(float _position) {
+		Kalman_gain = P_estimated * ( P_estimated + R ).inverse();
+
+		X = X_estimated + Kalman_gain * (X_measured - X_estimated);
 		current_position = X(0, 0);
 
-		P = P_estimated - (Kalman_gain * H) * P_estimated;
+		P = P_estimated - Kalman_gain * P_estimated;
 	}
 
-	void update(float _position, double _dt) {
-		dt = _dt;
-		measure = _position;
-		A << 1, dt, 0, 1;
+	void Measure(float _position) {
+		// if(cycle_time()){
+		// 	//first time to call
 
+		// }
+		X_measured(0, 0) = _position;
+		X_measured(1, 0) = calc_vel(_position, X(0, 0) );
+
+	}
+
+	void Compare(float _position) {
+
+	}
+
+	float calc_vel(float _position, float _last_position) {
+		float vel = (_position - _last_position) / dt;
+		return vel;
+	}
+
+	int cycle_time() {
+		int ret = 0;
+		double cur_time = ros::Time::now().toSec();
+		if (!last_time)
+			ret = 1;
+		dt = cur_time - last_time;
+		last_time = cur_time;
+
+		A << 1, dt, 0, 1;
 		Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
 		Q *= 2;
-		R = 2;
+
+		return ret;
 	}
-
-	void calc_vel(float _position, double _dt) {
-
-		float vel = (current_position - last_position) / _dt;
-		last_position = current_position;
-		// X << _position, vel;
-	}
-
-
 private:
-
-
 };
 
+
+void calc_3d() {
+	float lx, rx, y;
+
+	float a1, b1, c1;
+	float tx, ty, tz;
+
+	lx = 502;
+	rx = 623;
+	y = 101;
+
+	c1 =  2.97f * 450 / ((lx - rx) * 0.00375f);
+	a1 = (2.97f * 450 / ((lx - rx) * 0.00375f)) * (0.00375f * (lx + rx - 1280)) / (2 * 2.97f);
+	b1 =  (-0.00375f) * ((2 * y) / 2 - 480.0f) * (2.97f * 450 / ((lx - rx) * 0.00375f)) / 2.97f;
+
+	cout << "first : " << a1 << "," << b1 << "," << c1 << endl;
+
+
+// depth =  ( 2.97 * 450 / 0.00375 ) / (left_x - right_x);
+// b1 = - depth * 0.00375 / 2.97 / 2 * ( (left_y + right_y) - 960);
+// a1 = depth * 0.00375 / 2.97 / 2 * ( (left_x + right_x) - 1280);
+
+	float constant_ab = 0.00375f / 2.97f / 2.0f;
+	float constant_depth = ( 2.97f * 450.0f / 0.00375f );
+	float width = 1280.0f;
+	float height = 960.0f;
+	// cout << "constant : " << constant_ab << ", " << constant_depth << endl;
+// depth =  constant_depth / (left_x - right_x);
+// b1 = - depth * constant_ab * ( (left_y + right_y) - 960);
+// a1 = depth * constant_ab * ( (left_x + right_x) - 1280);
+	tz =  constant_depth / (lx - rx);
+	tx = tz * constant_ab * ( (lx + rx) - width);
+	ty = - tz * constant_ab * ( 2 * y - height);
+
+	cout << "second : " << tx  << "," << ty  << "," << tz << endl;
+}
+
+
+
+
+/*
+cycle_time() -> Predict() -> {multiple of} Measure() -> Correct()
+
+
+*/
 
 
 // depth =  2.97 * 450 / ((left_x - right_x) * 0.00375);
 
+
+
 // a1 = depth * ( 0.00375) * ( (left_x + right_x) / 2 - 1280 / 2) / 2.97;
+
+// a1 = depth * ( 0.00375 / 2.97 / 2) * ( (left_x + right_x) - 1280) ;
+
+
 // b1 = depth * (-0.00375) * ( (left_y + right_y) / 2 - 960 / 2)  /2.97);
 
-
+// final
 // depth =  ( 2.97 * 450 / 0.00375 ) / (left_x - right_x);
+// deriv_depth_left_x = -(2.97 * 450 / 0.00375 ) / pow(left_x - right_x,2)
+
+// deriv_depth_left_y =  (2.97 * 450 / 0.00375 ) / pow(left_x - right_x,2)
+
+
+
 // b1 = depth * (-0.00375) / 2.97 / 2 * ( (left_y + right_y) - 960);
 // a1 = depth * ( 0.00375) / 2.97 / 2 * ( (left_x + right_x) - 1280);
 
@@ -221,6 +295,9 @@ int main(int argc, char **argv) {
 	// cout << "inverse" << endl << mat.inverse() << endl << endl;
 	// cout << "*" << endl << mat * mat2 << endl << endl;
 	// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
+	calc_3d();
+
+
 
 	double dt = 0.1;
 	Matrix<float, 2, 2> A, Q;
@@ -251,15 +328,15 @@ int main(int argc, char **argv) {
 
 
 	// cout << Kalman_gain << endl;
-	cout << H * A << endl;
+	// cout << H * A << endl;
 
 
 	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
-	std::ifstream inFile("/tmp/pidparam1");
-	cout << "FILE TEST" << inFile.is_open() << endl;
-	std::string tmp_st("/tmp/pidparam");
-	tmp_st += "1";
-	cout << tmp_st << endl;
+	// std::ifstream inFile("/tmp/pidparam1");
+	// cout << "FILE TEST" << inFile.is_open() << endl;
+	// std::string tmp_st("/tmp/pidparam");
+	// tmp_st += "1";
+	// cout << tmp_st << endl;
 	while (ros::ok()) {
 
 

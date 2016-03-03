@@ -52,7 +52,7 @@ private:
    ros::Subscriber target_sub;
    ros::NodeHandle nod;
 
-   
+
 
    int drone_num;
 
@@ -92,6 +92,8 @@ private:
    float current_position_x;
    float current_position_y;
    float current_position_z;
+
+   float takeoff_altitude;
 
    int tim1_timer;
    int tim2_timer;
