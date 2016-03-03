@@ -240,7 +240,8 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
    float tmp_I = 0, tmp_D = 0;
-   
+
+
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);
 
