@@ -9,8 +9,13 @@
 #define LOAD_PARAMFILE3 9993
 #define LOAD_PARAMFILE4 9994
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
-const std::string tmp_dir("/tmp/drone/");
+
+const std::string tmp_dir_home(getpwuid(getuid())->pw_dir);
+const std::string tmp_dir(tmp_dir_home + "/catkin_ws/drone");
 
 struct pid_parameter_t {
 public:

@@ -30,51 +30,9 @@
 #include "calculation.h"
 
 
-#if 0
-typedef struct pos_vel_t {
-	float cur_pos;
-	float cur_vel;
-	float last_pos;
-	float last_vel;
-	double cur_time;
-	double last_time;
-	double cycle_time;
-
-	float last_vel_raw;
-	float cur_vel_raw;
-} pos_vel_t;
-
-void calc_velocity(pos_vel_t* pos_vel) {
-	int is_lpf = 1;
-	if (pos_vel->last_time && pos_vel->cur_time) {
-		pos_vel->cycle_time = pos_vel->cur_time - pos_vel->last_time;
-
-		//if ros's cycle period is fast (in my case, about 1000hz), sometime the cycle period might have some noize over 30%. it must be corrected.
-		// if(pos_vel->cycle_time > 0.0013 || pos_vel->cycle_time < 0.0007){
-		//         pos_vel->last_vel = pos_vel->cur_vel;
-		//         pos_vel->last_time = pos_vel->cur_time;
-		//         pos_vel->last_pos = pos_vel->cur_pos;
-		//     return;
-		// }
-	}
-	if (pos_vel->cur_pos && pos_vel->last_pos)
-		pos_vel->cur_vel = pos_vel->cur_pos - pos_vel->last_pos;
-
-	if (pos_vel->cycle_time)
-		pos_vel->cur_vel /= pos_vel->cycle_time;
-
-	pos_vel->cur_vel_raw = pos_vel->cur_vel;
-
-	if (pos_vel->last_vel && is_lpf)
-		pos_vel->cur_vel = (pos_vel->cur_vel + pos_vel->last_vel) / 2;
-
-	pos_vel->last_vel = pos_vel->cur_vel;
-	pos_vel->last_time = pos_vel->cur_time;
-	pos_vel->last_pos = pos_vel->cur_pos;
-	pos_vel->last_vel_raw = pos_vel->cur_vel_raw;
-
-}
-#endif
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 
 using namespace std;
@@ -254,89 +212,16 @@ int main(int argc, char **argv) {
 	int count = 0;
 
 
-	// int fd = open("/tmp/save", O_RDWR | O_CREAT | O_TRUNC, 0777);
+	struct passwd *pw = getpwuid(getuid());
 
+	const char *homedir = pw->pw_dir;
+	const std::string tmp_dira(getpwuid(getuid())->pw_dir);
 
-	// char buf[100] = "hello";
-	double buff = 1.21234l;
-	// sprintf(buf,"%lf",buff);
-	// write(fd,buf,sizeof(buf));
-	// printf("%d\n",fd);
-
-
-	// std::ofstream myfile;
-	// myfile.open ("/tmp/example.txt");
-	// //myfile << "buff\n";
-	// myfile.close();
-
-// #define MAX_SIZE 1000
-// 	char inputString[MAX_SIZE];
-
-
-	// std::ofstream outFile("/tmp/output.txt");
-
-	// for (int i = 0 ; i < 10 ; i++) {
-	// 	outFile << i << std::endl;
-	// }
-
-	// outFile.close();
+	cout << tmp_dira << endl;
 
 
 
 
-	// Matrix2f mat, mat2, mat3;
-	// Matrix<float, 2, 2> mat4;
-	// mat << 1, 2, 3, 4;
-	// mat2 = Matrix2f::Identity(2, 2);
-	// Vector2f vec;
-	// vec = mat.diagonal();
-	// cout << "diagonal" << endl << vec << endl << endl << endl;
-	// cout << "transpose" << endl << mat.transpose() << endl << endl;
-	// cout << "inverse" << endl << mat.inverse() << endl << endl;
-	// cout << "*" << endl << mat * mat2 << endl << endl;
-	// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
-	calc_3d();
-
-
-
-	double dt = 0.1;
-	Matrix<float, 2, 2> A, Q;
-	Matrix<float, 1, 2> H;
-
-	Matrix<float, 2, 1> X;
-	Matrix<float, 2, 1> Kalman_gain;
-
-	Matrix<float, 2, 1> X_estimated;
-
-
-	Matrix<float, 2, 2> P;
-
-
-	float R;
-	float position_k, velocity_k;
-
-
-	X << 1, 0;
-
-	A << 1, dt, 0, 1;
-	H << 1, 0;
-	Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
-	R = 2;
-
-
-	X_estimated = A * X;
-
-
-	// cout << Kalman_gain << endl;
-	// cout << H * A << endl;
-
-
-	// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
-	// std::ifstream inFile("/tmp/pidparam1");
-	// cout << "FILE TEST" << inFile.is_open() << endl;
-	// std::string tmp_st("/tmp/pidparam");
-	// tmp_st += "1";
-	// cout << tmp_st << endl;
 	while (ros::ok()) {
 
 
@@ -408,3 +293,92 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
+
+
+
+
+// int fd = open("/tmp/save", O_RDWR | O_CREAT | O_TRUNC, 0777);
+
+
+// char buf[100] = "hello";
+// double buff = 1.21234l;
+// sprintf(buf,"%lf",buff);
+// write(fd,buf,sizeof(buf));
+// printf("%d\n",fd);
+
+
+// std::ofstream myfile;
+// myfile.open ("/tmp/example.txt");
+// //myfile << "buff\n";
+// myfile.close();
+
+// #define MAX_SIZE 1000
+// 	char inputString[MAX_SIZE];
+
+
+// std::ofstream outFile("/tmp/output.txt");
+
+// for (int i = 0 ; i < 10 ; i++) {
+// 	outFile << i << std::endl;
+// }
+
+// outFile.close();
+
+
+
+
+// Matrix2f mat, mat2, mat3;
+// Matrix<float, 2, 2> mat4;
+// mat << 1, 2, 3, 4;
+// mat2 = Matrix2f::Identity(2, 2);
+// Vector2f vec;
+// vec = mat.diagonal();
+// cout << "diagonal" << endl << vec << endl << endl << endl;
+// cout << "transpose" << endl << mat.transpose() << endl << endl;
+// cout << "inverse" << endl << mat.inverse() << endl << endl;
+// cout << "*" << endl << mat * mat2 << endl << endl;
+// cout << "/" << endl << mat * mat2.inverse() << endl << endl;
+// calc_3d();
+
+
+
+// double dt = 0.1;
+// Matrix<float, 2, 2> A, Q;
+// Matrix<float, 1, 2> H;
+
+// Matrix<float, 2, 1> X;
+// Matrix<float, 2, 1> Kalman_gain;
+
+// Matrix<float, 2, 1> X_estimated;
+
+
+// Matrix<float, 2, 2> P;
+
+
+// float R;
+// float position_k, velocity_k;
+
+
+// X << 1, 0;
+
+// A << 1, dt, 0, 1;
+// H << 1, 0;
+// Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
+// R = 2;
+
+
+// X_estimated = A * X;
+
+
+// cout << Kalman_gain << endl;
+// cout << H * A << endl;
+
+
+// // cout << "dig" << endl << mat * mat2.inverse() << endl<<endl;
+// std::ifstream inFile("/tmp/pidparam1");
+// cout << "FILE TEST" << inFile.is_open() << endl;
+// std::string tmp_st("/tmp/pidparam");
+// tmp_st += "1";
+// cout << tmp_st << endl;
+
+
