@@ -346,8 +346,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       is_arm = 1950;
    }
    else if (flight_mode_position_callback == MODE_MANUAL) {
-
-      calc_takeoff_altitude(&pid_rate_Z);
       manual(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, max_vel);
       if (pid_rate_Z.output < 50.0f) {
          reset_I(&pid_rate_X, 0.0f);
@@ -383,18 +381,19 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       // calc_takeoff_altitude(&pid_rate_Z);
 
       mag_counter++;
-      if ( mag_counter % 10 == 10 )
+      if ( mag_counter % 10 == 0 )
          maghold_drone(pid_param_c.flight_param->pid_D + 600);
 
-      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 50, &is_takeoff);
+      calc_takeoff_altitude(&pid_rate_Z);
+      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 100, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
 
-      if (current_Z.cur_pos < takeoff_altitude + 30.0f) {
-         tmp_pid_poshold_rate_param_Z.pid_I *= 15;
+      if (current_Z.cur_pos < takeoff_altitude + 25.0f) {
+         tmp_pid_poshold_rate_param_Z.pid_I *= 20;
       } else if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
-         tmp_pid_poshold_rate_param_Z.pid_I *= 7;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 3;
       }
 
       if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {

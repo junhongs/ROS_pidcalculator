@@ -23,7 +23,7 @@
 #define MANAGE_MODE_ERROR -1
 #define MANAGE_TARGET_ERROR -1
 
-static const float TAKEOFF_SPEED = 200.0f;
+static const float TAKEOFF_SPEED = 400.0f;
 static const float LANDING_SPEED = -200.0f;
 
 #define PARAM_OUTER 1
