@@ -6,9 +6,14 @@ project(pid_controller)
 
 
 find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs std_msgs genmsg message_generation cmake_modules
-cv_bridge
-image_transport
+cv_bridge image_geometry image_transport tf
 )
+
+
+#find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs std_msgs genmsg message_generation cmake_modules
+#cv_bridge image_geometry image_transport opencv2 )
+
+
 ##find_package(catkin REQUIRED )
 find_package(Eigen REQUIRED)
 

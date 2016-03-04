@@ -32,7 +32,7 @@ static const float LANDING_SPEED = -200.0f;
 class PIDCONTROLLER
 {
 public:
-   PIDCONTROLLER(std::string DRONE, float x_off, float y_off);
+   PIDCONTROLLER(std::string DRONE);
    ~PIDCONTROLLER();
    pos_pid_parameter_t pid_param_c;
    int param_location;
@@ -55,9 +55,6 @@ private:
 
 
    int drone_num;
-
-   float x_offset;
-   float y_offset;
 
    float max_vel;
    float limited_target_vel;
@@ -97,6 +94,8 @@ private:
 
    int tim1_timer;
    int tim2_timer;
+
+   int mag_counter;
 
    lpf_c lpf_vel_x;
    lpf_c lpf_vel_y;

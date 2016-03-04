@@ -103,6 +103,7 @@ void paramCallback(const std_msgs::Int32& msg) {
          std::cout << "COMMON :: " << param_list[param_data] << " :: " << *get_param_n(param_data) << std::endl;
       }
       else {
+         drone_controller[drone_number-1]->set_self_param();
          update_param(param_data, &(drone_controller[drone_number - 1]->pid_param_c) );
          std::cout << drone_controller[drone_number - 1]->drone << " :: " << param_list[param_data] << " :: " << *get_param_n(param_data, &(drone_controller[drone_number - 1]->pid_param_c) ) << std::endl;
       }
@@ -124,13 +125,13 @@ int main(int argc, char **argv) {
 
    ros::Subscriber pos_stamp_sub = n.subscribe("potition1", 100, pos_stamped_tested_verCallback);
 
-   PIDCONTROLLER first("/FIRST", 0.0f, 0.0f);
+   PIDCONTROLLER first("/FIRST");
    drone_controller[0] = &first;
-   PIDCONTROLLER second("/SECOND", 0.0f, 0.0f);
+   PIDCONTROLLER second("/SECOND");
    drone_controller[1] = &second;
-   PIDCONTROLLER third("/THIRD", 0.0f, 0.0f);
+   PIDCONTROLLER third("/THIRD");
    drone_controller[2] = &third;
-   PIDCONTROLLER fourth("/FOURTH", 0.0f, 0.0f);
+   PIDCONTROLLER fourth("/FOURTH");
    drone_controller[3] = &fourth;
 
    // ros::MultiThreadedSpinner spinner(4); // Use 4 threads

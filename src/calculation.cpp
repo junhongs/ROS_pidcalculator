@@ -177,7 +177,7 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
       *changed_to_poshold = 0;
 
    // If current position is in a 50mm target range, change the mode to the pos_hold
-   if ((err_pos < 20.0f && err_pos > -20.0f) || *changed_to_poshold ) {
+   if ((err_pos < 30.0f && err_pos > -30.0f) || *changed_to_poshold ) {
       *changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param);
       return 1;

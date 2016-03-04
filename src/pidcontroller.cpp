@@ -8,11 +8,9 @@ using namespace std;
 PIDCONTROLLER::~PIDCONTROLLER() {
 
 }
-PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
+PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    drone(DRONE),
-   x_offset(x_off),
-   y_offset(y_off),
-   limited_target_vel(700.0f),
+   limited_target_vel(1000.0f),
    max_vel(300.0f),
 
    is_changed_manage_mode(0),
@@ -35,6 +33,8 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
 
    tim1_timer(0.0f),
    tim2_timer(0.0f),
+
+   mag_counter(1),
 
    current_mode(MODE_NOT_DETECTED),
 
@@ -312,10 +312,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
-
-
-
-
    if (flight_mode_position_callback == MODE_NAV) {
 
       int sum_nav = 0;
@@ -385,18 +381,20 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
       // calc_takeoff_altitude(&pid_rate_Z);
-      if(is_changed_mode){
+
+      mag_counter++;
+      if ( mag_counter % 10 == 10 )
          maghold_drone(pid_param_c.flight_param->pid_D + 600);
-         std::cout << "First Takeoff"<< std::endl;
-      }
 
       calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 50, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
 
-      if (current_Z.cur_pos < takeoff_altitude + 50.0f) {
-         tmp_pid_poshold_rate_param_Z.pid_I *= 10;
+      if (current_Z.cur_pos < takeoff_altitude + 30.0f) {
+         tmp_pid_poshold_rate_param_Z.pid_I *= 15;
+      } else if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
+         tmp_pid_poshold_rate_param_Z.pid_I *= 7;
       }
 
       if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {
