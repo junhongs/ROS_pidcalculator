@@ -36,7 +36,7 @@ using namespace cv;
 
 
 #define PI 3.14159265
-#define DEBUG
+// #define DEBUG
 
 double Angle = 61; // 55
 double Angle2 = 354; // 354
@@ -60,9 +60,10 @@ struct My3DVelocity {
 };
 
 vector <MyPoint> MyFirst, MySecond;
-
+#ifdef DEBUG
 static const std::string OPENCV_WINDOW = "Image window";
 static const std::string OPENCV_WINDOW2 = "Image window2";
+#endif
 int Ccount1 = -2;
 int Ccount = -2;
 clock_t Start_time, End_time;
@@ -379,30 +380,16 @@ public:
 #endif
 
                 if (closest_dis == 987654321) {
-
-#ifdef DEBUG
-                    cout << "what!!" << endl;
-#endif
                     continue;
                 }
 
                 else {
                     // pass
-#ifdef DEBUG
-                    cout << "what else" << endl;
-#endif
                     Acummulate_Time[k] = 0;
 
-#ifdef JH
-                    Current_Loc[k].x = tmp_p.x;
-                    Current_Loc[k].y = tmp_p.y;
-                    Current_Loc[k].z = tmp_p.z;
-#else
                     Current_Loc[k].x = closest_3DPoint.x;
                     Current_Loc[k].y = closest_3DPoint.y;
                     Current_Loc[k].z = closest_3DPoint.z;
-#endif
-
                 }
 
                 cout << "Curren " << Current_Loc[k].x << " " << Current_Loc[k].y << " " << Current_Loc[k].z << endl;
@@ -525,12 +512,7 @@ public:
         }
 
 #ifdef DEBUG
-
         cv::imshow(OPENCV_WINDOW2, cv_ptr->image);
-
-        //Rect rect(MySecond[0].x-50, MySecond[0].y-50, 100, 100);
-        //Mat subimage = cv_ptr->image(rect);
-        //cv::imshow(OPENCV_WINDOW2, subimage);
         cv::waitKey(3);
 #endif
     }
