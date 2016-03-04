@@ -3,6 +3,12 @@
 
 #include "ros/ros.h"
 #include <string>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+
+
 #define LOAD_PARAMFILE 9990
 #define LOAD_PARAMFILE1 9991
 #define LOAD_PARAMFILE2 9992
@@ -10,7 +16,9 @@
 #define LOAD_PARAMFILE4 9994
 
 
-const std::string tmp_dir("/tmp/drone/");
+const std::string home_dir(getpwuid(getuid())->pw_dir);
+
+const std::string tmp_dir(home_dir + "/catkin_ws/drone/");
 
 struct pid_parameter_t {
 public:
@@ -39,13 +47,39 @@ public:
 	double pid_Imax;
 };
 
+struct flight_parameter_t {
+public:
+	flight_parameter_t() :
+		takeoff_x(0.0l),
+		takeoff_y(0.0l),
+		heading(0.0l),
+		aux(0.0l)
+	{}
+	flight_parameter_t(double p, double i, double d, double im) :
+		takeoff_x(p),
+		takeoff_y(i),
+		heading(d),
+		aux(im)
+	{}
+	flight_parameter_t(flight_parameter_t& param) :
+		takeoff_x(param.takeoff_x),
+		takeoff_y(param.takeoff_y),
+		heading(param.heading),
+		aux(param.aux)
+	{}
 
+	double takeoff_x;
+	double takeoff_y;
+	double heading;
+	double aux;
+};
 
 
 struct pos_pid_parameter_t {
 public:
 	pos_pid_parameter_t(pid_parameter_t *a, pid_parameter_t *b, pid_parameter_t *c, pid_parameter_t *d, pid_parameter_t *e, pid_parameter_t *f,
 	                    pid_parameter_t *g, pid_parameter_t *h, pid_parameter_t *i, pid_parameter_t *j, pid_parameter_t *k, pid_parameter_t *l
+	                    , pid_parameter_t *m
 	                   ):
 		pos_pid_X(a),
 		rate_pid_X(b),
@@ -59,6 +93,7 @@ public:
 		rate_nav_pid_Y(j),
 		pos_nav_pid_Z(k),
 		rate_nav_pid_Z(l)
+		, flight_param(m)
 	{}
 	pos_pid_parameter_t():
 		pos_pid_X(NULL),
@@ -73,11 +108,13 @@ public:
 		rate_nav_pid_Y(NULL),
 		pos_nav_pid_Z(NULL),
 		rate_nav_pid_Z(NULL)
+		, flight_param(NULL)
 	{}
 
 	void set_param(
 	    pid_parameter_t *a, pid_parameter_t *b, pid_parameter_t *c, pid_parameter_t *d, pid_parameter_t *e, pid_parameter_t *f,
 	    pid_parameter_t *g, pid_parameter_t *h, pid_parameter_t *i, pid_parameter_t *j, pid_parameter_t *k, pid_parameter_t *l
+	    , pid_parameter_t *m
 	){
 		pos_pid_X = a;
 		rate_pid_X = b;
@@ -91,6 +128,7 @@ public:
 		rate_nav_pid_Y = j;
 		pos_nav_pid_Z = k;
 		rate_nav_pid_Z = l;
+		flight_param = m;
 
 	}
 	pid_parameter_t *pos_pid_X;
@@ -111,6 +149,9 @@ public:
 
 	pid_parameter_t *pos_nav_pid_Z;
 	pid_parameter_t *rate_nav_pid_Z;
+
+	pid_parameter_t *flight_param;
+	pid_parameter_t *flight_param2;
 };
 
 
@@ -174,6 +215,8 @@ extern pid_parameter_t __pid_nav_rate_param_Y;
 extern pid_parameter_t __pid_nav_pos_param_Z;
 extern pid_parameter_t __pid_nav_rate_param_Z;
 
+extern pid_parameter_t __flight_param;
+
 
 extern pid_parameter_t default_param_pos_X;
 extern pid_parameter_t default_param_rate_X;
@@ -188,5 +231,7 @@ extern pid_parameter_t default_nav_param_pos_Y;
 extern pid_parameter_t default_nav_param_rate_Y;
 extern pid_parameter_t default_nav_param_pos_Z;
 extern pid_parameter_t default_nav_param_rate_Z;
+
+extern pid_parameter_t default_flight_param;
 
 #endif

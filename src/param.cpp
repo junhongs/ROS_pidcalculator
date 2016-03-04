@@ -10,69 +10,70 @@
 // RATE = 24
 char param_list[][50] =
 {
-   "FIRST/POSHOLD/POS/X/PID_P",    //0
-   "FIRST/POSHOLD/POS/X/PID_I",    //1
-   "FIRST/POSHOLD/POS/X/PID_D",    //2
-   "FIRST/POSHOLD/POS/X/PID_IMAX",    //3
+   "DRONE/POSHOLD/POS/X/PID_P",    //0
+   "DRONE/POSHOLD/POS/X/PID_I",    //1
+   "DRONE/POSHOLD/POS/X/PID_D",    //2
+   "DRONE/POSHOLD/POS/X/PID_IMAX",    //3
 
-   "FIRST/POSHOLD/RATE/X/PID_P",      //4
-   "FIRST/POSHOLD/RATE/X/PID_I",      //5
-   "FIRST/POSHOLD/RATE/X/PID_D",      //6
-   "FIRST/POSHOLD/RATE/X/PID_IMAX",   //7
+   "DRONE/POSHOLD/RATE/X/PID_P",      //4
+   "DRONE/POSHOLD/RATE/X/PID_I",      //5
+   "DRONE/POSHOLD/RATE/X/PID_D",      //6
+   "DRONE/POSHOLD/RATE/X/PID_IMAX",   //7
 
-   "FIRST/POSHOLD/POS/Y/PID_P",    //8
-   "FIRST/POSHOLD/POS/Y/PID_I",    //9
-   "FIRST/POSHOLD/POS/Y/PID_D",    //10
-   "FIRST/POSHOLD/POS/Y/PID_IMAX",    //11
+   "DRONE/POSHOLD/POS/Y/PID_P",    //8
+   "DRONE/POSHOLD/POS/Y/PID_I",    //9
+   "DRONE/POSHOLD/POS/Y/PID_D",    //10
+   "DRONE/POSHOLD/POS/Y/PID_IMAX",    //11
 
-   "FIRST/POSHOLD/RATE/Y/PID_P",      //12
-   "FIRST/POSHOLD/RATE/Y/PID_I",      //13
-   "FIRST/POSHOLD/RATE/Y/PID_D",      //14
-   "FIRST/POSHOLD/RATE/Y/PID_IMAX",   //15
+   "DRONE/POSHOLD/RATE/Y/PID_P",      //12
+   "DRONE/POSHOLD/RATE/Y/PID_I",      //13
+   "DRONE/POSHOLD/RATE/Y/PID_D",      //14
+   "DRONE/POSHOLD/RATE/Y/PID_IMAX",   //15
 
-   "FIRST/POSHOLD/POS/Z/PID_P",    //16
-   "FIRST/POSHOLD/POS/Z/PID_I",    //17
-   "FIRST/POSHOLD/POS/Z/PID_D",    //18
-   "FIRST/POSHOLD/POS/Z/PID_IMAX",    //19
+   "DRONE/POSHOLD/POS/Z/PID_P",    //16
+   "DRONE/POSHOLD/POS/Z/PID_I",    //17
+   "DRONE/POSHOLD/POS/Z/PID_D",    //18
+   "DRONE/POSHOLD/POS/Z/PID_IMAX",    //19
 
-   "FIRST/POSHOLD/RATE/Z/PID_P",      //20
-   "FIRST/POSHOLD/RATE/Z/PID_I",      //21
-   "FIRST/POSHOLD/RATE/Z/PID_D",      //22
-   "FIRST/POSHOLD/RATE/Z/PID_IMAX",    //23
+   "DRONE/POSHOLD/RATE/Z/PID_P",      //20
+   "DRONE/POSHOLD/RATE/Z/PID_I",      //21
+   "DRONE/POSHOLD/RATE/Z/PID_D",      //22
+   "DRONE/POSHOLD/RATE/Z/PID_IMAX",    //23
 
 
-   "FIRST/NAV/POS/X/PID_P",
-   "FIRST/NAV/POS/X/PID_I",
-   "FIRST/NAV/POS/X/PID_D",
-   "FIRST/NAV/POS/X/PID_IMAX",
+   "DRONE/NAV/POS/X/PID_P",
+   "DRONE/NAV/POS/X/PID_I",
+   "DRONE/NAV/POS/X/PID_D",
+   "DRONE/NAV/POS/X/PID_IMAX",
 
-   "FIRST/NAV/RATE/X/PID_P",
-   "FIRST/NAV/RATE/X/PID_I",
-   "FIRST/NAV/RATE/X/PID_D",
-   "FIRST/NAV/RATE/X/PID_IMAX",
+   "DRONE/NAV/RATE/X/PID_P",
+   "DRONE/NAV/RATE/X/PID_I",
+   "DRONE/NAV/RATE/X/PID_D",
+   "DRONE/NAV/RATE/X/PID_IMAX",
 
-   "FIRST/NAV/POS/Y/PID_P",
-   "FIRST/NAV/POS/Y/PID_I",
-   "FIRST/NAV/POS/Y/PID_D",
-   "FIRST/NAV/POS/Y/PID_IMAX",
+   "DRONE/NAV/POS/Y/PID_P",
+   "DRONE/NAV/POS/Y/PID_I",
+   "DRONE/NAV/POS/Y/PID_D",
+   "DRONE/NAV/POS/Y/PID_IMAX",
 
-   "FIRST/NAV/RATE/Y/PID_P",
-   "FIRST/NAV/RATE/Y/PID_I",
-   "FIRST/NAV/RATE/Y/PID_D",
-   "FIRST/NAV/RATE/Y/PID_IMAX",
+   "DRONE/NAV/RATE/Y/PID_P",
+   "DRONE/NAV/RATE/Y/PID_I",
+   "DRONE/NAV/RATE/Y/PID_D",
+   "DRONE/NAV/RATE/Y/PID_IMAX",
 
-   "FIRST/NAV/POS/Z/PID_P",
-   "FIRST/NAV/POS/Z/PID_I",
-   "FIRST/NAV/POS/Z/PID_D",
-   "FIRST/NAV/POS/Z/PID_IMAX",
+   "DRONE/NAV/POS/Z/PID_P",
+   "DRONE/NAV/POS/Z/PID_I",
+   "DRONE/NAV/POS/Z/PID_D",
+   "DRONE/NAV/POS/Z/PID_IMAX",
 
-   "FIRST/NAV/RATE/Z/PID_P",
-   "FIRST/NAV/RATE/Z/PID_I",
-   "FIRST/NAV/RATE/Z/PID_D",
-   "FIRST/NAV/RATE/Z/PID_IMAX",      //47
-   "FIRST/TAKEOFF_X",
-   "FIRST/TAKEOFF_Y",
-   "FIRST/HEADING"
+   "DRONE/NAV/RATE/Z/PID_P",
+   "DRONE/NAV/RATE/Z/PID_I",
+   "DRONE/NAV/RATE/Z/PID_D",
+   "DRONE/NAV/RATE/Z/PID_IMAX",      //47
+   "DRONE/TAKEOFF_X",               // 48
+   "DRONE/TAKEOFF_Y",               // 49
+   "DRONE/HEADING",                  // 50
+   "DRONE/AUX"
 };
 
 //POSHOLD PARAMETER
@@ -96,6 +97,8 @@ pid_parameter_t __pid_nav_rate_param_Y;
 
 pid_parameter_t __pid_nav_pos_param_Z;
 pid_parameter_t __pid_nav_rate_param_Z;
+
+pid_parameter_t __flight_param;
 
 
 
@@ -142,12 +145,6 @@ pid_parameter_t default_param_rate_Z (
 );
 
 
-
-
-
-
-
-
 //DEFAULT NAVIGATION PARAMETER
 pid_parameter_t default_param_nav_pos_X (
    1.980l,
@@ -189,6 +186,13 @@ pid_parameter_t default_param_nav_rate_Z (
 );
 
 
+pid_parameter_t default_flight_param (
+   0.0l,
+   0.0l,
+   0.0l,
+   0.0l
+);
+
 
 
 pos_pid_parameter_t pid_default_param(
@@ -205,6 +209,7 @@ pos_pid_parameter_t pid_default_param(
    &default_param_nav_rate_Y,
    &default_param_nav_pos_Z,
    &default_param_nav_rate_Z
+   , &default_flight_param
 );
 
 
@@ -224,6 +229,7 @@ pos_pid_parameter_t pid_param(
    &__pid_nav_rate_param_Y,
    &__pid_nav_pos_param_Z,
    &__pid_nav_rate_param_Z
+   , &__flight_param
 );
 
 
@@ -429,10 +435,10 @@ void init_param() {
       save_param(filen_tmpparam.c_str());
    else {
       int i = 0;
-      //std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
+      // std::cout << sizeof(param_list) / sizeof(param_list[0]) << std::endl;
       while (i < sizeof(param_list) / sizeof(param_list[0])) {
          init_param(param_list[i], get_param_n(i), get_default_param_n(i));
-         // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << *get_default_param_n(i) << std::endl;
+         // std::cout << i << " " << param_list[i] << " : " << *get_param_n(i) << ":" << get_param_n(i) << ":::"<< *get_default_param_n(i) << std::endl;
          i++;
       }
       save_param(filen_param.c_str());

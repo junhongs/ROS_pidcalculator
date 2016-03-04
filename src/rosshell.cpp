@@ -77,19 +77,19 @@ void quit(int sig) {
 }
 
 void key_debug(std::string str) {
-	std::cout << "   "<< current_program << ":" <<  str << std::endl;
+	std::cout << "   " << current_program << ":" <<  str << std::endl;
 }
 
 void key_debug(std::string str, int n) {
-	std::cout << "   "<< current_program << ":" << str <<  n << std::endl;
+	std::cout << "   " << current_program << ":" << str << "," <<  n << std::endl;
 }
 
 void key_debug(int n) {
-	std::cout << "   "<< current_program << ":" <<  n << std::endl;
+	std::cout << "   " << current_program << ":" <<  n << std::endl;
 }
 
 void key_debug(std::string str, double n) {
-	std::cout << "   "<< current_program << ":" << str <<  n << std::endl;
+	std::cout << "   " << current_program << ":" << str << "," <<  n << std::endl;
 }
 
 void print_param(int nav, int drone_num) {
@@ -103,7 +103,10 @@ void print_param(int nav, int drone_num) {
 
 	printf("   X::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n",   *get_param_n(nav, 0, 0, 0), *get_param_n(nav, 0, 0, 1), *get_param_n(nav, 0, 0, 2), *get_param_n(nav, 1, 0, 0), *get_param_n(nav, 1, 0, 1), *get_param_n(nav, 1, 0, 2));
 	printf("   Y::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", 	 *get_param_n(nav, 0, 1, 0), *get_param_n(nav, 0, 1, 1), *get_param_n(nav, 0, 1, 2), *get_param_n(nav, 1, 1, 0), *get_param_n(nav, 1, 1, 1), *get_param_n(nav, 1, 1, 2));
-	printf("   Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 0, 2, 2), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+	printf("   Z::%4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf : %4.3lf\n", *get_param_n(nav, 0, 2, 0), *get_param_n(nav, 0, 2, 1), *get_param_n(nav, 0, 2, 2), *get_param_n(nav, 1, 2, 0), *get_param_n(nav, 1, 2, 1), *get_param_n(nav, 1, 2, 2));
+
+//b: heading(50)   n: takeoff_x(48)    m: takeoff_y(49)
+	std::cout << "   B,HEADING:" << *get_param_n(50) << "   N,TAKEOFF_X:" << *get_param_n(48) << "   M,TAKEOFF_Y:" << *get_param_n(49) << std::endl;
 }
 
 
@@ -111,11 +114,12 @@ void keyLoop(std::string param_file_name, int drone_num) {
 	char c;
 	bool dirty = false;
 	static int pr = 0, xyz = 0, pidi = 0, nav = 0;
+	static int param_n = 0;;
 
 	static double scale = 0.001l;
 	static std_msgs::Int32 param_msg;
 
-	std::cout<< "   " << std::endl << "   "<< param_file_name.c_str() << std::endl;
+	std::cout << "   " << std::endl << "   " << param_file_name.c_str() << std::endl;
 	int is_original = 1;
 	if ( param_file_name == "pidparam" ) {
 		is_original = 0;
@@ -168,7 +172,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 		//printf("\033[1A"); // UP 1 lines
 		//printf("\033[K"); // erase to end of line
 
-
+//b: heading(50)   n: takeoff_x(48)    m: takeoff_y(49)
 		switch (c) {
 		case KEYCODE_L:
 		case 'a':
@@ -180,19 +184,51 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			scale /= 10.0l;
 			key_debug("::SCALE:", scale);
 			break;
+
+		case 'b':
+			param_n = 50;
+			break;
+		case 'n':
+			param_n = 48;
+			break;
+		case 'm':
+			param_n = 49;
+			break;
+
 		case KEYCODE_U:
-			*db_pt += scale;
-			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
-			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
-			param_pub.publish(param_msg);
+			if (param_n >= 48 && param_n <= 50) {
+				(*get_param_n(param_n))++;
+				set_param_n(param_n,*get_param_n(param_n));
+				key_debug(param_list[ param_n], *get_param_n(param_n));
+				param_msg.data = param_n + drone_num * 100;
+				param_pub.publish(param_msg);
+
+			}
+			else
+			{
+				*db_pt += scale;
+				key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+				set_param_n(nav, pr, xyz, pidi, *db_pt);
+				param_msg.data = param_n + drone_num * 100;
+				param_pub.publish(param_msg);
+			}
 			break;
 		case KEYCODE_D:
-			*db_pt -= scale;
-			key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
-			set_param_n(nav, pr, xyz, pidi, *db_pt);
-			param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
-			param_pub.publish(param_msg);
+			if (param_n >= 48 && param_n <= 50) {
+				(*get_param_n(param_n))--;
+				set_param_n(param_n,*get_param_n(param_n));
+				key_debug(param_list[ param_n], *get_param_n(param_n));
+				param_msg.data = param_n + drone_num * 100;
+				param_pub.publish(param_msg);
+			}
+			else
+			{
+				*db_pt -= scale;
+				key_debug(param_list[ get_param_num(nav, pr, xyz, pidi)], *db_pt);
+				set_param_n(nav, pr, xyz, pidi, *db_pt);
+				param_msg.data = get_param_num(nav, pr, xyz, pidi) + drone_num * 100;
+				param_pub.publish(param_msg);
+			}
 			break;
 		case 'y':
 			pr = 0;
@@ -338,14 +374,14 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			break;
 
 		case '3':
-			std::cout<< "   " << param_str << ":::";
+			std::cout << "   " << param_str << ":::";
 			key_debug("::SAVE THE PARAMETER");
 			save_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
 			param_pub.publish(param_msg);
 			break;
 		case '4':
-			std::cout<< "   " << param_str << ":::";
+			std::cout << "   " << param_str << ":::";
 			key_debug("::LOAD THE PARAMETER");
 			load_param(param_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -353,7 +389,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 
 			break;
 		case '5':
-			std::cout<< "   " << param_str << ":::";
+			std::cout << "   " << param_str << ":::";
 			key_debug("::DELETE THE PARAMETER");
 			delete_file_param(param_str.c_str());
 			if (!drone_num) {
@@ -364,7 +400,7 @@ void keyLoop(std::string param_file_name, int drone_num) {
 			param_pub.publish(param_msg);
 			break;
 		case '6':
-			std::cout<< "   " << param_str << ":::";
+			std::cout << "   " << param_str << ":::";
 			key_debug("::LOAD THE STARTED PARAMETER");
 			load_param(param_start_str.c_str());
 			param_msg.data = LOAD_PARAMFILE + drone_num;
@@ -401,9 +437,9 @@ void keyLoop_nav(std::string str = "null") {
 	// print_cur();
 	geometry_msgs::Quaternion target_msgs;
 
-	std::cout<<std::endl<< "   " << "::::NAIGATION::::" << std::endl;
+	std::cout << std::endl << "   " << "::::NAIGATION::::" << std::endl;
 
-	std::cout<< "   " << "WASD:direction   RF:up&down  12:takeoff&landing OP:magnetic" << std::endl;;
+	std::cout << "   " << "WASD:direction   RF:up&down  12:takeoff&landing OP:magnetic" << std::endl;;
 	// get the console in raw mode
 	memcpy(&raw, &cooked, sizeof(struct termios));
 	raw.c_lflag &= ~ (ICANON | ECHO);
@@ -437,61 +473,61 @@ void keyLoop_nav(std::string str = "null") {
 		case 'w': case 'W':
 			target_msgs.y = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "Y- DIRECTION ";
+			cout << "   " << "Y- DIRECTION ";
 			break;
 
 		case 'a': case 'A':
 			target_msgs.x = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "X+ DIRECTION ";
+			cout << "   " << "X+ DIRECTION ";
 			break;
 
 		case 's': case 'S':
 			target_msgs.y = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "Y+ DIRECTION ";
+			cout << "   " << "Y+ DIRECTION ";
 			break;
 
 		case 'd': case 'D':
 			target_msgs.x = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "Y- DIRECTION ";
+			cout << "   " << "Y- DIRECTION ";
 			break;
 
 		case 'r': case 'R':
 			target_msgs.z = 50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "Z+ DIRECTION ";
+			cout << "   " << "Z+ DIRECTION ";
 			break;
 
 		case 'f': case 'F':
 			target_msgs.z = -50.0f;
 			target_msgs.w = MISSION_AUX;
-			cout<< "   " << "Z- DIRECTION ";
+			cout << "   " << "Z- DIRECTION ";
 			break;
 
 
 		case 'o': case 'O':
 			target_msgs.y = maghold -= 1;
 			target_msgs.w = MISSION_MAGHOLD;
-			cout<< "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
+			cout << "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
 			break;
 		case 'p': case 'P':
 			target_msgs.y = maghold += 1;
 			target_msgs.w = MISSION_MAGHOLD;
-			cout<< "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
+			cout << "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
 			break;
 
 
 		case '1':
 		case 't':
 			target_msgs.w = MISSION_TAKEOFF;
-			cout<< "   " << "TAKEOFF ";
+			cout << "   " << "TAKEOFF ";
 			break;
 		case '2':
 		case 'l':
 			target_msgs.w = MISSION_LANDING;
-			cout<< "   " << "LANDING ";
+			cout << "   " << "LANDING ";
 			break;
 
 
@@ -506,13 +542,13 @@ void keyLoop_nav(std::string str = "null") {
 		}
 		if (is_loop)
 			if (str == "null") {
-				std::cout<< "   " << "MESSAGE TO ALL DRONE" << std::endl;
+				std::cout << "   " << "MESSAGE TO ALL DRONE" << std::endl;
 				for (int i = 0; i < 4; i++) {
 					target_pub_arr[i].publish(target_msgs);
 				}
 			}
 			else {
-				std::cout<< "   " << "MESSAGE TO DRONE : ";
+				std::cout << "   " << "MESSAGE TO DRONE : ";
 
 				std::string tmp_str(str);
 				std::sort(tmp_str.begin(), tmp_str.end());
@@ -524,7 +560,7 @@ void keyLoop_nav(std::string str = "null") {
 						target_pub_arr[n - 1].publish(target_msgs);
 					}
 				}
-				std::cout<< "   " << std::endl;
+				std::cout << "   " << std::endl;
 			}
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);

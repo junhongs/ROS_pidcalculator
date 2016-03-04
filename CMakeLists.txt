@@ -5,7 +5,10 @@ project(pid_controller)
 
 
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs std_msgs genmsg message_generation cmake_modules)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy geometry_msgs std_msgs genmsg message_generation cmake_modules
+cv_bridge
+image_transport
+)
 ##find_package(catkin REQUIRED )
 find_package(Eigen REQUIRED)
 
@@ -32,6 +35,11 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 add_executable(tested_value src/talker.cpp)
 target_link_libraries(tested_value ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 add_dependencies(tested_value pid_controller_cpp)
+
+add_executable(reconstruction src/reconst_3d.cpp)
+target_link_libraries(reconstruction ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+add_dependencies(reconstruction pid_controller_cpp)
+
 
 add_executable(shell src/rosshell.cpp src/param.cpp)
 target_link_libraries(shell ${catkin_LIBRARIES} ${Eigen_LIBRARIES})

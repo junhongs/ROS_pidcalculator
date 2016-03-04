@@ -146,6 +146,7 @@ private:
    pid_parameter_t pid_nav_pos_param_Z;
    pid_parameter_t pid_nav_rate_param_Z;
 
+   pid_parameter_t flight_param;
 
 
 

@@ -65,6 +65,8 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE, float x_off, float y_off) :
    pid_nav_pos_param_Z(__pid_nav_pos_param_Z),
    pid_nav_rate_param_Z(__pid_nav_rate_param_Z),
 
+   flight_param(__flight_param),
+// pid_param_c.flight_param->P
    pid_rate_Z(-450.0f)
 {
    pid_output_msg.data.resize(5, 1000);
@@ -383,6 +385,11 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
       // calc_takeoff_altitude(&pid_rate_Z);
+      if(is_changed_mode){
+         maghold_drone(pid_param_c.flight_param->pid_D + 600);
+         std::cout << "First Takeoff"<< std::endl;
+      }
+
       calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 50, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
@@ -454,8 +461,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       changed_to_poshold_z = 0;
    }
    //Write the pid_output
-   pid_output_msg.data[0] = (unsigned short)(1500.0f - x_offset - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0)); // ROLL
-   pid_output_msg.data[1] = (unsigned short)(1500.0f - y_offset - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0)); // PITCH
+   pid_output_msg.data[0] = (unsigned short)(1500.0f - pid_param_c.flight_param->pid_P - (unsigned short)constrain(pid_rate_X.output, -500.0, 500.0)); // ROLL
+   pid_output_msg.data[1] = (unsigned short)(1500.0f - pid_param_c.flight_param->pid_I - (unsigned short)constrain(pid_rate_Y.output, -500.0, 500.0)); // PITCH
    pid_output_msg.data[3] = (unsigned short)(1500.0f + (unsigned short)constrain(pid_rate_Z.output, -500.0, 500.0)); // THROTTLE
    pid_output_msg.data[2] = (unsigned short)1500;   // YAW
    pid_output_msg.data[4] = is_arm;
@@ -602,6 +609,7 @@ void PIDCONTROLLER::set_self_param() {
       &pid_nav_rate_param_Y,
       &pid_nav_pos_param_Z,
       &pid_nav_rate_param_Z
+      , &flight_param
    );
 
    param_location = PARAM_INNER;
@@ -621,6 +629,7 @@ void PIDCONTROLLER::set_common_param() {
       &__pid_nav_rate_param_Y,
       &__pid_nav_pos_param_Z,
       &__pid_nav_rate_param_Z
+      , &__flight_param
    );
    param_location = PARAM_OUTER;
 }
