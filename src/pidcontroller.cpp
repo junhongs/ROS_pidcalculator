@@ -62,13 +62,13 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    lpf_offset_y(0.1f),
    lpf_offset_z(0.1f),
 
-   lpf_vel_x(1.5f),
-   lpf_vel_y(1.5f),
-   lpf_vel_z(1.5f),
+   lpf_vel_x(1.0f),
+   lpf_vel_y(1.0f),
+   lpf_vel_z(1.0f),
 
-   lpf_pos_x(2.0f),
-   lpf_pos_y(2.0f),
-   lpf_pos_z(2.0f),
+   lpf_pos_x(1.5f),
+   lpf_pos_y(1.5f),
+   lpf_pos_z(1.5f),
 
 
    is_arm(1000),
@@ -290,7 +290,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       current_Z.cur_pos = last_target_z;
 
       // In flight
-      if ( tmp_flight_mode != MODE_GROUND || tmp_flight_mode != MODE_NOT_DETECTED ) {
+      if ( tmp_flight_mode != MODE_GROUND && tmp_flight_mode != MODE_NOT_DETECTED ) {
          if (!failsafe_time) {
             std::cout << "GET IN FAILSAFE" << std::endl;
             failsafe_time = ros::Time::now().toSec();
@@ -330,17 +330,17 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    calc_velocity(&current_Z);
 
    /* velocity Low Pass Filter*/
-   lpf_vel_x.set_cutoff_freq(1.5f);
-   lpf_vel_y.set_cutoff_freq(1.5f);
-   lpf_vel_z.set_cutoff_freq(1.5f);
+   // lpf_vel_x.set_cutoff_freq(1.5f);
+   // lpf_vel_y.set_cutoff_freq(1.5f);
+   // lpf_vel_z.set_cutoff_freq(1.5f);
    current_X.cur_vel = lpf_vel_x.get_lpf(current_X.cur_vel);
    current_Y.cur_vel = lpf_vel_y.get_lpf(current_Y.cur_vel);
    current_Z.cur_vel = lpf_vel_z.get_lpf(current_Z.cur_vel);
 
    /* Position Low Pass Filter*/
-   lpf_pos_x.set_cutoff_freq(2.0f);
-   lpf_pos_y.set_cutoff_freq(2.0f);
-   lpf_pos_z.set_cutoff_freq(2.0f);
+   // lpf_pos_x.set_cutoff_freq(2.0f);
+   // lpf_pos_y.set_cutoff_freq(2.0f);
+   // lpf_pos_z.set_cutoff_freq(2.0f);
    current_X.cur_pos = lpf_pos_x.get_lpf(current_X.cur_pos);
    current_Y.cur_pos = lpf_pos_y.get_lpf(current_Y.cur_pos);
    current_Z.cur_pos = lpf_pos_z.get_lpf(current_Z.cur_pos);
