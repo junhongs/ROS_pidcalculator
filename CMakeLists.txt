@@ -37,11 +37,11 @@ catkin_package(
 ## Build talker and listener
 include_directories(include ${catkin_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS})
 
-add_executable(tested_value src/talker.cpp)
+add_executable(tested_value src/talker.cpp )
 target_link_libraries(tested_value ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 add_dependencies(tested_value pid_controller_cpp)
 
-add_executable(reconstruction src/reconst_3d.cpp)
+add_executable(reconstruction src/reconst_3d.cpp src/calculation.cpp src/kalman.cpp)
 target_link_libraries(reconstruction ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 add_dependencies(reconstruction pid_controller_cpp)
 

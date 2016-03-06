@@ -24,13 +24,16 @@
 #include <time.h>
 #include <vector>
 #include <cmath>
+#include "kalman.h"
+
+#include <Eigen/Dense>
+
+#include "calculation.h"
 
 
 
 
-
-
-
+using namespace Eigen;
 using namespace std;
 using namespace cv;
 
@@ -118,6 +121,8 @@ static float get_lpf(lpf_t *lpf, float lpf_hz = 15.0f) {
 }
 
 
+
+
 int MyCompare(MyPoint a, MyPoint b) {
    return (a.x < b.x || (a.x == b.x && a.y < b.y));
 }
@@ -133,17 +138,23 @@ class RECONSTRUCTION
    image_transport::CameraSubscriber left_subscribe;
    image_transport::CameraSubscriber right_subscribe;
 
+
+
    ros::Publisher pub_drone[4];
    ros::Publisher Nasang[4];
 
 public:
+   PV_kalman kalman_x;
+   PV_kalman kalman_y;
+   lpf_c lpf_x;
+
    RECONSTRUCTION()
       : it_(nh_)
    {
       left_subscribe = it_.subscribeCamera("/stereo/left/image_raw", 2, &RECONSTRUCTION::imageCb, this);
       right_subscribe = it_.subscribeCamera("/stereo/right/image_raw", 2, &RECONSTRUCTION::imageCb2, this);
 
-      pub_drone[0] = nh_.advertise<geometry_msgs::Point>("/FIRST/CURRENT_POS", 1);
+      pub_drone[0] = nh_.advertise<geometry_msgs::Point>("/KALMAN", 1);
       pub_drone[1] = nh_.advertise<geometry_msgs::Point>("/SECOND/CURRENT_POS", 1);
       pub_drone[2] = nh_.advertise<geometry_msgs::Point>("/THIRD/CURRENT_POS", 1);
       pub_drone[3] = nh_.advertise<geometry_msgs::Point>("/FOURTH/CURRENT_POS", 1);
@@ -189,8 +200,6 @@ public:
 
       cam_model_left.fromCameraInfo(info_msg);
       // cout << "dist " << info_msg->D[0] << " " << info_msg->D[1] << " " << info_msg->D[2] << " " <<  endl;
-
-      cout << "model : "  << info_msg->distortion_model << endl;
 
       Mat image, gray, temp, mask;
       image = cv_ptr->image;
@@ -260,7 +269,7 @@ public:
 #ifdef DEBUG
       //cout << Ccount << " " << MyFirst[0].y << " " << MySecond[0].y << endl;
 #endif
-      cout << "size : " << MyFirst.size() << "," << MySecond.size() << endl;
+      // cout << "size : " << MyFirst.size() << "," << MySecond.size() << endl;
 
       if (MyFirst.size() && MySecond.size()) {
          // cout << MyFirst[0].x << "," << MyFirst[0].y << endl;
@@ -271,8 +280,42 @@ public:
          // cout << cam_model_left.rectifyPoint(left_pt).x << "," << cam_model_left.rectifyPoint(left_pt).y << "rectified" << endl;
          // cout << cam_model_right.rectifyPoint(right_pt).x << "," << cam_model_right.rectifyPoint(right_pt).y << "rectified" << endl;
 
-         cout << "notcal :: " << MyFirst[0].y - MySecond[0].y << endl;
-         cout << "calibr  :: " << cam_model_left.rectifyPoint(left_pt).y - cam_model_right.rectifyPoint(right_pt).y << endl;
+         // cout << "notcal :: " << MyFirst[0].y - MySecond[0].y << endl;
+         // cout << "calibr  :: " << cam_model_left.rectifyPoint(left_pt).y - cam_model_right.rectifyPoint(right_pt).y << endl;
+
+         float leftpt_y = MyFirst[0].y;
+
+         Matrix<float,2,1> X_kalman = kalman_x.getKalman(leftpt_y);
+         // cout << "KALMAN" << kalman_x.getKalman_1(leftpt_y) << "," << leftpt_y << endl;;
+
+         geometry_msgs::Point drone1_msg;
+         drone1_msg.x = leftpt_y;//get_lpf(&lpf_x,10);
+         drone1_msg.y = X_kalman(0,0);//get_lpf(&lpf_z,10);
+         drone1_msg.z = X_kalman(1,0);//get_lpf(&lpf_y,5);
+         pub_drone[0].publish(drone1_msg);
+
+
+
+         cv::Point3d ptr_left = cam_model_left.projectPixelTo3dRay(left_pt);
+         cv::Point3d ptr_right = cam_model_right.projectPixelTo3dRay(right_pt);
+
+
+         // getKalman_1();
+
+         // cout << ptr_left.y - ptr_right.y << endl;
+         // cout << "left 3d   :: " <<  ptr_left.x  << "," << ptr_left.y << "," << ptr_left.z << endl;
+         // cout << "right 3d  :: " <<  ptr_right.x  << "," << ptr_right.y << "," << ptr_right.z << endl << endl;
+
+
+
+         ptr_left = cam_model_left.projectPixelTo3dRay(cam_model_left.rectifyPoint(left_pt));
+         ptr_right = cam_model_right.projectPixelTo3dRay(cam_model_right.rectifyPoint(right_pt));
+
+         // cout << ptr_left.y - ptr_right.y << endl;
+         // cout << "left 3d   :: " <<  ptr_left.x  << "," << ptr_left.y << "," << ptr_left.z << endl;
+         // cout << "right 3d  :: " <<  ptr_right.x  << "," << ptr_right.y << "," << ptr_right.z << endl;
+
+
       }
       // cout << MySecond[0].x << "," << MySecond[0].y << endl;
       if (Ccount == 1) {
@@ -286,7 +329,7 @@ public:
 
          for (int i = 0; i < Dron_size; i++) {
             double a1, b1, c1;
-            cout << "hello " << MyFirst[i].x - MySecond[i].x << endl;
+            // cout << "hello " << MyFirst[i].x - MySecond[i].x << endl;
             c1 =  2.97 * 450 / ((MyFirst[i].x - MySecond[i].x) * 0.00375);
             a1 = (2.97 * 450 / ((MyFirst[i].x - MySecond[i].x) * 0.00375)) * (0.00375 * (MyFirst[i].x + MySecond[i].x - 1280)) / (2 * 2.97);
 
