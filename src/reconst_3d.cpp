@@ -188,7 +188,9 @@ public:
       }
 
       cam_model_left.fromCameraInfo(info_msg);
-      cout << "dist " << info_msg->D[0] << " " << info_msg->D[1] << " " << info_msg->D[2] << " " <<  endl;
+      // cout << "dist " << info_msg->D[0] << " " << info_msg->D[1] << " " << info_msg->D[2] << " " <<  endl;
+
+      cout << "model : "  << info_msg->distortion_model << endl;
 
       Mat image, gray, temp, mask;
       image = cv_ptr->image;
