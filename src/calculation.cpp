@@ -24,26 +24,20 @@ std::string mode_str[SIZEOFMODE] =
    "MODE_LANDING",
    "MODE_POSHOLD",
    "MODE_GROUND",
+   "MODE_FAILSAFE",
    "MODE_NOT_DETECTED"
 };
 
-// pid_calc_t -> error
 static float get_P(pid_calc_t *pid, pid_parameter_t *pid_param) {
    return pid->error * pid_param->pid_P;
 }
 
-// pid_calc_t -> error
-// pid_calc_t -> cycle_time
 static float get_I(pid_calc_t *pid, pid_parameter_t *pid_param) {
    pid->integrator += (pid->error * pid_param->pid_I) * pid->cycle_time;
    pid->integrator = constrain(pid->integrator, -pid_param->pid_Imax, pid_param->pid_Imax);
    return pid->integrator;
 }
 
-// #define DEBUG
-// pid_calc_t -> error
-// pid_calc_t -> cycle_time
-// pid_calc_t -> derivative = pos_vel_t -> cur_vel_raw
 static float get_D(pid_calc_t *pid, pid_parameter_t *pid_param) {
    if (pid->cycle_time) {
       pid->derivative = (pid->error - pid->last_error) / pid->cycle_time;
@@ -169,7 +163,7 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
 }
 
 //if the mode is not changed, the changed poshold is not return to the navi_rate
-int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param, int *changed_to_poshold) {
+int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param, int *changed_to_poshold, float *offset, lpf_c *offset_lpf) {
 
    float err_pos = target->target_pos - current->cur_pos;
 
@@ -179,7 +173,7 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    // If current position is in a 50mm target range, change the mode to the pos_hold
    if ((err_pos < 30.0f && err_pos > -30.0f) || *changed_to_poshold ) {
       *changed_to_poshold = 1;
-      pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param);
+      pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf);
       return 1;
    }
    else {
@@ -230,7 +224,7 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
    pid_inner_pub->publish(pid_inner_msg);
 }
 
-void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
+void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, float *offset, lpf_c *offset_lpf) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
    // calc_pid(pid_pos, pos_param);
@@ -244,6 +238,8 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);
+
+   *offset = offset_lpf->get_lpf(pid_rate->output);
 
    pid_rate->output += tmp_I = get_I(pid_pos, pos_param);
    // pid_rate->output += tmp_D = get_D(pid_pos, pos_param);
@@ -260,8 +256,14 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 }
 
 void calc_takeoff_altitude(pid_calc_t *pid) {
-   if (pid->integrator < 100.0f ) {
+   if (pid->integrator < 60.0f ) {
       pid->integrator += 400.0f * pid->cycle_time;
+   }
+}
+
+void calc_landing_altitude(pid_calc_t *pid) {
+   if (pid->integrator < 100.0f ) {
+      pid->integrator -= 200.0f * pid->cycle_time;
    }
 }
 
@@ -284,8 +286,16 @@ lpf_c::lpf_c() :
    cycle_time (0.0l),
    lpf_hz (15.0f),
    cur_time(0.0l) {
-   //cur_time = ros::Time::now().toSec();
    set_cutoff_freq(lpf_hz);
+}
+
+lpf_c::lpf_c(float hz) :
+   last_input (0.0l),
+   last_time (0.0l),
+   cycle_time (0.0l),
+   lpf_hz (hz),
+   cur_time(0.0l) {
+   set_cutoff_freq(hz);
 }
 
 void lpf_c::set_cutoff_freq(float hz) {

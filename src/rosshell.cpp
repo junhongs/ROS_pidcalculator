@@ -198,10 +198,19 @@ void keyLoop(std::string param_file_name, int drone_num) {
 		case KEYCODE_U:
 			if (param_n >= 48 && param_n <= 50) {
 				(*get_param_n(param_n))++;
-				set_param_n(param_n,*get_param_n(param_n));
+				set_param_n(param_n, *get_param_n(param_n));
 				key_debug(param_list[ param_n], *get_param_n(param_n));
 				param_msg.data = param_n + drone_num * 100;
 				param_pub.publish(param_msg);
+
+				if (param_n == 50) {
+					geometry_msgs::Quaternion target_msgs;
+					target_msgs.x = 0.0f;
+					target_msgs.z = 0.0f;
+					target_msgs.y = *get_param_n(param_n) + 600;
+					target_msgs.w = MISSION_MAGHOLD;
+					target_pub_arr[drone_num - 1].publish(target_msgs);
+				}
 
 			}
 			else
@@ -216,10 +225,20 @@ void keyLoop(std::string param_file_name, int drone_num) {
 		case KEYCODE_D:
 			if (param_n >= 48 && param_n <= 50) {
 				(*get_param_n(param_n))--;
-				set_param_n(param_n,*get_param_n(param_n));
+				set_param_n(param_n, *get_param_n(param_n));
 				key_debug(param_list[ param_n], *get_param_n(param_n));
 				param_msg.data = param_n + drone_num * 100;
 				param_pub.publish(param_msg);
+
+				if (param_n == 50) {
+					geometry_msgs::Quaternion target_msgs;
+					target_msgs.x = 0.0f;
+					target_msgs.z = 0.0f;
+					target_msgs.y = *get_param_n(param_n) + 600;
+					target_msgs.w = MISSION_MAGHOLD;
+					target_pub_arr[drone_num - 1].publish(target_msgs);
+				}
+
 			}
 			else
 			{
@@ -455,8 +474,45 @@ void keyLoop_nav(std::string str = "null") {
 	is_loop = 1;
 
 	short maghold = 5 + 600;
+	int is_magchange = 0;
+
+	std::vector<int> msg_num;
+	std::vector<int>::iterator iter_msg;
+	int maghold_value[4] = {0, };
+
+	if (str == "null") {
+		msg_num.push_back(0);
+		msg_num.push_back(1);
+		msg_num.push_back(2);
+		msg_num.push_back(3);
+	}
+	else {
+		std::string tmp_str(str);
+		std::sort(tmp_str.begin(), tmp_str.end());
+
+		for (int i = 0; i < tmp_str.length(); i++) {
+			int n = tmp_str[i] - '0';
+			if (n > 0 && n <= 4) {
+				char num_tmp[2] = "0";
+				num_tmp[0] += n;
+				msg_num.push_back(n - 1);
+				std::string param_file("pidparam");
+				std::string param_str = tmp_dir + param_file + num_tmp;
+
+				if ( !load_param(param_str.c_str()) ) {
+					cout << "   " << "NO PARAM FILE" << endl;
+				}
+				maghold_value[n - 1] = *get_param_n(50) + 600;
+				cout << "   " << "MAG" <<  n  << "PARAM " << maghold_value[n - 1] - 600 << endl;
+			}
+		}
+	}
+
+
+
 
 	while (is_loop) {
+		is_magchange = 0;
 		if (!is_loop)
 			break;
 		if (read(kfd, &c, 1) < 0) {
@@ -468,56 +524,97 @@ void keyLoop_nav(std::string str = "null") {
 		target_msgs.x = 0.0f;
 		target_msgs.y = 0.0f;
 		target_msgs.z = 0.0f;
-		target_msgs.w = MISSION_AUTO;
+		target_msgs.w = MISSION_MANUAL;
+
+
+
+
 		switch (c) {
 		case 'w': case 'W':
-			target_msgs.y = -50.0f;
+			target_msgs.y = -1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y- DIRECTION ";
 			break;
-
 		case 'a': case 'A':
-			target_msgs.x = 50.0f;
+			target_msgs.x = 1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "X+ DIRECTION ";
 			break;
-
 		case 's': case 'S':
-			target_msgs.y = 50.0f;
+			target_msgs.y = 1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y+ DIRECTION ";
 			break;
-
 		case 'd': case 'D':
-			target_msgs.x = -50.0f;
+			target_msgs.x = -1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y- DIRECTION ";
 			break;
-
 		case 'r': case 'R':
-			target_msgs.z = 50.0f;
+			target_msgs.z = 1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Z+ DIRECTION ";
 			break;
-
 		case 'f': case 'F':
-			target_msgs.z = -50.0f;
+			target_msgs.z = -1.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Z- DIRECTION ";
 			break;
 
-
 		case 'o': case 'O':
-			target_msgs.y = maghold -= 1;
-			target_msgs.w = MISSION_MAGHOLD;
-			cout << "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
-			break;
-		case 'p': case 'P':
-			target_msgs.y = maghold += 1;
-			target_msgs.w = MISSION_MAGHOLD;
-			cout << "   " << "MAG DIRECTION " << (maghold - 600) << "   ";
+			if (str == "null") {
+				std::cout << "   " << "CANNOT MESSAGE TO ALL DRONE" << std::endl;
+			}
+			else {
+				iter_msg = msg_num.begin();
+				while (iter_msg != msg_num.end()) {
+
+					maghold_value[*iter_msg] -= 1;
+					target_msgs.y = maghold_value[*iter_msg];
+					target_msgs.w = MISSION_MAGHOLD;
+					target_pub_arr[*iter_msg].publish(target_msgs);
+					cout << "   " << "MAG " << (*iter_msg + 1) << " : " << (maghold_value[*iter_msg] - 600);
+					*get_param_n(50) = maghold_value[*iter_msg] - 600;
+					char num_tmp[2] = "1";
+					num_tmp[0] += *iter_msg;
+					std::string param_file("pidparam");
+					std::string param_str = tmp_dir + param_file + num_tmp;
+					save_param(param_str.c_str());
+
+					iter_msg++;
+				}
+				cout << endl;
+			}
+			is_magchange = 1;
 			break;
 
+		case 'p': case 'P':
+			if (str == "null") {
+				std::cout << "   " << "CANNOT MESSAGE TO ALL DRONE" << std::endl;
+			}
+			else {
+				iter_msg = msg_num.begin();
+				while (iter_msg != msg_num.end()) {
+
+					maghold_value[*iter_msg] += 1;
+					target_msgs.y = maghold_value[*iter_msg];
+					target_msgs.w = MISSION_MAGHOLD;
+					target_pub_arr[*iter_msg].publish(target_msgs);
+					cout << "   " << "MAG " << (*iter_msg + 1) << " : " << (maghold_value[*iter_msg] - 600);
+					*get_param_n(50) = maghold_value[*iter_msg] - 600;
+					char num_tmp[2] = "1";
+					num_tmp[0] += *iter_msg;
+					std::string param_file("pidparam");
+					std::string param_str = tmp_dir + param_file + num_tmp;
+					save_param(param_str.c_str());
+
+					iter_msg++;
+				}
+				cout << endl;
+
+			}
+			is_magchange = 1;
+			break;
 
 		case '1':
 		case 't':
@@ -541,44 +638,45 @@ void keyLoop_nav(std::string str = "null") {
 			break;
 		}
 		if (is_loop)
-			if (str == "null") {
-				std::cout << "   " << "MESSAGE TO ALL DRONE" << std::endl;
-				for (int i = 0; i < 4; i++) {
-					target_pub_arr[i].publish(target_msgs);
-				}
-			}
-			else {
-				std::cout << "   " << "MESSAGE TO DRONE : ";
-
-				std::string tmp_str(str);
-				std::sort(tmp_str.begin(), tmp_str.end());
-
-				for (int i = 0; i < tmp_str.length(); i++) {
-					int n = tmp_str[i] - '0';
-					if (n > 0 && n <= 4) {
-						std::cout << n;
-						target_pub_arr[n - 1].publish(target_msgs);
+			if (!is_magchange)
+				if (str == "null") {
+					std::cout << "   " << "MESSAGE TO ALL DRONE" << std::endl;
+					for (int i = 0; i < 4; i++) {
+						target_pub_arr[i].publish(target_msgs);
 					}
 				}
-				std::cout << "   " << std::endl;
-			}
+				else {
+					std::cout << "   " << "MESSAGE TO DRONE : ";
+
+					std::string tmp_str(str);
+					std::sort(tmp_str.begin(), tmp_str.end());
+
+					for (int i = 0; i < tmp_str.length(); i++) {
+						int n = tmp_str[i] - '0';
+						if (n > 0 && n <= 4) {
+							std::cout << n;
+							target_pub_arr[n - 1].publish(target_msgs);
+						}
+					}
+					std::cout << "   " << std::endl;
+				}
 	}
 	tcsetattr(kfd, TCSANOW, &cooked);
 	return;
 }
 
 
-void positionCallback(const std_msgs::Float32& msg) {
+void positionCallback(const std_msgs::Float32 & msg) {
 	float_data = msg.data;
 	is_received_float = 1;
 }
 
-void position_Callback(const geometry_msgs::Point& msg) {
+void position_Callback(const geometry_msgs::Point & msg) {
 	position_data = msg;
 	is_received_position = 1;
 }
 
-void velocityCallback(const geometry_msgs::Point& msg) {
+void velocityCallback(const geometry_msgs::Point & msg) {
 	velocity_data = msg;
 	is_received_velocity = 1;
 }
@@ -652,7 +750,9 @@ int main(int argc, char **argv) {
 					param_file += "4";
 					keyLoop(param_file, 4);
 				}
-				else keyLoop(param_file, 0);
+				else
+					std::cout << "SELECT THE DRONE NUMBER" << std::endl;
+				// keyLoop(param_file, 0);
 			}
 			else if (argvector[0] == "nav") {
 				int arg = 0;

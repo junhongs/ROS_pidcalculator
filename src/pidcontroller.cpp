@@ -29,7 +29,17 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    current_position_y(500.0f),
    current_position_z(-3500.0f),
 
+   last_target_x(0.0f),
+   last_target_y(0.0f),
+   last_target_z(0.0f),
+
+   offset_roll(1500.0f),
+   offset_pitch(1500.0f),
+   offset_throttle(1500.0f),
+
    takeoff_altitude(-3000.0f),
+
+   is_landing_range(0),
 
    tim1_timer(0.0f),
    tim2_timer(0.0f),
@@ -44,7 +54,22 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    node_last_time(0.0l),
    reboot_time(0.0l),
    manual_time(0.0l),
+   failsafe_time(0.0l),
    ground_altitude(GROUND_ALTITUDE),
+
+
+   lpf_offset_x(0.1f),
+   lpf_offset_y(0.1f),
+   lpf_offset_z(0.1f),
+
+   lpf_vel_x(1.5f),
+   lpf_vel_y(1.5f),
+   lpf_vel_z(1.5f),
+
+   lpf_pos_x(2.0f),
+   lpf_pos_y(2.0f),
+   lpf_pos_z(2.0f),
+
 
    is_arm(1000),
    is_first_get_position(0),
@@ -66,7 +91,6 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    pid_nav_rate_param_Z(__pid_nav_rate_param_Z),
 
    flight_param(__flight_param),
-// pid_param_c.flight_param->P
    pid_rate_Z(-450.0f)
 {
    pid_output_msg.data.resize(5, 1000);
@@ -141,7 +165,7 @@ int PIDCONTROLLER::manage_mode(unsigned int getset, unsigned int *state) {
       *state = current_mode;
    }
    else if (getset == SET || getset == SET_TIMER) {
-      std::cout << drone << ":" << mode_str[current_mode] << ":" << "   TO   " << mode_str[*state];
+      std::cout << drone << ":" << mode_str[current_mode] << " TO " << mode_str[*state];
       if ((*state == MODE_TAKEOFF && current_mode != MODE_GROUND) ) {
          std::cout << "     NO PERMISSION to TAKEOFF" << std::endl;
          return MANAGE_MODE_ERROR;
@@ -250,18 +274,56 @@ void PIDCONTROLLER::timerCallback(const ros::TimerEvent&) {
 void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    node_cur_time = ros::Time::now().toSec();
 
-
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
-//   current_X.lpf.cur_time = current_Y.lpf.cur_time = current_Z.lpf.cur_time = node_cur_time;
-   if (!is_first_get_position) {
-      is_first_get_position = 1;
-      unsigned int flight_mode = MODE_GROUND;
-      manage_mode(SET, &flight_mode);
-   }
 
    current_X.cur_pos = msg.x;
    current_Y.cur_pos = msg.y;
    current_Z.cur_pos = msg.z;
+
+   if ( current_Y.cur_pos == 0 || current_Z.cur_pos == 0) {
+      std::cout << "NO COORDINATE INFO SET LAST POSITION" << std::endl;
+      unsigned int tmp_flight_mode;
+      int is_changed_mode_tmp = manage_mode(GET, &tmp_flight_mode);
+
+      current_X.cur_pos = last_target_x;
+      current_Y.cur_pos = last_target_y;
+      current_Z.cur_pos = last_target_z;
+
+      // In flight
+      if ( tmp_flight_mode != MODE_GROUND || tmp_flight_mode != MODE_NOT_DETECTED ) {
+         if (!failsafe_time) {
+            std::cout << "GET IN FAILSAFE" << std::endl;
+            failsafe_time = ros::Time::now().toSec();
+         }
+         else if (failsafe_time > 0) {
+            if ( ros::Time::now().toSec() - failsafe_time > 6.0l ) {
+               std::cout << "FAILSAFE TO GROUND" << std::endl;
+               unsigned int tmp_mod = MODE_GROUND;
+               manage_mode(SET, &tmp_mod);
+            }
+            else if ( ros::Time::now().toSec() - failsafe_time > 2.0l ) {
+               std::cout << "FAILSAFE TO LANDING" << std::endl;
+               unsigned int tmp_mod = MODE_FAILSAFE;
+               manage_mode(SET, &tmp_mod);
+            }
+         }
+      }
+      else
+         failsafe_time = 0;
+   }
+   else
+      failsafe_time = 0;
+
+   last_target_x = current_X.cur_pos;
+   last_target_y = current_Y.cur_pos;
+   last_target_z = current_Z.cur_pos;
+
+   if (!is_first_get_position) {
+      is_first_get_position = 1;
+      std::cout << "GET THE FIRST POSITION" << std::endl;
+      unsigned int flight_mode = MODE_GROUND;
+      manage_mode(SET, &flight_mode);
+   }
 
    calc_velocity(&current_X);
    calc_velocity(&current_Y);
@@ -290,15 +352,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    velocity_pub.publish(velocity_msg);
 
    manage_current_pos(SET, &(current_X.cur_pos), &(current_Y.cur_pos), &(current_Z.cur_pos));
-   // if (node_cur_time - node_last_time > 3.0 ) {
-   //    flight_mode_position_callback = MODE_GROUND;
-   //    manage_mode(SET, &flight_mode_position_callback);
-   //    static int is_first = 0;
-   //    if (is_first) {
-   //       std::cout << drone << ":" <<"Position Input has been delayed more than 3 seconds." << std::endl;
-   //    }
-   //    is_first = 1;
-   // }
+
    node_last_time = node_cur_time;
 
    int is_changed_target = manage_target(GET, &target_pos_x, &target_pos_y, &target_pos_z);
@@ -306,7 +360,6 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
    }
    int is_changed_mode = manage_mode(GET, &flight_mode_position_callback);
-
 
    target_X.target_pos = target_pos_x;
    target_Y.target_pos = target_pos_y;
@@ -316,15 +369,15 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       int sum_nav = 0;
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_vel);
-      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z);
+      sum_nav += navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z);
       if (pid_rate_Z.output < 50.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
          reset_I(&pid_pos_X, 0.0f);
          reset_I(&pid_pos_Y, 0.0f);
       }
-      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &changed_to_poshold_x);
-      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &changed_to_poshold_y);
+      sum_nav += navi_rate(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &changed_to_poshold_x, &offset_roll, &lpf_offset_x);
+      sum_nav += navi_rate(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &changed_to_poshold_y, &offset_pitch, &lpf_offset_y);
 
       if (sum_nav == 3) {
          unsigned int tmp_mod = MODE_POSHOLD;
@@ -355,49 +408,47 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       manual(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, max_vel);
       manual(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, max_vel);
-      if ( ros::Time::now().toSec() - manual_time > 0.5l ) {
+      if ( ros::Time::now().toSec() - manual_time > 0.3l ) {
          manage_target(SET, &current_X.cur_pos, &current_Y.cur_pos, &current_Z.cur_pos);
          unsigned int flight_mode_tmp = MODE_POSHOLD;
          manage_mode(SET, &flight_mode_tmp);
       }
       is_arm = 1950;
    }
-
    else if (flight_mode_position_callback == MODE_POSHOLD) {
       //Calculate the pos_hold mod
       calc_takeoff_altitude(&pid_rate_Z);
-      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z);
+      pos_hold(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &offset_throttle, &lpf_offset_z);
       if (pid_rate_Z.output < 50.0f) {
          reset_I(&pid_rate_X, 0.0f);
          reset_I(&pid_rate_Y, 0.0f);
          reset_I(&pid_pos_X, 0.0f);
          reset_I(&pid_pos_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &offset_roll, &lpf_offset_x);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &offset_pitch, &lpf_offset_y);
       is_arm = 1950;
    }
    else if (flight_mode_position_callback == MODE_TAKEOFF) {
-      // calc_takeoff_altitude(&pid_rate_Z);
-
       mag_counter++;
       if ( mag_counter % 10 == 0 )
          maghold_drone(pid_param_c.flight_param->pid_D + 600);
-
+      calc_takeoff_altitude(&pid_rate_Z);
       calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 100, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
 
       if (current_Z.cur_pos < takeoff_altitude + 30.0f) {
-         target_Z.target_vel = 300;
-         tmp_pid_poshold_rate_param_Z.pid_I *= 15;
-      } 
-      else if (current_Z.cur_pos < takeoff_altitude + 60.0f) {
-         tmp_pid_poshold_rate_param_Z.pid_I *= 3;
+         target_Z.target_vel = TAKEOFF_SPEED + 100;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 13;
+      }
+      else if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
+         target_Z.target_vel = TAKEOFF_SPEED + 50;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 6;
       }
 
-      if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z)) {
+      if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z)) {
          unsigned int tmp_mod = MODE_POSHOLD;
          manage_mode(SET, &tmp_mod);
       }
@@ -408,8 +459,8 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          reset_I(&pid_pos_X, 0.0f);
          reset_I(&pid_pos_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &offset_roll, &lpf_offset_x);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &offset_pitch, &lpf_offset_y);
       if ( is_arm == 1050 )
          pid_rate_Z.output = -500;
 
@@ -419,11 +470,15 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       target_Z.target_vel = LANDING_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
-      if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
-         tmp_pid_poshold_rate_param_Z.pid_I *= 10;
+      if (current_Z.cur_pos < takeoff_altitude + 100.0f || is_landing_range) {
+         calc_landing_altitude(&pid_rate_Z);
+         is_landing_range = 1;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 15;
+         tmp_pid_poshold_rate_param_Z.pid_P *= 20;
+         std::cout << "IN LANDING ZONE" << std::endl;
       }
       else
-         navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z);
+         navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z);
 
 
       if (pid_rate_Z.output < 50.0f) {
@@ -432,15 +487,23 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          reset_I(&pid_pos_X, 0.0f);
          reset_I(&pid_pos_Y, 0.0f);
       }
-      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X);
-      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y);
+      pos_hold(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &offset_roll, &lpf_offset_x);
+      pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &offset_pitch, &lpf_offset_y);
 
       is_arm = 1950;
-      if (current_Z.cur_pos < takeoff_altitude + 40.0f) {
+      if (current_Z.cur_pos < takeoff_altitude + 50.0f) {
          flight_mode_position_callback = MODE_GROUND;
          manage_mode(SET, &flight_mode_position_callback);
       }
    }
+   else if (flight_mode_position_callback == MODE_FAILSAFE) {
+      pid_rate_X.output = offset_roll;
+      pid_rate_Y.output = offset_pitch;
+      pid_rate_Z.output = offset_throttle - 50;
+   }
+
+
+
    if (flight_mode_position_callback == MODE_GROUND) {
       reset_PID(&pid_pos_X, 0.0f);
       reset_PID(&pid_rate_X, 0.0f);
@@ -452,7 +515,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       pid_rate_Y.output = 0;
       pid_rate_Z.output = -500;
       is_arm = 1050;
-
+      is_landing_range = 0;
       is_takeoff = 0;
       changed_to_poshold_x = 0;
       changed_to_poshold_y = 0;
@@ -499,10 +562,9 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    manage_current_pos(GET, &current_x, &current_y, &current_z);
    unsigned int mission = (unsigned int)msg.w;
    unsigned int tmp_mod = MODE_GROUND;
-   // if (mission <= MISSION_AUX )
-   //    std::cout << drone << ":             " << "MISSION MESSAGE IS :: " << mission_str[mission] << std::endl;
 
    if (mission == MISSION_TAKEOFF) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_TAKEOFF;
       if (current_z > GROUND_ALTITUDE + 150.0f ) {
          std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
@@ -514,8 +576,12 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
       }
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
          takeoff_altitude = current_z;
-         if (target_z)
+         if (target_z < 0)
             manage_target(SET_TARGET, &current_x, &current_y, &target_z);
+         else if (target_z > 0) {
+            current_z += target_z;
+            manage_target(SET_TARGET, &current_x, &current_y, &target_z);
+         }
          else {
             current_z += 500.0f;
             manage_target(SET_TARGET, &current_x, &current_y, &current_z);
@@ -525,7 +591,6 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
    else if (mission == MISSION_MANUAL) {
       tmp_mod = MODE_MANUAL;
       manual_time = ros::Time::now().toSec();
-
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
          if (manage_target(SET_MANUAL, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
             tmp_mod = MODE_POSHOLD;
@@ -533,48 +598,43 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
          }
    }
    else if (mission == MISSION_AUTO) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_NAV;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
          if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
             tmp_mod = MODE_POSHOLD;
             manage_mode(SET, &tmp_mod);
-            //manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
    }
    else if (mission == MISSION_AUTO_N) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_NAV_N;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
          if (manage_target(SET_TARGET, &target_x, &target_y, &target_z) == MANAGE_TARGET_ERROR) {
             tmp_mod = MODE_POSHOLD;
             manage_mode(SET, &tmp_mod);
-            //manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
    }
-   // else if (mission == MISSION_MANUAL) {
-   //    tmp_mod = MODE_MANUAL;
-   //    if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR )
-   //       manage_target(SET_TARGET, &target_x, &target_y, &target_z);
-   // }
    else if (mission == MISSION_LANDING) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_LANDING;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
-         target_z = -3000.0f;
+         target_z = -4000.0f;
          manage_target(SET_TARGET, &current_x, &current_y, &target_z);
       }
    }
    else if (mission == MISSION_AUX ) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_NAV;
       if (manage_mode(SET, &tmp_mod) != MANAGE_MODE_ERROR ) {
-         // std::cout<< "HELL"<< std::endl;
-         // std::cout << current_x << "," << current_y << ","  << current_z << std::endl;
          current_x += target_x;
          current_y += target_y;
          current_z += target_z;
          manage_target(SET_TARGET, &current_x, &current_y, &current_z);
-         // std::cout << current_x << "," << current_y << ","  << current_z << std::endl;
       }
    }
    else if (mission == MISSION_GROUND) {
+      std::cout << "TARGETMSG : ";
       tmp_mod = MODE_GROUND;
       manage_mode(SET, &tmp_mod);
       manage_target(SET_TARGET, &current_x, &current_y, &current_z);

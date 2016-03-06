@@ -63,6 +63,7 @@ private:
    double node_last_time;
    double reboot_time;
    double manual_time;
+   double failsafe_time;
 
    unsigned short is_arm;
    unsigned int is_first_get_position;
@@ -81,10 +82,19 @@ private:
    int is_changed_manage_mode;
    int is_changed_manage_target;
    int is_changed_manage_current_pos;
+   int is_landing_range;
+
+   float offset_roll;
+   float offset_pitch;
+   float offset_throttle;
 
    float current_target_x;
    float current_target_y;
    float current_target_z;
+
+   float last_target_x;
+   float last_target_y;
+   float last_target_z;
 
    float current_position_x;
    float current_position_y;
@@ -104,6 +114,10 @@ private:
    lpf_c lpf_pos_x;
    lpf_c lpf_pos_y;
    lpf_c lpf_pos_z;
+
+   lpf_c lpf_offset_x;
+   lpf_c lpf_offset_y;
+   lpf_c lpf_offset_z;
 
    pos_vel_t current_X;
    pos_vel_t current_Y;

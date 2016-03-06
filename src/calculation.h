@@ -23,6 +23,7 @@
 class lpf_c {
 public:
    lpf_c();
+   lpf_c(float hz);
    void set_cutoff_freq(float hz);
    void set_cycletime();
    void set_cycletime(double cur);
@@ -87,6 +88,7 @@ enum flight_mode_e {
    MODE_POSHOLD,
    MODE_GROUND,
    MODE_NOT_DETECTED,
+   MODE_FAILSAFE,
    SIZEOFMODE
 };
 /*have to change mission_str also!*/
@@ -126,14 +128,15 @@ void  calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param);
 void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float);
 void  calc_takeoff_altitude(pid_calc_t *);
+void  calc_landing_altitude(pid_calc_t *);
 void  calc_takeoff_altitude_once(pid_calc_t *, int, int, int *);
 
 int   constrain(int amt, int low, int high);
 float constrain(float amt, float low, float high);
 
-void  pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
+void  pos_hold(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, float *, lpf_c *);
 void  manual(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, float);
-int   navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, int, pid_parameter_t *, pid_parameter_t *, int *);
+int   navi_rate(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *, int, pid_parameter_t *, pid_parameter_t *, int *, float *, lpf_c *);
 void  navi_rate_next(pid_calc_t *, pid_calc_t *, target_pos_vel_t *, pos_vel_t *, float, ros::Publisher *, pid_parameter_t *, pid_parameter_t *);
 
 
