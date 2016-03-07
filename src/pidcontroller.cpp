@@ -11,7 +11,7 @@ PIDCONTROLLER::~PIDCONTROLLER() {
 PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    drone(DRONE),
    limited_target_vel(1000.0f),
-   max_vel(300.0f),
+   max_vel(250.0f),
 
    is_changed_manage_mode(0),
    is_changed_manage_target(0),
@@ -24,6 +24,9 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    current_target_x(0.0f),
    current_target_y(0.0f),
    current_target_z(0.0f),
+
+   seq(0),
+   seq2(0),
 
    current_position_x(0.0f),
    current_position_y(500.0f),
@@ -138,15 +141,17 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    std::string current_pos = drone + "/CURRENT_POS";
    std::string target_pos = drone + "/TARGET_POS";
 
-   velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 100);
+   velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 1);
    // timer = nod.createTimer(ros::Duration(0.08), &PIDCONTROLLER::timerCallback, this);
-   pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 100);
-   pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 100);
-   pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 100);
-   pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 100);
+   pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 1);
+   pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 1);
+   pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 1);
+   pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 1);
 
-   position_sub = nod.subscribe(current_pos, 100, &PIDCONTROLLER::position_Callback, this);
-   target_sub = nod.subscribe(target_pos, 100, &PIDCONTROLLER::targetCallback, this);
+   position_sub = nod.subscribe(current_pos, 1, &PIDCONTROLLER::position_Callback, this);
+// position_sub = nod.subscribe(current_pos, 1, &PIDCONTROLLER::seq_Callback, this);
+
+   target_sub = nod.subscribe(target_pos, 1, &PIDCONTROLLER::targetCallback, this);
 
    pid_rate_Z.integrator = -500.0f;
 }
@@ -285,8 +290,14 @@ void PIDCONTROLLER::timerCallback(const ros::TimerEvent&) {
       tim2_timer = 0;
    }
 }
+void PIDCONTROLLER::seq_Callback(const geometry_msgs::Point& msg){
+   seq++;
+   std::cout << "sequence : " << seq << std::endl;
+}
+
 
 void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
+   seq++;
    node_cur_time = ros::Time::now().toSec();
 
    current_X.cur_time = current_Y.cur_time = current_Z.cur_time = node_cur_time;
@@ -392,9 +403,9 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
-   if ( ros::Time::now().toSec() - mode_change_time_to_smooth_target_velocity < 0.5) {
-      lpf_target_x.set_cutoff_freq(2.0f);
-      lpf_target_y.set_cutoff_freq(2.0f);
+   if ( ros::Time::now().toSec() - mode_change_time_to_smooth_target_velocity < 1) {
+      lpf_target_x.set_cutoff_freq(1.5f);
+      lpf_target_y.set_cutoff_freq(1.5f);
    }
    else {
       lpf_target_x.set_cutoff_freq(0.0f);
@@ -565,6 +576,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    pid_output_msg.data[2] = (unsigned short)1500;   // YAW
    pid_output_msg.data[4] = is_arm;
    pid_out_pub.publish(pid_output_msg);
+   seq2++;
 }
 
 void PIDCONTROLLER::reboot_drone() {
@@ -620,7 +632,7 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
             manage_target(SET_TARGET, &current_x, &current_y, &target_z);
          }
          else {
-            current_z += 500.0f;
+            current_z += 750.0f;
             manage_target(SET_TARGET, &current_x, &current_y, &current_z);
          }
       }

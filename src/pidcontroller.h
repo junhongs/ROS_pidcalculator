@@ -37,7 +37,7 @@ public:
    ~PIDCONTROLLER();
    pos_pid_parameter_t pid_param_c;
    int param_location;
-
+   int seq, seq2;
    std::string drone;
 
    void set_self_param();
@@ -184,9 +184,7 @@ private:
    void timerCallback(const ros::TimerEvent&);
    void position_Callback(const geometry_msgs::Point&);
    void targetCallback(const geometry_msgs::Quaternion&);
-
+   void seq_Callback(const geometry_msgs::Point&);
 
 };
-
-
 #endif
