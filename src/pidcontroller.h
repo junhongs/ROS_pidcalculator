@@ -119,6 +119,10 @@ private:
    lpf_c lpf_offset_y;
    lpf_c lpf_offset_z;
 
+   lpf_c lpf_target_x;
+   lpf_c lpf_target_y;
+   lpf_c lpf_target_z;   
+
    pos_vel_t current_X;
    pos_vel_t current_Y;
    pos_vel_t current_Z;

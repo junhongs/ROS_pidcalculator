@@ -189,6 +189,9 @@ public:
       Ccount1++;
       cv_bridge::CvImageConstPtr cv_ptr;
       double cur = ros::Time::now().toSec();
+
+      // lpf_x.set_cutoff_freq(0);
+      // lpf_x.get_lpf(10);
       try
       {
          cv_ptr = cv_bridge::toCvShare(msg, sensor_msgs::image_encodings::MONO8);
@@ -288,7 +291,7 @@ public:
             RES_KALMAN = kalman_xyz.getKalman(Z);
             cout << "???" << endl;
             cout << RES_KALMAN << endl;;
-            
+
          // cout << cam_model_left.rectifyPoint(left_pt).x << "," << cam_model_left.rectifyPoint(left_pt).y << "rectified" << endl;
          // cout << cam_model_right.rectifyPoint(right_pt).x << "," << cam_model_right.rectifyPoint(right_pt).y << "rectified" << endl;
 
@@ -530,9 +533,7 @@ public:
 
 
    void imageCb2(const sensor_msgs::ImageConstPtr& msg, const sensor_msgs::CameraInfoConstPtr& info_msg) {
-      static int i = 0;
-      if (!i)
-         cout << "asdf" << i++ << endl;
+      
       MySecond.clear();
       Ccount++;
 
