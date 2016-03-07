@@ -106,71 +106,7 @@ int PV_kalman::cycle_time() {
 
 
 
-class stereo_system_model {
 
-public:
-   static const float constant_ab = 0.00375f / 2.97f / 2.0f;
-   static const float constant_depth = ( 2.97f * 450.0f / 0.00375f );
-   static const float width = 1280.0f;
-   static const float height = 960.0f;
-
-
-   static inline float H_convert_leftx(float x, float y, float z) {
-
-      return 1.0f / 2.0f / z * ( constant_depth + x / constant_ab ) + width / 2.0f;
-
-   }
-   static inline float H_convert_rightx(float x, float y, float z) {
-
-      return 1.0f / 2.0f / z * ( -constant_depth + x / constant_ab  ) + width / 2.0f;
-   }
-   static inline float H_convert_y(float x, float y, float z) {
-      return height / 2.0f - y / z * constant_ab / 2.0f;
-   }
-
-
-   static inline float leftx_diff_X(float x, float y, float z ) {
-      return 1.0f / z / 2.0f / constant_ab;
-   }
-   static inline float leftx_diff_Z(float x, float y, float z) {
-      return - 1.0f / 2.0f * (constant_depth + x / constant_ab) / z / z;
-   }
-   static inline float rightx_diff_X(float x, float y, float z) {
-      return 1.0f / 2.0f / z / constant_ab;
-   }
-   static inline float rightx_diff_Z(float x, float y, float z) {
-      return - 1.0f / 2.0f * (x / constant_ab - constant_depth) / z / z;
-   }
-   static inline float y_diff_Y(float x, float y, float z) {
-      return - 1.0f / z / constant_ab / 2.0f;
-   }
-   static inline float y_diff_Z(float x, float y, float z) {
-      return 1.0f / constant_ab / 2.0f * y / z / z;
-   }
-   static Matrix<float, 3, 1> calc_3d_pos(Matrix<float, 3, 1> _Z) {
-      Matrix<float, 3, 1> X;
-
-      float depth =  constant_depth / (_Z(0, 0) - _Z(1, 0));
-      float tx = depth * constant_ab * ( (_Z(0, 0) + _Z(1, 0)) - width);
-      float ty = - depth * constant_ab * ( 2 * _Z(2, 0) - height);
-
-      X(0, 0) = tx;
-      X(1, 0) = ty;
-      X(2, 0) = depth;
-
-      return X;
-   }
-
-   static Matrix<float, 6, 1> calc_init_3d_pos(Matrix<float, 3, 1> _Z) {
-      Matrix<float, 6, 1> X;
-      Matrix<float, 3, 1> tmp_X;
-      tmp_X = calc_3d_pos(_Z);
-
-      X << tmp_X(0, 0), tmp_X(1, 0), tmp_X(2, 0), 0, 0, 0;
-
-      return X;
-   }
-};
 
 
 

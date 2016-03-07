@@ -278,6 +278,17 @@ public:
          cv::Point2d right_pt(MySecond[0].x, MySecond[0].y);
          cam_model_left.rectifyPoint(left_pt);
 
+            Matrix<float, 3, 1> Z;
+            Matrix<float, 6, 1> RES_KALMAN;
+            Z<< 
+            MyFirst[0].x, 
+            MySecond[0].x, 
+            (MyFirst[0].y + MySecond[0].y) / 2.0f;
+
+            RES_KALMAN = kalman_xyz.getKalman(Z);
+            cout << "???" << endl;
+            cout << RES_KALMAN << endl;;
+            
          // cout << cam_model_left.rectifyPoint(left_pt).x << "," << cam_model_left.rectifyPoint(left_pt).y << "rectified" << endl;
          // cout << cam_model_right.rectifyPoint(right_pt).x << "," << cam_model_right.rectifyPoint(right_pt).y << "rectified" << endl;
 
@@ -286,13 +297,13 @@ public:
 
          float leftpt_y = MyFirst[0].y;
 
-         Matrix<float,2,1> X_kalman = kalman_x.getKalman(leftpt_y);
+         Matrix<float, 2, 1> X_kalman = kalman_x.getKalman(leftpt_y);
          // cout << "KALMAN" << kalman_x.getKalman_1(leftpt_y) << "," << leftpt_y << endl;;
 
          geometry_msgs::Point drone1_msg;
          drone1_msg.x = leftpt_y;//get_lpf(&lpf_x,10);
-         drone1_msg.y = X_kalman(0,0);//get_lpf(&lpf_z,10);
-         drone1_msg.z = X_kalman(1,0);//get_lpf(&lpf_y,5);
+         drone1_msg.y = X_kalman(0, 0); //get_lpf(&lpf_z,10);
+         drone1_msg.z = X_kalman(1, 0); //get_lpf(&lpf_y,5);
          pub_drone[0].publish(drone1_msg);
 
 
@@ -335,6 +346,9 @@ public:
             a1 = (2.97 * 450 / ((MyFirst[i].x - MySecond[i].x) * 0.00375)) * (0.00375 * (MyFirst[i].x + MySecond[i].x - 1280)) / (2 * 2.97);
 
             b1 =  (-0.00375) * ((MyFirst[i].y + MySecond[i].y) / 2 - 480) * (2.97 * 450 / ((MyFirst[i].x - MySecond[i].x) * 0.00375)) / 2.97;
+
+
+
 
 
             Current_Loc[i].x = a1;
@@ -402,7 +416,11 @@ public:
                   double a1, b1, c1;
                   double aa1, bb1, cc1;
 
-                  cout << MyFirst[i].x - MySecond[j].x << endl;
+                  cout << "depth : " << MyFirst[i].x - MySecond[j].x << endl;
+
+
+
+
                   c1 =  2.97 * 450.0 / ((MyFirst[i].x - MySecond[j].x) * 0.00375);
                   a1 = (2.97 * 450.0 / ((MyFirst[i].x - MySecond[j].x) * 0.00375)) * (0.00375 * (MyFirst[i].x + MySecond[j].x - 1280.0)) / (2.0 * 2.97);
 
@@ -463,6 +481,8 @@ public:
             }
 
             cout << "Curren " << Current_Loc[k].x << " " << Current_Loc[k].y << " " << Current_Loc[k].z << endl;
+            
+
 
 
             cout << "-------------------------------------------------------------------------------" << endl << endl;
@@ -505,7 +525,7 @@ public:
          }
 
       }
-      cout << ros::Time::now().toSec() - cur << endl;;
+      cout << "cb1 cycletime : " << ros::Time::now().toSec() - cur << endl;;
    }
 
 
