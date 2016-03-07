@@ -27,7 +27,6 @@ public:
    Matrix<float, 2, 2> P_estimated;
    Matrix<float, 2, 2> Kalman_gain;
 
-   float measure;
    float last_position;
    float current_position;
 
@@ -59,6 +58,47 @@ public:
 private:
 };
 
+class PV3_kalman {
+public:
+   double dt;
+   Matrix<float, 6, 6> A;
+   Matrix<float, 6, 6> Q;
+   Matrix<float, 3, 3> R;
 
+   Matrix<float, 6, 1> X;
+   Matrix<float, 3, 6> H;
+   Matrix<float, 3, 1> Z_measured;
+   Matrix<float, 6, 1> X_estimated;
+   Matrix<float, 6, 6> P;
+   Matrix<float, 6, 6> P_estimated;
+   Matrix<float, 6, 3> Kalman_gain;
+
+
+   double last_time;
+
+   PV3_kalman(Matrix<float, 6, 1> _X, Matrix<float, 6, 6> _P, Matrix<float, 3, 3> _R);
+ 
+   PV3_kalman();
+
+   Matrix<float, 6, 1> getKalman(Matrix<float, 3, 1> _Z_measured);
+
+   // float getKalman_1(Matrix<float, 3, 1> _Z_measured);
+ 
+   void Predict();
+
+   void InitK(Matrix<float, 3, 1> _Z_measured);
+ 
+   void Correct();
+
+   void Measure(Matrix<float, 3, 1> _Z_measured);
+ 
+
+   void Compare(Matrix<float, 3, 1> _Z_measured) ;
+
+   int cycle_time();
+
+
+private:
+};
 
 #endif

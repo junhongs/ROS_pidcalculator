@@ -147,6 +147,7 @@ public:
    PV_kalman kalman_x;
    PV_kalman kalman_y;
    lpf_c lpf_x;
+   PV3_kalman kalman_xyz;
 
    RECONSTRUCTION()
       : it_(nh_)
