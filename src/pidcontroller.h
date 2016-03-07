@@ -15,6 +15,7 @@
 #include "pcl_msgs/ModelCoefficients.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
+#include "kalman.h"
 
 #include <string>
 #include "calculation.h"
@@ -64,6 +65,7 @@ private:
    double reboot_time;
    double manual_time;
    double failsafe_time;
+   double mode_change_time_to_smooth_target_velocity;
 
    unsigned short is_arm;
    unsigned int is_first_get_position;
@@ -114,6 +116,10 @@ private:
    lpf_c lpf_pos_x;
    lpf_c lpf_pos_y;
    lpf_c lpf_pos_z;
+
+   PV_kalman kalman_x;
+   PV_kalman kalman_y;
+   PV_kalman kalman_z;
 
    lpf_c lpf_offset_x;
    lpf_c lpf_offset_y;

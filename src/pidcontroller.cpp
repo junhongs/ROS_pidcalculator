@@ -57,7 +57,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    failsafe_time(0.0l),
    mode_change_time_to_smooth_target_velocity(0.0l),
    ground_altitude(GROUND_ALTITUDE),
-
+//teste
    lpf_offset_x(0.1f),
    lpf_offset_y(0.1f),
    lpf_offset_z(0.1f),
@@ -515,7 +515,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       //TEST
 
-      landing(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z, &lpf_target_z);
+      navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z, &lpf_target_z);
 
 
       if (pid_rate_Z.output < 50.0f) {

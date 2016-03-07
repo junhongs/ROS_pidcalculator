@@ -10,23 +10,34 @@
 using namespace Eigen;
 
 
-PV_kalman::PV_kalman(Matrix<float, 2, 1> _X, Matrix<float, 2, 2> _P, Matrix<float, 2, 2> _R)
-   : X(_X), P(_P), R(_R), dt(0)
+PV_kalman::PV_kalman( Matrix<float, 2, 2> _P, Matrix<float, 2, 2> _R)
+   : P(_P), R(_R), dt(0), H(1)
 {
    current_position = 0.0f;
    last_position = 0.0f;
    last_time = 0.0l;
-   H = 1;
 }
+
 PV_kalman::PV_kalman()
-   : dt(0)
+   : dt(0), H(1), initial_P(10), initial_Q(100), initial_R(1)
 {
    R << 1, 0, 0, 2;
-   H = 1;
+   R *= initial_R;
    current_position = 0.0f;
    last_position = 0.0f;
    last_time = 0.0l;
 }
+
+PV_kalman::PV_kalman(float _P, float _Q, float _R)
+   : dt(0), H(1), initial_P(_P), initial_Q(_Q), initial_R(_R)
+{
+   R << 1, 0, 0, 2;
+   R *= initial_R;
+   current_position = 0.0f;
+   last_position = 0.0f;
+   last_time = 0.0l;
+}
+
 Matrix<float, 2, 1> PV_kalman::getKalman(float _position) {
    if (cycle_time()) {
       InitK(_position);
@@ -38,6 +49,7 @@ Matrix<float, 2, 1> PV_kalman::getKalman(float _position) {
    }
    return X;
 }
+
 float PV_kalman::getKalman_1(float _position) {
    if (cycle_time()) {
       InitK(_position);
@@ -58,25 +70,26 @@ void PV_kalman::Predict() {
 void PV_kalman::InitK(float _position) {
    X(0, 0) = _position;
    X(1, 0) = 0;
-   P << 10, 0, 0, 10;
+   P << 1, 0, 0, 1;
+   P *= initial_P;
 }
+
 void PV_kalman::Correct() {
-   Kalman_gain = P_estimated * ( P_estimated + R ).inverse();
+   Kalman_gain = P_estimated * H * ( H * P_estimated * H + R ).inverse();
    X = X_estimated + Kalman_gain * (X_measured - X_estimated);
    current_position = X(0, 0);
-   P = P_estimated - Kalman_gain * P_estimated;
+   P = P_estimated - Kalman_gain * H * P_estimated;
 }
 
 void PV_kalman::Measure(float _position) {
-
    X_measured(0, 0) = _position;
    X_measured(1, 0) = calc_vel(_position, X(0, 0) );
-
 }
 
 void PV_kalman::Compare(float _position) {
 
 }
+
 float PV_kalman::calc_vel(float _position, float _last_position) {
 
    float vel = (_position - _last_position) / dt;
@@ -94,17 +107,9 @@ int PV_kalman::cycle_time() {
    A << 1, dt, 0, 1;
 
    Q << pow(dt, 4) / 4, pow(dt, 3) / 2 , pow(dt, 3) / 2 , pow(dt, 2);
-   Q *= 100;
+   Q *= initial_Q;
    return ret;
 }
-
-
-
-
-
-
-
-
 
 
 
