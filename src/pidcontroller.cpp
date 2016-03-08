@@ -291,7 +291,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    current_Z.cur_pos = msg.z;
 
    if ( current_Y.cur_pos == 0 || current_Z.cur_pos == 0) {
-      std::cout << drone << "NO COORDINATE INFO SET LAST POSITION" << std::endl;
+      std::cout << drone << " : NO COORDINATE INFO SET LAST POSITION" << std::endl;
       unsigned int tmp_flight_mode;
       int is_changed_mode_tmp = manage_mode(GET, &tmp_flight_mode);
 
@@ -302,19 +302,19 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       // In flight
       if ( tmp_flight_mode != MODE_GROUND && tmp_flight_mode != MODE_NOT_DETECTED ) {
          if (!failsafe_time) {
-            std::cout << drone << "GET IN FAILSAFE" << std::endl;
+            std::cout << drone << " : GET IN FAILSAFE" << std::endl;
             failsafe_time = ros::Time::now().toSec();
          }
          else if (failsafe_time > 0) {
             if ( ros::Time::now().toSec() - failsafe_time > 6.0l ) {
-               std::cout << drone << "FAILSAFE TO GROUND" << std::endl;
+               std::cout << drone << " : FAILSAFE TO GROUND" << std::endl;
                unsigned int tmp_mod = MODE_GROUND;
-               manage_mode(SET, &tmp_mod);
+               // manage_mode(SET, &tmp_mod);
             }
             else if ( ros::Time::now().toSec() - failsafe_time > 2.0l ) {
-               std::cout << drone << "FAILSAFE TO LANDING" << std::endl;
+               std::cout << drone << " : FAILSAFE TO LANDING" << std::endl;
                unsigned int tmp_mod = MODE_FAILSAFE;
-               manage_mode(SET, &tmp_mod);
+               // manage_mode(SET, &tmp_mod);
             }
          }
       }
@@ -486,10 +486,10 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
       if ( !calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 100, &is_takeoff) ) {
          if (current_Z.cur_pos < takeoff_altitude + 40.0f) {
-            target_Z.target_vel = TAKEOFF_SPEED + 100;
-            tmp_pid_poshold_rate_param_Z.pid_I *= 13;
+            target_Z.target_vel = TAKEOFF_SPEED + 200;
+            tmp_pid_poshold_rate_param_Z.pid_I *= 16;
          }
-         else if (current_Z.cur_pos < takeoff_altitude + 80.0f) {
+         else if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
             tmp_pid_poshold_rate_param_Z.pid_I *= 6;
          }
       }
