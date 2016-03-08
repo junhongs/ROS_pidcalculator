@@ -12,6 +12,7 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    drone(DRONE),
    limited_target_vel(1000.0f),
    max_vel(300.0f),
+   max_proportional_vel(600.0f),
 
    is_changed_manage_mode(0),
    is_changed_manage_target(0),
@@ -141,17 +142,17 @@ PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    std::string current_pos = drone + "/CURRENT_POS";
    std::string target_pos = drone + "/TARGET_POS";
 
-   velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 1);
+   velocity_pub = nod.advertise<geometry_msgs::Point>(current_vel, 10);
    // timer = nod.createTimer(ros::Duration(0.08), &PIDCONTROLLER::timerCallback, this);
-   pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 1);
-   pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 1);
-   pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 1);
-   pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 1);
+   pid_out_pub     = nod.advertise<std_msgs::UInt16MultiArray>(output_pid, 10);
+   pid_inner_x_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_x, 10);
+   pid_inner_y_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_y, 10);
+   pid_inner_z_pub = nod.advertise<geometry_msgs::Inertia>(output_inner_pid_z, 10);
 
-   position_sub = nod.subscribe(current_pos, 1, &PIDCONTROLLER::position_Callback, this);
+   position_sub = nod.subscribe(current_pos, 10, &PIDCONTROLLER::position_Callback, this);
 // position_sub = nod.subscribe(current_pos, 1, &PIDCONTROLLER::seq_Callback, this);
 
-   target_sub = nod.subscribe(target_pos, 1, &PIDCONTROLLER::targetCallback, this);
+   target_sub = nod.subscribe(target_pos, 10, &PIDCONTROLLER::targetCallback, this);
 
    pid_rate_Z.integrator = -500.0f;
 }
@@ -414,7 +415,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    }
 
 
-   if (flight_mode_position_callback == MODE_NAV) {
+   if (flight_mode_position_callback == MODE_NAV_P) {
 
       int sum_nav = 0;
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_vel);
@@ -434,10 +435,10 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       is_arm = 1950;
    }
-   if (flight_mode_position_callback == MODE_NAV_P) {
+   else if (flight_mode_position_callback == MODE_NAV) {
 
       int sum_nav = 0;
-      calc_navi_proportional_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_vel, &pid_navi_proprotion_vel, pid_param_c.pos_nav_pid_X);
+      calc_navi_proportional_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_proportional_vel, &pid_navi_proprotion_vel, pid_param_c.pos_nav_pid_X);
       sum_nav += navi_rate_proportional(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z, &lpf_target_z);
       if (pid_rate_Z.output < 50.0f) {
          reset_I(&pid_rate_X, 0.0f);
@@ -539,11 +540,11 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       target_Z.target_vel = LANDING_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
-      if (current_Z.cur_pos < takeoff_altitude + 100.0f || is_landing_range) {
-         calc_landing_altitude(&pid_rate_Z);
+      if (current_Z.cur_pos < takeoff_altitude + 70.0f || is_landing_range) {
+         // calc_landing_altitude(&pid_rate_Z);
          is_landing_range = 1;
-         tmp_pid_poshold_rate_param_Z.pid_I *= 15;
-         tmp_pid_poshold_rate_param_Z.pid_P *= 20;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 10;
+         tmp_pid_poshold_rate_param_Z.pid_P *= 5;
          std::cout << drone << "IN LANDING ZONE" << std::endl;
       }
       //TEST
@@ -561,7 +562,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       pos_hold(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &offset_pitch, &lpf_offset_y, &lpf_target_y);
 
       is_arm = 1950;
-      if (current_Z.cur_pos < takeoff_altitude + 50.0f) {
+      if (current_Z.cur_pos < takeoff_altitude + 30.0f) {
          flight_mode_position_callback = MODE_GROUND;
          manage_mode(SET, &flight_mode_position_callback);
       }
@@ -581,6 +582,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       reset_PID(&pid_rate_Y, 0.0f);
       reset_PID(&pid_pos_Z, 0.0f);
       reset_PID(&pid_rate_Z, -500.0f);
+      reset_PID(&pid_navi_proprotion_vel, 0.0f);
       pid_rate_X.output = 0;
       pid_rate_Y.output = 0;
       pid_rate_Z.output = -500;
@@ -641,7 +643,7 @@ void PIDCONTROLLER::targetCallback(const geometry_msgs::Quaternion& msg) {
          std::cout << drone << ":" << "NOT THE GROUND" << std::endl;
          return;
       }
-      if ( ros::Time::now().toSec() - reboot_time < 5.0l) {
+      if ( ros::Time::now().toSec() - reboot_time < 7.0l) {
          std::cout << drone << ":" << "Wait for reboot" << std::endl;
          return;
       }

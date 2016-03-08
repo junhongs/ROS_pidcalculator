@@ -531,32 +531,32 @@ void keyLoop_nav(std::string str = "null") {
 
 		switch (c) {
 		case 'w': case 'W':
-			target_msgs.y = -1.0f;
+			target_msgs.y = -10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y- DIRECTION ";
 			break;
 		case 'a': case 'A':
-			target_msgs.x = 1.0f;
+			target_msgs.x = 10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "X+ DIRECTION ";
 			break;
 		case 's': case 'S':
-			target_msgs.y = 1.0f;
+			target_msgs.y = 10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y+ DIRECTION ";
 			break;
 		case 'd': case 'D':
-			target_msgs.x = -1.0f;
+			target_msgs.x = -10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Y- DIRECTION ";
 			break;
 		case 'r': case 'R':
-			target_msgs.z = 1.0f;
+			target_msgs.z = 10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Z+ DIRECTION ";
 			break;
 		case 'f': case 'F':
-			target_msgs.z = -1.0f;
+			target_msgs.z = -10.0f;
 			target_msgs.w = MISSION_AUX;
 			cout << "   " << "Z- DIRECTION ";
 			break;

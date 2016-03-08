@@ -222,7 +222,7 @@ int navi_rate_proportional(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos
 
    // If current position is in a 50mm target range, change the mode to the pos_hold
    if ((pid_pos->error < 30.0f && pid_pos->error > -30.0f) || *changed_to_poshold ) {
-      target_lpf->set_cutoff_freq(1.5f);
+      target_lpf->set_cutoff_freq(2.5f);
       *changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf, target_lpf);
       return 1;
@@ -314,7 +314,7 @@ void calc_takeoff_altitude(pid_calc_t *pid) {
 
 void calc_landing_altitude(pid_calc_t *pid) {
    if (pid->integrator < 100.0f ) {
-      pid->integrator -= 200.0f * pid->cycle_time;
+      pid->integrator -= 50.0f * pid->cycle_time;
    }
 }
 
