@@ -13,7 +13,6 @@
 #include "math.h"
 #include <string>
 
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +23,6 @@
 #include <iostream>
 #include <fstream>
 
-
 #include <Eigen/Dense>
 
 #include "calculation.h"
@@ -32,7 +30,6 @@
 
 using namespace std;
 using namespace Eigen;
-
 
 
 class position_PV_kalman {

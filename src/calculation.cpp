@@ -20,6 +20,7 @@ std::string mode_str[SIZEOFMODE] =
    "MODE_TAKEOFF",
    "MODE_NAV",
    "MODE_NAV_N",
+   "MODE_NAV_P",
    "MODE_MANUAL",
    "MODE_LANDING",
    "MODE_POSHOLD",
@@ -117,8 +118,6 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->inner_d = constrain(get_D(pid, pid_param), -100.0f , 100.0f) + constrain(get_D_L(pid, pid_param), -100.0f , 100.0f);
 
    pid->output = pid->inner_p + pid->inner_i + pid->inner_d;
-   // pid->output += pid->inner_d = constrain(get_D(pid, pid_param), -100.0f , 100.0f);
-   // pid->output += pid->inner_d = constrain(get_D_L(pid, pid_param), -200.0f , 200.0f);
 }
 
 void calc_velocity(pos_vel_t* current) {
@@ -131,9 +130,6 @@ void calc_velocity(pos_vel_t* current) {
       current->cur_vel /= current->cycle_time;
    }
    current->cur_vel_raw = current->cur_vel;
-   // if( abs(current->last_vel - current->cur_vel) > 500 ){
-   //       current->cur_vel = current->last_vel;
-   // }
 
    if (is_lpf )
       current->cur_vel = (current->cur_vel + current->last_vel) / 2.0f;
@@ -165,16 +161,68 @@ void calc_navi_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_p
    }
 }
 
+
+void calc_navi_proportional_set_target(target_pos_vel_t *target_x, pos_vel_t *cur_x, target_pos_vel_t *target_y, pos_vel_t *cur_y, target_pos_vel_t *target_z, pos_vel_t *cur_z, float max_vel, pid_calc_t *pid_pos, pid_parameter_t *pos_param) {
+   float vector_x = target_x->target_pos - cur_x->cur_pos;
+   float vector_y = target_y->target_pos - cur_y->cur_pos;
+   float vector_z = target_z->target_pos - cur_z->cur_pos;
+   float norm_xyz = sqrt(vector_x * vector_x + vector_y * vector_y + vector_z * vector_z);
+
+   pid_pos->error = norm_xyz;
+   pid_pos->cycle_time = cur_x->cycle_time;
+   calc_pid(pid_pos, pos_param);
+   pid_pos->output = constrain(pid_pos->output ,-max_vel ,max_vel);
+   if (norm_xyz > 0) {
+      target_x->target_vel = vector_x / norm_xyz * pid_pos->output;
+      target_y->target_vel = vector_y / norm_xyz * pid_pos->output;
+      target_z->target_vel = vector_z / norm_xyz * pid_pos->output;
+   }
+}
+
 //if the mode is not changed, the changed poshold is not return to the navi_rate
 int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param, int *changed_to_poshold, float *offset, lpf_c *offset_lpf, lpf_c *target_lpf) {
 
-   float err_pos = target->target_pos - current->cur_pos;
+   calc_pos_error(pid_pos, target, current);
+
+   target->target_vel = target_lpf->get_lpf(target->target_vel);
 
    if (changed_target)
       *changed_to_poshold = 0;
 
    // If current position is in a 50mm target range, change the mode to the pos_hold
-   if ((err_pos < 30.0f && err_pos > -30.0f) || *changed_to_poshold ) {
+   if ((pid_pos->error < 30.0f && pid_pos->error > -30.0f) || *changed_to_poshold ) {
+      target_lpf->set_cutoff_freq(1.5f);
+      *changed_to_poshold = 1;
+      pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf, target_lpf);
+      return 1;
+   }
+   else {
+      // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
+      calc_rate_error(pid_rate, target, current);
+      calc_pid(pid_rate, rate_param);
+
+      geometry_msgs::Inertia pid_inner_msg;
+      pid_inner_msg.m = target->target_vel;
+      pid_inner_msg.ixx = pid_rate->inner_p;
+      pid_inner_msg.ixy = pid_rate->inner_i;
+      pid_inner_msg.ixz = pid_rate->inner_d;
+      pid_inner_msg.izz =  pid_rate->output;
+      pid_inner_pub->publish(pid_inner_msg);
+      return 0;
+   }
+}
+
+int navi_rate_proportional(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param, int *changed_to_poshold, float *offset, lpf_c *offset_lpf, lpf_c *target_lpf) {
+
+   calc_pos_error(pid_pos, target, current);
+   target->target_vel = target_lpf->get_lpf(target->target_vel);
+
+   if (changed_target)
+      *changed_to_poshold = 0;
+
+   // If current position is in a 50mm target range, change the mode to the pos_hold
+   if ((pid_pos->error < 30.0f && pid_pos->error > -30.0f) || *changed_to_poshold ) {
+      target_lpf->set_cutoff_freq(1.5f);
       *changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf, target_lpf);
       return 1;
@@ -198,23 +246,24 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 //if the mode is not changed, the changed poshold is not return to the navi_rate
 void navi_rate_next(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param) {
 
-      // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
-      calc_rate_error(pid_rate, target, current);
-      calc_pid(pid_rate, rate_param);
+   // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
 
-      geometry_msgs::Inertia pid_inner_msg;
-      pid_inner_msg.m = target->target_vel;
-      pid_inner_msg.ixx = pid_rate->inner_p;
-      pid_inner_msg.ixy = pid_rate->inner_i;
-      pid_inner_msg.ixz = pid_rate->inner_d;
-      pid_inner_msg.izz =  pid_rate->output;
-      pid_inner_pub->publish(pid_inner_msg);
+   calc_rate_error(pid_rate, target, current);
+   calc_pid(pid_rate, rate_param);
+
+   geometry_msgs::Inertia pid_inner_msg;
+   pid_inner_msg.m = target->target_vel;
+   pid_inner_msg.ixx = pid_rate->inner_p;
+   pid_inner_msg.ixy = pid_rate->inner_i;
+   pid_inner_msg.ixz = pid_rate->inner_d;
+   pid_inner_msg.izz =  pid_rate->output;
+   pid_inner_pub->publish(pid_inner_msg);
 }
-
 
 void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, float max_vel, lpf_c *target_lpf) {
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
    target->target_vel = target->target_pos * max_vel;
+   target->target_vel = target_lpf->get_lpf(target->target_vel);
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);
 
@@ -230,14 +279,14 @@ void manual(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target,
 void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, float *offset, lpf_c *offset_lpf, lpf_c *target_lpf) {
    //calculate the target velocity
    calc_pos_error(pid_pos, target, current);
-   // calc_pid(pid_pos, pos_param);
-   // target->target_vel = pid_pos->output;
 
    target->target_vel = get_P(pid_pos, pos_param) + get_D(pid_pos, pos_param);
    target->target_vel = constrain(target->target_vel, -limited_target_vel, limited_target_vel);
+
+   target->target_vel = target_lpf->get_lpf(target->target_vel);
+
    // (0)target_vel, (1)rateP, (2)rateI, (3)rateD, (4)res
    float tmp_I = 0, tmp_D = 0;
-
 
    calc_rate_error(pid_rate, target, current);
    calc_pid(pid_rate, rate_param);
@@ -245,7 +294,6 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    *offset = offset_lpf->get_lpf(pid_rate->output);
 
    pid_rate->output += tmp_I = get_I(pid_pos, pos_param);
-   // pid_rate->output += tmp_D = get_D(pid_pos, pos_param);
 
    geometry_msgs::Inertia pid_inner_msg;
    pid_inner_msg.m = target->target_vel;
@@ -271,8 +319,6 @@ void calc_landing_altitude(pid_calc_t *pid) {
 }
 
 void calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff, int takeoff_throttle, int *is_takeoff) {
-
-   //static int takeoff_throttle = 170;
    if (is_changed_to_takeoff)
       *is_takeoff = 1;
    if (pid->integrator >= takeoff_throttle ) {
@@ -305,7 +351,7 @@ void lpf_c::set_cutoff_freq(float hz) {
    if (lpf_hz == hz)
       return;
    lpf_hz = hz;
-   if(hz)
+   if (hz)
       lpf_filter = (1.0f / (2.0f * M_PI * hz));
    else
       lpf_filter = 0;

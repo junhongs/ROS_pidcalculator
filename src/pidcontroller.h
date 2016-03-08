@@ -141,6 +141,8 @@ private:
    pid_calc_t pid_rate_Y;
    pid_calc_t pid_rate_Z;
 
+   pid_calc_t pid_navi_proprotion_vel;
+
    target_pos_vel_t target_X;
    target_pos_vel_t target_Y;
    target_pos_vel_t target_Z;

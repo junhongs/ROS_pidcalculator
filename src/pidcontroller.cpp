@@ -11,7 +11,7 @@ PIDCONTROLLER::~PIDCONTROLLER() {
 PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    drone(DRONE),
    limited_target_vel(1000.0f),
-   max_vel(250.0f),
+   max_vel(300.0f),
 
    is_changed_manage_mode(0),
    is_changed_manage_target(0),
@@ -403,14 +403,16 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    target_Y.target_pos = target_pos_y;
    target_Z.target_pos = target_pos_z;
 
-   if ( ros::Time::now().toSec() - mode_change_time_to_smooth_target_velocity < 1) {
-      lpf_target_x.set_cutoff_freq(1.5f);
-      lpf_target_y.set_cutoff_freq(1.5f);
+
+   if ( ros::Time::now().toSec() - mode_change_time_to_smooth_target_velocity < 0.5f) {
+      lpf_target_x.set_cutoff_freq(2.0f);
+      lpf_target_y.set_cutoff_freq(2.0f);
    }
    else {
       lpf_target_x.set_cutoff_freq(0.0f);
       lpf_target_y.set_cutoff_freq(0.0f);
    }
+
 
    if (flight_mode_position_callback == MODE_NAV) {
 
@@ -432,6 +434,26 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       }
       is_arm = 1950;
    }
+   if (flight_mode_position_callback == MODE_NAV_P) {
+
+      int sum_nav = 0;
+      calc_navi_proportional_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_vel, &pid_navi_proprotion_vel, pid_param_c.pos_nav_pid_X);
+      sum_nav += navi_rate_proportional(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z, &lpf_target_z);
+      if (pid_rate_Z.output < 50.0f) {
+         reset_I(&pid_rate_X, 0.0f);
+         reset_I(&pid_rate_Y, 0.0f);
+         reset_I(&pid_pos_X, 0.0f);
+         reset_I(&pid_pos_Y, 0.0f);
+      }
+      sum_nav += navi_rate_proportional(&pid_pos_X, &pid_rate_X, &target_X, &current_X, limited_target_vel, &pid_inner_x_pub, pid_param_c.pos_nav_pid_X, pid_param_c.rate_nav_pid_X, is_changed_target, pid_param_c.pos_pid_X, pid_param_c.rate_pid_X, &changed_to_poshold_x, &offset_roll, &lpf_offset_x, &lpf_target_x);
+      sum_nav += navi_rate_proportional(&pid_pos_Y, &pid_rate_Y, &target_Y, &current_Y, limited_target_vel, &pid_inner_y_pub, pid_param_c.pos_nav_pid_Y, pid_param_c.rate_nav_pid_Y, is_changed_target, pid_param_c.pos_pid_Y, pid_param_c.rate_pid_Y, &changed_to_poshold_y, &offset_pitch, &lpf_offset_y, &lpf_target_y);
+
+      if (sum_nav == 3) {
+         unsigned int tmp_mod = MODE_POSHOLD;
+         manage_mode(SET, &tmp_mod);
+      }
+      is_arm = 1950;
+   }   
    else if (flight_mode_position_callback == MODE_NAV_N) {
       calc_navi_set_target(&target_X, &current_X, &target_Y, &current_Y, &target_Z, &current_Z , max_vel);
       navi_rate_next(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, pid_param_c.rate_nav_pid_Z);
@@ -481,18 +503,18 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       if ( mag_counter % 10 == 0 )
          maghold_drone(pid_param_c.flight_param->pid_D + 600);
       calc_takeoff_altitude(&pid_rate_Z);
-      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 100, &is_takeoff);
+      calc_takeoff_altitude_once(&pid_rate_Z, is_changed_mode, 130, &is_takeoff);
       target_Z.target_vel = TAKEOFF_SPEED;
 
       pid_parameter_t tmp_pid_poshold_rate_param_Z = *pid_param_c.rate_nav_pid_Z;
 
       if (current_Z.cur_pos < takeoff_altitude + 30.0f) {
          target_Z.target_vel = TAKEOFF_SPEED + 100;
-         tmp_pid_poshold_rate_param_Z.pid_I *= 13;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 11;
       }
       else if (current_Z.cur_pos < takeoff_altitude + 100.0f) {
          target_Z.target_vel = TAKEOFF_SPEED + 50;
-         tmp_pid_poshold_rate_param_Z.pid_I *= 6;
+         tmp_pid_poshold_rate_param_Z.pid_I *= 4;
       }
 
       if ( navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z, &lpf_target_z)) {
