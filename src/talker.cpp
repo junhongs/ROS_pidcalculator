@@ -36,7 +36,6 @@ ros::Publisher target_pub;
 
 void position__Callback2(const geometry_msgs::Point& msg) {
 	static float x = msg.x, y = msg.y, z = msg.z;
-	y -= 400;
 	static float sphere_x = x;
 
 	static int a = 20;
@@ -52,7 +51,7 @@ void position__Callback2(const geometry_msgs::Point& msg) {
 	target_msgs.x = x;
 	target_msgs.y = y;
 	target_msgs.z = z;
-	target_msgs.w = MISSION_AUTO;
+	target_msgs.w = MISSION_AUTO_N;
 	target_pub.publish(target_msgs);
 }
 void position__Callback(const geometry_msgs::Point& msg) {
@@ -79,7 +78,7 @@ void position__Callback(const geometry_msgs::Point& msg) {
 	target_msgs.x = x;
 	target_msgs.y = y;
 	target_msgs.z = z;
-	target_msgs.w = MISSION_AUTO;
+	target_msgs.w = MISSION_AUTO_N;
 	target_pub.publish(target_msgs);
 }
 

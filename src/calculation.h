@@ -131,7 +131,7 @@ void  calc_navi_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, 
 
 void calc_navi_proportional_set_target(target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, target_pos_vel_t *, pos_vel_t *, float , pid_calc_t *, pid_parameter_t *);
 
-void  calc_takeoff_altitude(pid_calc_t *);
+int  calc_takeoff_altitude(pid_calc_t *);
 void  calc_landing_altitude(pid_calc_t *);
 int  calc_takeoff_altitude_once(pid_calc_t *, int, int, int *);
 

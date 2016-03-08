@@ -117,8 +117,6 @@ void calc_pid(pid_calc_t* pid, pid_parameter_t* pid_param) {
    pid->inner_d = constrain(get_D(pid, pid_param), -100.0f , 100.0f) + constrain(get_D_L(pid, pid_param), -100.0f , 100.0f);
 
    pid->output = pid->inner_p + pid->inner_i + pid->inner_d;
-   // pid->output += pid->inner_d = constrain(get_D(pid, pid_param), -100.0f , 100.0f);
-   // pid->output += pid->inner_d = constrain(get_D_L(pid, pid_param), -200.0f , 200.0f);
 }
 
 void calc_velocity(pos_vel_t* current) {
@@ -173,7 +171,7 @@ void calc_navi_proportional_set_target(target_pos_vel_t *target_x, pos_vel_t *cu
    pid_pos->error = norm_xyz;
    pid_pos->cycle_time = cur_x->cycle_time;
    calc_pid(pid_pos, pos_param);
-   pid_pos->output = constrain(pid_pos->output ,-max_vel ,max_vel);
+   pid_pos->output = constrain(pid_pos->output, -max_vel, max_vel);
    if (norm_xyz > 0) {
       target_x->target_vel = vector_x / norm_xyz * pid_pos->output;
       target_y->target_vel = vector_y / norm_xyz * pid_pos->output;
@@ -193,7 +191,7 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    // If current position is in a 50mm target range, change the mode to the pos_hold
    if ((err_pos < 30.0f && err_pos > -30.0f) || *changed_to_poshold ) {
       *changed_to_poshold = 1;
-      target->target_lpf.set_cutoff_freq(3.5f);
+      // target->target_lpf.set_cutoff_freq(3.5f);
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf);
       return 1;
    }
@@ -222,7 +220,7 @@ int navi_rate_proportional(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos
 
    // If current position is in a 50mm target range, change the mode to the pos_hold
    if ((pid_pos->error < 30.0f && pid_pos->error > -30.0f) || *changed_to_poshold ) {
-      target->target_lpf.set_cutoff_freq(3.5f);
+      // target->target_lpf.set_cutoff_freq(6.0f);
       *changed_to_poshold = 1;
       pos_hold(pid_pos, pid_rate, target, current, limited_target_vel, pid_inner_pub, ph_pos_param, ph_rate_param, offset, offset_lpf);
       return 1;
@@ -306,10 +304,13 @@ void pos_hold(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
    pid_inner_pub->publish(pid_inner_msg);
 }
 
-void calc_takeoff_altitude(pid_calc_t *pid) {
-   if (pid->integrator < 60.0f ) {
-      pid->integrator += 400.0f * pid->cycle_time;
+int calc_takeoff_altitude(pid_calc_t *pid) {
+   if (pid->integrator < 0.0f ) {
+      pid->integrator += 200.0f * pid->cycle_time;
+      return 1;
    }
+   else
+      return 0;
 }
 
 void calc_landing_altitude(pid_calc_t *pid) {
@@ -325,7 +326,7 @@ int calc_takeoff_altitude_once(pid_calc_t *pid, int is_changed_to_takeoff, int t
       *is_takeoff = 0;
    }
    if (pid->integrator < takeoff_throttle && *is_takeoff ) {
-      pid->integrator += 150.0f * pid->cycle_time;
+      pid->integrator += 200.0f * pid->cycle_time;
       return 1;
    }
    else return 0;
