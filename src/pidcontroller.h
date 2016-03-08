@@ -15,12 +15,11 @@
 #include "pcl_msgs/ModelCoefficients.h"
 #include "std_msgs/Float32MultiArray.h"
 #include "std_msgs/UInt16MultiArray.h"
-#include "kalman.h"
 
 #include <string>
 #include "calculation.h"
 
-#define GROUND_ALTITUDE -2620.0f
+#define GROUND_ALTITUDE -2650.0f
 #define MANAGE_MODE_ERROR -1
 #define MANAGE_TARGET_ERROR -1
 
@@ -37,7 +36,7 @@ public:
    ~PIDCONTROLLER();
    pos_pid_parameter_t pid_param_c;
    int param_location;
-   int seq, seq2;
+
    std::string drone;
 
    void set_self_param();
@@ -58,15 +57,14 @@ private:
    int drone_num;
 
    float max_vel;
-   float max_proportional_vel;
    float limited_target_vel;
+   float max_proportional_vel;
 
    double node_cur_time;
    double node_last_time;
    double reboot_time;
    double manual_time;
    double failsafe_time;
-   double mode_change_time_to_smooth_target_velocity;
 
    unsigned short is_arm;
    unsigned int is_first_get_position;
@@ -114,21 +112,15 @@ private:
    lpf_c lpf_vel_y;
    lpf_c lpf_vel_z;
 
+   double mode_change_time_to_smooth_target_velocity;
+
    lpf_c lpf_pos_x;
    lpf_c lpf_pos_y;
    lpf_c lpf_pos_z;
 
-   PV_kalman kalman_x;
-   PV_kalman kalman_y;
-   PV_kalman kalman_z;
-
    lpf_c lpf_offset_x;
    lpf_c lpf_offset_y;
    lpf_c lpf_offset_z;
-
-   lpf_c lpf_target_x;
-   lpf_c lpf_target_y;
-   lpf_c lpf_target_z;   
 
    pos_vel_t current_X;
    pos_vel_t current_Y;
@@ -187,7 +179,9 @@ private:
    void timerCallback(const ros::TimerEvent&);
    void position_Callback(const geometry_msgs::Point&);
    void targetCallback(const geometry_msgs::Quaternion&);
-   void seq_Callback(const geometry_msgs::Point&);
+
 
 };
+
+
 #endif

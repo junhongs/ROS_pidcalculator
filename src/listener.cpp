@@ -57,11 +57,11 @@ void positionCallback(const std_msgs::Float64& msg) {
 
 }
 
-void pos_stamped_tested_verCallback(const geometry_msgs::PointStamped& msg) {
+void pos_stamped_tested_verCallback(const geometry_msgs::PointStamped& msg){
 
    // std::cout << msg.header.stamp << std::endl;
    // std::cout << msg.header.stamp << std::endl;
-   // ros::Time::now().toSec()
+   // ros::Time::now().toSec() 
 }
 
 void paramCallback(const std_msgs::Int32& msg) {
@@ -103,22 +103,13 @@ void paramCallback(const std_msgs::Int32& msg) {
          std::cout << "COMMON :: " << param_list[param_data] << " :: " << *get_param_n(param_data) << std::endl;
       }
       else {
-         drone_controller[drone_number - 1]->set_self_param();
+         drone_controller[drone_number-1]->set_self_param();
          update_param(param_data, &(drone_controller[drone_number - 1]->pid_param_c) );
          std::cout << drone_controller[drone_number - 1]->drone << " :: " << param_list[param_data] << " :: " << *get_param_n(param_data, &(drone_controller[drone_number - 1]->pid_param_c) ) << std::endl;
       }
    }
 }
-void seq_manager(const ros::TimerEvent&) {
-   std::cout << "seq_manager : ";// << std::endl;
-   for (int i = 0; i < 4; i++)
-      std::cout << drone_controller[i]->seq << " ";
 
-   for (int i = 0; i < 4; i++)
-      if (drone_controller[i]->seq2 != drone_controller[i]->seq)
-         std::cout << drone_controller[i]->drone << ":" << drone_controller[i]->seq2 << " ";
-   std::cout << std::endl;
-}
 int main(int argc, char **argv) {
    ros::init(argc, argv, "listener");
    ros::NodeHandle n;
@@ -132,7 +123,7 @@ int main(int argc, char **argv) {
    ros::Subscriber param_sub = n.subscribe("/PARAM_CHANGE", 100, paramCallback);
 
 
-   ros::Subscriber pos_stamp_sub = n.subscribe("potition1", 1000, pos_stamped_tested_verCallback);
+   ros::Subscriber pos_stamp_sub = n.subscribe("potition1", 100, pos_stamped_tested_verCallback);
 
    PIDCONTROLLER first("/FIRST");
    drone_controller[0] = &first;
@@ -143,11 +134,9 @@ int main(int argc, char **argv) {
    PIDCONTROLLER fourth("/FOURTH");
    drone_controller[3] = &fourth;
 
-
-   ros::Timer timer = n.createTimer(ros::Duration(1), seq_manager);
-
-   ros::spin();
    // ros::MultiThreadedSpinner spinner(4); // Use 4 threads
    // spinner.spin(); // spin() will not return until the node has been shutdown
+
+   ros::spin();
    return 0;
 }
