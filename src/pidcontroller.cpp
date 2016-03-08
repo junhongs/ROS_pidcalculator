@@ -11,7 +11,7 @@ PIDCONTROLLER::~PIDCONTROLLER() {
 PIDCONTROLLER::PIDCONTROLLER(std::string DRONE) :
    drone(DRONE),
    limited_target_vel(1000.0f),
-   max_vel(300.0f),
+   max_vel(200.0f),
 
    is_changed_manage_mode(0),
    is_changed_manage_target(0),
@@ -281,7 +281,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    current_Z.cur_pos = msg.z;
 
    if ( current_Y.cur_pos == 0 || current_Z.cur_pos == 0) {
-      std::cout << "NO COORDINATE INFO SET LAST POSITION" << std::endl;
+      std::cout<< drone << "NO COORDINATE INFO SET LAST POSITION" << std::endl;
       unsigned int tmp_flight_mode;
       int is_changed_mode_tmp = manage_mode(GET, &tmp_flight_mode);
 
@@ -292,17 +292,17 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
       // In flight
       if ( tmp_flight_mode != MODE_GROUND && tmp_flight_mode != MODE_NOT_DETECTED ) {
          if (!failsafe_time) {
-            std::cout << "GET IN FAILSAFE" << std::endl;
+            std::cout<< drone << "GET IN FAILSAFE" << std::endl;
             failsafe_time = ros::Time::now().toSec();
          }
          else if (failsafe_time > 0) {
             if ( ros::Time::now().toSec() - failsafe_time > 6.0l ) {
-               std::cout << "FAILSAFE TO GROUND" << std::endl;
+               std::cout<< drone << "FAILSAFE TO GROUND" << std::endl;
                unsigned int tmp_mod = MODE_GROUND;
                manage_mode(SET, &tmp_mod);
             }
             else if ( ros::Time::now().toSec() - failsafe_time > 2.0l ) {
-               std::cout << "FAILSAFE TO LANDING" << std::endl;
+               std::cout<< drone << "FAILSAFE TO LANDING" << std::endl;
                unsigned int tmp_mod = MODE_FAILSAFE;
                manage_mode(SET, &tmp_mod);
             }
@@ -320,7 +320,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
 
    if (!is_first_get_position) {
       is_first_get_position = 1;
-      std::cout << "GET THE FIRST POSITION" << std::endl;
+      std::cout<< drone << "GET THE FIRST POSITION" << std::endl;
       unsigned int flight_mode = MODE_GROUND;
       manage_mode(SET, &flight_mode);
    }
@@ -330,17 +330,17 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
    calc_velocity(&current_Z);
 
    /* velocity Low Pass Filter*/
-   // lpf_vel_x.set_cutoff_freq(1.5f);
-   // lpf_vel_y.set_cutoff_freq(1.5f);
-   // lpf_vel_z.set_cutoff_freq(1.5f);
+   lpf_vel_x.set_cutoff_freq(1.5f);
+   lpf_vel_y.set_cutoff_freq(1.5f);
+   lpf_vel_z.set_cutoff_freq(1.5f);
    current_X.cur_vel = lpf_vel_x.get_lpf(current_X.cur_vel);
    current_Y.cur_vel = lpf_vel_y.get_lpf(current_Y.cur_vel);
    current_Z.cur_vel = lpf_vel_z.get_lpf(current_Z.cur_vel);
 
    /* Position Low Pass Filter*/
-   // lpf_pos_x.set_cutoff_freq(2.0f);
-   // lpf_pos_y.set_cutoff_freq(2.0f);
-   // lpf_pos_z.set_cutoff_freq(2.0f);
+   lpf_pos_x.set_cutoff_freq(2.0f);
+   lpf_pos_y.set_cutoff_freq(2.0f);
+   lpf_pos_z.set_cutoff_freq(2.0f);
    current_X.cur_pos = lpf_pos_x.get_lpf(current_X.cur_pos);
    current_Y.cur_pos = lpf_pos_y.get_lpf(current_Y.cur_pos);
    current_Z.cur_pos = lpf_pos_z.get_lpf(current_Z.cur_pos);
@@ -475,7 +475,7 @@ void PIDCONTROLLER::position_Callback(const geometry_msgs::Point& msg) {
          is_landing_range = 1;
          tmp_pid_poshold_rate_param_Z.pid_I *= 15;
          tmp_pid_poshold_rate_param_Z.pid_P *= 20;
-         std::cout << "IN LANDING ZONE" << std::endl;
+         std::cout<< drone << "IN LANDING ZONE" << std::endl;
       }
       else
          navi_rate(&pid_pos_Z, &pid_rate_Z, &target_Z, &current_Z, limited_target_vel, &pid_inner_z_pub, pid_param_c.pos_nav_pid_Z, &tmp_pid_poshold_rate_param_Z, is_changed_target, pid_param_c.pos_pid_Z, pid_param_c.rate_pid_Z, &changed_to_poshold_z, &offset_throttle, &lpf_offset_z);
