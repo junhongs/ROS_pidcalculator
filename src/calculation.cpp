@@ -183,6 +183,7 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 
    float err_pos = target->target_pos - current->cur_pos;
 
+   target->target_lpf.set_cutoff_freq(6.0f);
    target->target_vel = target->target_lpf.get_lpf(target->target_vel);
 
    if (changed_target)
@@ -213,6 +214,7 @@ int navi_rate(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *targe
 int navi_rate_proportional(pid_calc_t *pid_pos, pid_calc_t *pid_rate, target_pos_vel_t *target, pos_vel_t *current, float limited_target_vel, ros::Publisher *pid_inner_pub , pid_parameter_t *pos_param, pid_parameter_t *rate_param, int changed_target, pid_parameter_t *ph_pos_param, pid_parameter_t *ph_rate_param, int *changed_to_poshold, float *offset, lpf_c *offset_lpf) {
 
    calc_pos_error(pid_pos, target, current);
+   target->target_lpf.set_cutoff_freq(6.0f);
    target->target_vel = target->target_lpf.get_lpf(target->target_vel);
 
    if (changed_target)
@@ -339,7 +341,7 @@ lpf_c::lpf_c() :
    lpf_hz (0.0f),
    lpf_filter(0.0f),
    cur_time(0.0l) {
-   set_cutoff_freq(lpf_hz);
+   set_cutoff_freq(10.0f);
 }
 
 lpf_c::lpf_c(float hz) :
@@ -357,7 +359,8 @@ void lpf_c::set_cutoff_freq(float hz) {
       return;
    lpf_hz = hz;
    if (hz == 0.0f) {
-      lpf_filter = 0;
+      hz = 10.0f;
+      lpf_filter = (1.0f / (2.0f * M_PI * hz));
    }
    else
       lpf_filter = (1.0f / (2.0f * M_PI * hz));

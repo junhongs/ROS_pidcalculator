@@ -3,6 +3,7 @@
 #include "std_msgs/Int32.h"
 #include "std_msgs/Float32.h"
 #include "std_msgs/Float64.h"
+#include "std_msgs/UInt16MultiArray.h"
 #include "geometry_msgs/Point32.h"
 #include "geometry_msgs/Point.h"
 
@@ -32,7 +33,7 @@ using namespace Eigen;
 
 
 ros::Publisher target_pub;
-
+ros::Publisher pid_out_pub[4];
 
 void position__Callback2(const geometry_msgs::Point& msg) {
 	static float x = msg.x, y = msg.y, z = msg.z;
@@ -82,6 +83,28 @@ void position__Callback(const geometry_msgs::Point& msg) {
 	target_pub.publish(target_msgs);
 }
 
+
+void position_bluetooth_Callback(const geometry_msgs::Point& msg) {
+
+	static float a = 0;
+
+	a += 3.14 / 12;
+	cout <<  490 *sin(a) + 1500 << endl;
+	std_msgs::UInt16MultiArray pid_output_msg;
+	pid_output_msg.data.resize(5, 1000);
+	pid_output_msg.data[0] = 1500; // ROLL
+	pid_output_msg.data[1] = 1500;
+	pid_output_msg.data[3] = 490 *sin(a) + 1500;
+	pid_output_msg.data[2] = 1500;   // YAW
+	pid_output_msg.data[4] = 1050;
+	for(int i = 0; i < 4; i++){
+		pid_out_pub[i].publish(pid_output_msg);
+	}
+
+}
+
+
+
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "talker");
 	ros::NodeHandle n;
@@ -96,9 +119,28 @@ int main(int argc, char **argv) {
 	// ros::Subscriber position_sub = n.subscribe("/FIRST/CURRENT_POS/", 1, &position__Callback);
 	ros::Subscriber position_sub;
 
+	
+	pid_out_pub[0]     = n.advertise<std_msgs::UInt16MultiArray>("/FIRST/OUTPUT_PID", 100);
+	pid_out_pub[1]     = n.advertise<std_msgs::UInt16MultiArray>("/SECOND/OUTPUT_PID", 100);
+	pid_out_pub[2]     = n.advertise<std_msgs::UInt16MultiArray>("/THIRD/OUTPUT_PID", 100);
+	pid_out_pub[3]     = n.advertise<std_msgs::UInt16MultiArray>("/FOURTH/OUTPUT_PID", 100);
+
+
+
+
+
+
+
+
+
+
 	if (argc > 1 && !strcmp(argv[1], "sin")) {
 		cout << "sin target pos" << endl;
 		position_sub = n.subscribe("/FIRST/CURRENT_POS/", 1, &position__Callback);
+	}
+	else if (argc > 1 && (!strcmp(argv[1], "b")))  {
+		cout << "bluetooth" << endl;
+		position_sub = n.subscribe("/FIRST/CURRENT_POS/", 1, &position_bluetooth_Callback);
 	}
 	else {
 		cout << "line target pos" << endl;
@@ -109,7 +151,7 @@ int main(int argc, char **argv) {
 	int count = 0;
 
 	ros::spin();
-
+	return 0;
 	while (ros::ok()) {
 
 
